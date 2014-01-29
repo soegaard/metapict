@@ -1,1 +1,0 @@
-("6.0.0.1" ("57eac295cd8f48a16f108e3c06db36fc94b1c443" . "bfd071ef1f5f998e1832eaf223b298195065151b") (collects #"racket" #"runtime-config.rkt") (collects #"racket" #"main.rkt") (collects #"metapict" #"metapict" #"metapict.rkt") (collects #"syntax" #"parse" #"private" #"runtime-report.rkt"))
