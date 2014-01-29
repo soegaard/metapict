@@ -1,0 +1,1 @@
+("6.0.0.1" ("5d7272da30659fd0933ad8a637df8e7155c6c0b1" . "6555895729ef8d0e6bb6a4c4d0507ee7cac0805d") (collects #"metapict" #"metapict" #"polygons.rkt") (collects #"racket" #"runtime-config.rkt") (collects #"racket" #"main.rkt") (collects #"metapict" #"metapict" #"metapict.rkt") (collects #"syntax" #"parse" #"private" #"runtime-report.rkt"))

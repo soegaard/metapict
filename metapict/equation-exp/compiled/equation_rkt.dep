@@ -1,0 +1,1 @@
+("6.0.0.1" ("9af6c3224b3c5544092aa6c6a82c655f88df9ba2" . "d7838f2ad9594d299ba8be814c48ad17707eaadf") (collects #"slideshow" #"pict.rkt") (collects #"racket" #"runtime-config.rkt") #"/Users/soegaard/Library/Racket/planet/300/development/cache/gcr/pdf-render.plt/2/2/main.rkt" (collects #"racket" #"main.rkt"))

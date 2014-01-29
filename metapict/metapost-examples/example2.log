@@ -1,0 +1,13 @@
+This is MetaPost, version 1.504 (kpathsea version 6.0.1)  22 JUL 2013 18:30
+**example2.rkt end
+(mpost.mp (/usr/local/texlive/2011/texmf-dist/metapost/base/plain.mp
+Preloading the plain mem file, version 1.004)) (./example2.rkt
+>> Path at line 4:
+(0,0)..controls (0.12888,0.19974) and (0.87401,0.90417)
+ ..(1,1)..controls (1.41742,1.31747) and (2,0.78996)
+ ..(2,0)..controls (2.33333,0) and (2.66667,0)
+ ..(3,0)
+
+ [1])
+1 output file written: example2.1
+

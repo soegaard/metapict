@@ -1,0 +1,1 @@
+("5.90.0.10" ("9f768a9bbbe23349f8ce2a9916c3ca00c4b8ba96" . "7393228ec2cf6a06a46fda71d371c1ae8615fc0c") (collects #"scribble" #"eval.rkt") (collects #"scribble" #"manual.rkt") (collects #"racket" #"base.rkt") (collects #"scribble" #"core.rkt") (collects #"racket" #"runtime-config.rkt") (collects #"scribble" #"html-properties.rkt") (collects #"at-exp" #"lang" #"reader.rkt"))

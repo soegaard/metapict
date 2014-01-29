@@ -1,0 +1,297 @@
+%!PS-Adobe-3.0
+%%Title: flattened PostScript generated from file: formula1.pdf
+%%Creator: pstoedit
+%%BoundingBox: (atend)
+%%Pages: (atend)
+%%EndComments
+%%BeginProlog
+/setPageSize { pop pop } def
+/ntranslate { neg exch neg exch translate } def
+/p2esetcolorname { pop } def
+/setshowparams { pop pop pop} def
+/awidthshowhex { dup length 0 gt { dup /ASCIIHexDecode filter exch length 2 div cvi string readstring pop } if awidthshow } def
+/awidthshowhexwithglyphs { true { pop awidthshowhex } { { glyphshow } forall pop } ifelse } def
+/backendconstraints { pop pop } def
+/pstoedit.newfont { 80 string cvs  findfont  dup length dict begin {1 index /FID ne {def} {pop pop} ifelse} forall  /Encoding ISOLatin1Encoding def   dup 80 string cvs /FontName exch def  currentdict end  definefont pop } def
+/imagestring 1 string def
+%%EndProlog
+%%BeginSetup
+% pstoedit.textastext pstoedit.doflatten backendconstraints   
+0 0 backendconstraints
+%%EndSetup
+%%Page: 1 1
+save %{
+save %{
+gsave %{
+  
+ 595.276 841.89 setPageSize
+ 0 setlinecap
+ 10.0 setmiterlimit
+ 0 setlinejoin
+ [ ] 0.0 setdash
+ 1.0 setlinewidth
+ 0.0 0.0 0.0 1.0 setcmykcolor
+() p2esetcolorname
+ 
+ 
+% 1                   pathnumber
+% eofilledpath
+ 0 setlinecap
+ 10.0 setmiterlimit
+ 0 setlinejoin
+ [ ] 0.0 setdash
+ 1.0 setlinewidth
+ 0.0 0.0 0.0 1.0 setcmykcolor
+() p2esetcolorname
+newpath
+ 292.453 674.477 moveto
+ 290.328 681.93 lineto
+ 288.938 680.32 lineto
+ 289.094 680.164 lineto
+ 289.781 680.961 lineto
+ 292.063 672.992 lineto
+ 292.391 672.992 292.406 672.992 292.484 673.227 curveto
+ 297.938 690.477 lineto
+ 297.984 690.633 297.984 690.664 297.984 690.68 curveto
+ 297.984 690.789 297.906 690.867 297.797 690.867 curveto
+ 297.641 690.867 297.609 690.742 297.563 690.617 curveto
+ 292.453 674.477 lineto
+ closepath
+ 297.805 690.477 moveto
+eofill
+gsave %{
+ grestore %}
+ gsave %{
+  
+ 
+% 2                   pathnumber
+% strokedpath
+ 0 setlinecap
+ 10.0 setmiterlimit
+ 0 setlinejoin
+ [ ] 0.0 setdash
+ 0.398 setlinewidth
+ 0.0 0.0 0.0 1.0 setcmykcolor
+() p2esetcolorname
+newpath
+ 297.805 690.676 moveto
+ 322.41 690.676 lineto
+stroke
+grestore %}
+ save %{
+restore %}
+ 
+ 0 setlinecap
+ 10.0 setmiterlimit
+ 0 setlinejoin
+ [ ] 0.0 setdash
+ 1.0 setlinewidth
+ 0.0 0.0 0.0 1.0 setcmykcolor
+() p2esetcolorname
+ 
+ 
+% 3                   pathnumber
+% eofilledpath
+ 0 setlinecap
+ 10.0 setmiterlimit
+ 0 setlinejoin
+ [ ] 0.0 setdash
+ 1.0 setlinewidth
+ 0.0 0.0 0.0 1.0 setcmykcolor
+() p2esetcolorname
+newpath
+ 303.461 682.594 moveto
+ 303.07 682.531 302.93 682.234 302.93 682.016 curveto
+ 302.93 681.734 303.164 681.625 303.32 681.625 curveto
+ 303.68 681.625 303.93 681.938 303.93 682.266 curveto
+ 303.93 682.766 303.367 682.984 302.852 682.984 curveto
+ 302.133 682.984 301.727 682.281 301.617 682.047 curveto
+ 301.352 682.938 300.602 682.984 300.398 682.984 curveto
+ 299.18 682.984 298.539 681.438 298.539 681.172 curveto
+ 298.539 681.125 298.586 681.063 298.664 681.063 curveto
+ 298.758 681.063 298.789 681.125 298.805 681.172 curveto
+ 299.211 682.5 300.008 682.75 300.352 682.75 curveto
+ 300.898 682.75 300.992 682.25 300.992 681.969 curveto
+ 300.992 681.703 300.93 681.438 300.789 680.859 curveto
+ 300.383 679.219 lineto
+ 300.195 678.516 299.852 677.859 299.227 677.859 curveto
+ 299.164 677.859 298.867 677.859 298.617 678.016 curveto
+ 299.039 678.094 299.133 678.453 299.133 678.594 curveto
+ 299.133 678.828 298.961 678.969 298.742 678.969 curveto
+ 298.445 678.969 298.133 678.719 298.133 678.344 curveto
+ 298.133 677.844 298.695 677.609 299.211 677.609 curveto
+ 299.789 677.609 300.195 678.063 300.445 678.563 curveto
+ 300.633 677.859 301.227 677.609 301.664 677.609 curveto
+ 302.883 677.609 303.523 679.172 303.523 679.438 curveto
+ 303.523 679.5 303.477 679.547 303.414 679.547 curveto
+ 303.305 679.547 303.289 679.484 303.258 679.391 curveto
+ 302.93 678.344 302.242 677.859 301.695 677.859 curveto
+ 301.289 677.859 301.055 678.156 301.055 678.656 curveto
+ 301.055 678.922 301.102 679.109 301.305 679.891 curveto
+ 301.711 681.516 lineto
+ 301.898 682.234 302.305 682.75 302.852 682.75 curveto
+ 302.867 682.75 303.211 682.75 303.461 682.594 curveto
+ closepath
+ 304.453 677.734 moveto
+eofill
+gsave %{
+ grestore %}
+ save %{
+restore %}
+ 
+ 0 setlinecap
+ 10.0 setmiterlimit
+ 0 setlinejoin
+ [ ] 0.0 setdash
+ 1.0 setlinewidth
+ 0.0 0.0 0.0 1.0 setcmykcolor
+() p2esetcolorname
+ 
+ 
+% 4                   pathnumber
+% eofilledpath
+ 0 setlinecap
+ 10.0 setmiterlimit
+ 0 setlinejoin
+ [ ] 0.0 setdash
+ 1.0 setlinewidth
+ 0.0 0.0 0.0 1.0 setcmykcolor
+() p2esetcolorname
+newpath
+ 307.926 682.984 moveto
+ 310.27 682.984 lineto
+ 310.379 682.984 310.551 682.984 310.551 683.172 curveto
+ 310.551 683.359 310.379 683.359 310.27 683.359 curveto
+ 307.926 683.359 lineto
+ 307.926 685.703 lineto
+ 307.926 685.813 307.926 685.984 307.738 685.984 curveto
+ 307.566 685.984 307.566 685.813 307.566 685.703 curveto
+ 307.566 683.359 lineto
+ 305.207 683.359 lineto
+ 305.098 683.359 304.926 683.359 304.926 683.172 curveto
+ 304.926 682.984 305.098 682.984 305.207 682.984 curveto
+ 307.566 682.984 lineto
+ 307.566 680.641 lineto
+ 307.566 680.531 307.566 680.359 307.738 680.359 curveto
+ 307.926 680.359 307.926 680.531 307.926 680.641 curveto
+ 307.926 682.984 lineto
+ closepath
+ 311.043 681.188 moveto
+eofill
+gsave %{
+ grestore %}
+  
+ 0 setlinecap
+ 10.0 setmiterlimit
+ 0 setlinejoin
+ [ ] 0.0 setdash
+ 1.0 setlinewidth
+ 0.0 0.0 0.0 1.0 setcmykcolor
+() p2esetcolorname
+ 
+ 
+% 5                   pathnumber
+% eofilledpath
+ 0 setlinecap
+ 10.0 setmiterlimit
+ 0 setlinejoin
+ [ ] 0.0 setdash
+ 1.0 setlinewidth
+ 0.0 0.0 0.0 1.0 setcmykcolor
+() p2esetcolorname
+newpath
+ 314.68 676.406 moveto
+ 314.352 675.953 313.883 675.547 313.305 675.547 curveto
+ 313.164 675.547 312.586 675.563 312.414 676.109 curveto
+ 312.445 676.094 312.508 676.094 312.523 676.094 curveto
+ 312.883 676.094 313.117 676.406 313.117 676.688 curveto
+ 313.117 676.953 312.898 677.063 312.727 677.063 curveto
+ 312.523 677.063 312.117 676.906 312.117 676.328 curveto
+ 312.117 675.719 312.617 675.297 313.305 675.297 curveto
+ 314.492 675.297 315.695 676.406 316.039 677.719 curveto
+ 317.195 682.375 lineto
+ 317.211 682.438 317.242 682.5 317.242 682.578 curveto
+ 317.242 682.75 317.102 682.875 316.914 682.875 curveto
+ 316.805 682.875 316.555 682.828 316.461 682.469 curveto
+ 315.586 678.969 lineto
+ 315.523 678.75 315.523 678.719 315.43 678.594 curveto
+ 315.18 678.266 314.789 677.859 314.227 677.859 curveto
+ 313.555 677.859 313.492 678.516 313.492 678.828 curveto
+ 313.492 679.516 313.82 680.422 314.133 681.281 curveto
+ 314.273 681.625 314.336 681.797 314.336 682.031 curveto
+ 314.336 682.531 313.977 682.984 313.398 682.984 curveto
+ 312.305 682.984 311.867 681.266 311.867 681.172 curveto
+ 311.867 681.125 311.914 681.063 311.992 681.063 curveto
+ 312.102 681.063 312.117 681.109 312.164 681.281 curveto
+ 312.445 682.281 312.898 682.75 313.367 682.75 curveto
+ 313.477 682.75 313.68 682.75 313.68 682.359 curveto
+ 313.68 682.047 313.539 681.703 313.367 681.25 curveto
+ 312.773 679.688 312.773 679.297 312.773 679.016 curveto
+ 312.773 677.875 313.586 677.609 314.18 677.609 curveto
+ 314.523 677.609 314.961 677.719 315.383 678.156 curveto
+ 315.383 678.156 lineto
+ 315.211 677.453 315.086 676.984 314.68 676.406 curveto
+ closepath
+ 317.246 677.734 moveto
+eofill
+gsave %{
+ grestore %}
+  
+ 0 setlinecap
+ 10.0 setmiterlimit
+ 0 setlinejoin
+ [ ] 0.0 setdash
+ 1.0 setlinewidth
+ 0.0 0.0 0.0 1.0 setcmykcolor
+() p2esetcolorname
+ 
+ 
+% 6                   pathnumber
+% eofilledpath
+ 0 setlinecap
+ 10.0 setmiterlimit
+ 0 setlinejoin
+ [ ] 0.0 setdash
+ 1.0 setlinewidth
+ 0.0 0.0 0.0 1.0 setcmykcolor
+() p2esetcolorname
+newpath
+ 319.93 682.813 moveto
+ 320.055 682.922 320.383 683.188 320.508 683.297 curveto
+ 321.008 683.75 321.477 684.188 321.477 684.922 curveto
+ 321.477 685.859 320.68 686.469 319.68 686.469 curveto
+ 318.727 686.469 318.102 685.75 318.102 685.047 curveto
+ 318.102 684.656 318.414 684.594 318.523 684.594 curveto
+ 318.695 684.594 318.93 684.719 318.93 685.016 curveto
+ 318.93 685.438 318.539 685.438 318.445 685.438 curveto
+ 318.68 686.016 319.211 686.203 319.602 686.203 curveto
+ 320.336 686.203 320.727 685.578 320.727 684.922 curveto
+ 320.727 684.094 320.133 683.484 319.195 682.516 curveto
+ 318.195 681.484 lineto
+ 318.102 681.406 318.102 681.391 318.102 681.188 curveto
+ 321.242 681.188 lineto
+ 321.477 682.609 lineto
+ 321.227 682.609 lineto
+ 321.211 682.453 321.148 682.047 321.039 681.906 curveto
+ 320.992 681.844 320.398 681.844 320.273 681.844 curveto
+ 318.852 681.844 lineto
+ 319.93 682.813 lineto
+ closepath
+ 321.914 681.188 moveto
+eofill
+gsave %{
+ grestore %}
+ grestore %}
+ showpage
+%%BoundingBox: 288 672 322 690 
+%%Page: 1 1
+restore %}
+restore %}
+restore %}
+showpage
+%%BoundingBox: 999999 999999 0 0 
+%%Page: 2 2
+% normal end reached by pstoedit.pro
+%%Trailer
+%%Pages: 2
+%%EOF
