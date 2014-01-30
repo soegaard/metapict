@@ -1,13 +1,19 @@
 #lang racket
 (require "../metapict.rkt" "../polygons.rkt") 
 
-(def todo-red    (color "red"    (fill (square #:side 2))))
-(def todo-yellow (color "yellow" (fill (square #:side 2))))
-
 ;;;
 ;;; Figures from:
 ;;; http://tex.loria.fr/prod-graph/zoonekynd/metapost/metapost.html
 ;;;
+
+; (draw todo-red ...) will draw a red square below a fig.
+; use this to mark figures whose output differes from the
+; original metapost figures.
+
+(def todo-red    (color "red"    (fill (square #:side 2))))
+(def todo-yellow (color "yellow" (fill (square #:side 2))))
+
+
 (def fig1 ; straight lines
   (let ([A (pt 0 0)] [B (pt 1 0)] [C (pt 0 1)])
     (draw (curve A -- B -- C))))
@@ -218,7 +224,7 @@
     (draw (curve (pt 0 0) up .. up (pt 2 0)))))
 (def fig47 ; curl
   (with-window (window -1.2 2.2 -1.2 2.2)
-    (draw todo-red (curve (pt 0 0) up .. (pt 2 0) up .. cycle))))
+    (draw (curve (pt 0 0) up .. (pt 2 0) up .. cycle))))
 (define (unit θ) ; return point on unit circle, θ in degrees
   (pt (cos (rad θ)) (sin (rad θ))))
 (def fig48 
@@ -250,8 +256,7 @@
                     (angle (* 2 (px r))))))
     (with-window (window 0 3 0 3)
       (let ([A (pt 0 0)] [B (pt 3 0)] [C (pt 1 2)])
-        (draw todo-red ; todo curl ...
-              (curve A -- B -- C -- cycle)
+        (draw (curve A -- B -- C -- cycle)
               (draw-angle B A C 1)
               (draw-angle C B A 2)
               (draw-angle A C B 3))))))
@@ -288,12 +293,12 @@
             (curve A down .. C)
             (curve A (dir 30) .. B)
             (curve A (dir -30) .. C)))))
-(def fig55 ; curl ...  ought to be semicircle
+(def fig55 
   (with-window (window -1 3 -1 3)
-    (draw todo-red (curve (pt 0 0) .. (pt 1 1) .. (pt 2 0)))))
-(def fig56 ; curl ...
+    (draw (curve (pt 0 0) .. (pt 1 1) .. (pt 2 0)))))
+(def fig56 
   (with-window (window 0 3 0 3)
-    (draw todo-red (curve (pt 0 0) (tension 2) (pt 1 1) .. (pt 2 0)))))
+    (draw (curve (pt 0 0) (tension 2) (pt 1 1) .. (pt 2 0)))))
 (def fig57 
   (with-scaled-window 1.1
     (draw (curve (pt 0 1)    right      .. 
@@ -313,9 +318,9 @@
 #;(def fig64 ; ... todo: has negative tension,  not supported yet
     (with-window (window -.1 2.1 -.1 2.1)
       (draw (curve (pt 0 0) up ... (pt 1 1/10) ... (pt 2 0) down))))
-(def fig65 ; curl...  curls wrong way! It is this pi vs -pi in signed-angle ?
+(def fig65
   (with-scaled-window 2
-    (draw todo-red (curve (pt 0 0) (curl 0) .. (pt 0 1) .. (pt 1 0) .. (pt 1 1)))))
+    (draw (curve (pt 0 0) (curl 0) .. (pt 0 1) .. (pt 1 0) .. (pt 1 1)))))
 (def fig72
   (let () (def p (scaled 5 fullcircle))
     (define (shift k p) (shifted k (* 2 k) p))
@@ -330,8 +335,7 @@
   (let () 
     (def p (curve (pt .5  -.5) right .. (pt 2 0)))
     (with-window (window -1 4 -1 4)
-      (draw todo-yellow  ; curl ...
-            p
+      (draw p
             (rotatedd  0 p)
             (rotatedd 10 p)
             (rotatedd 20 p)

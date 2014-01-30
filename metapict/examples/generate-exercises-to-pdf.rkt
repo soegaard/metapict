@@ -2,7 +2,7 @@
 (require racket/draw math/base
          pict "../metapict.rkt")
 
-; A study hard has two sides: a front and a back.
+; A study card has two sides: a front and a back.
 ; Both sides are represented as picts.
 (struct card (front back))
 
