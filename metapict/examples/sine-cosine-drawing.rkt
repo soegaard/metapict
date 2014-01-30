@@ -2,6 +2,15 @@
 (require metapict)
 ; todo : fix arc to handle angles outside the normal range
 
+;;; 
+;;; EXAMPLE  
+;;;   This examples is inspired by:
+;;;       Example: A picture for Karl’s students
+;;;       http://www.texample.net/tikz/examples/tutorial/
+;;;   Compare with:
+;;;       https://github.com/takikawa/pict-utils
+
+
 (define (grid lower-left upper-right reference step)
   ; Draw a grid with the rectangle given by the lower-left 
   ; and upper-right corner. Reference is a point in
