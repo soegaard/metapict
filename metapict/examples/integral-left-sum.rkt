@@ -1,7 +1,13 @@
 #lang racket
+;;;
+;;; EXAMPLE
+;;;   This example illustrations numeric integration 
+;;;   with left sums.
+;;;
 
 ; todo: fix "bleeding" by reusing the path of the graph
 ; with cut-before and cut-after rather than recomputing the graph.
+
 ; Note: The cut-before and cut-after solution needs to
 ;       handle the case where x=a and x=b doesn't intersect the 
 ;       graph g inside the window.

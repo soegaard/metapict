@@ -1,10 +1,13 @@
 #lang racket
 
+;;; 
+;;; Examples from http://www.tug.org/TUGboat/tb31-1/tb97kmiecik-logo.pdf
+;;;
+
 ; TODO: fix error from (curve A .. B .. C right .. D .. cycle)
 
-(require "../metapict.rkt")
+(require metapict)
 
-; http://www.tug.org/TUGboat/tb31-1/tb97kmiecik-logo.pdf
 (define (kmiecik-examples)
   (define (u x) (* 1 x))
   (def 1u (u 1))

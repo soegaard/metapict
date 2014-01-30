@@ -1,9 +1,11 @@
 #lang racket
-(require "../metapict.rkt")
+(require metapict)
 
-; Figure from Wikipedia article on polygonal numbers.
+;;;
+;;; EXAMPLE
+;;;   Figure from Wikipedia article on polygonal numbers.
+;;;
 
-"Examples"
 (def (fig-polygonal-numbers)
   (let ()
     (curve-pict-window (window -2.1 2.1 -2.1 2.1))

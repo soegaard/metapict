@@ -1,5 +1,11 @@
 #lang racket
-(require pict "../metapict.rkt")
+(require metapict)
+
+;;; 
+;;; EXAMPLE
+;;;   Two figures illustrating projection of vector on vector.
+;;;   The figures are saved as pngs.
+;;;
 
 (define (save-as-png filename pict)
   (send (pict->bitmap pict)

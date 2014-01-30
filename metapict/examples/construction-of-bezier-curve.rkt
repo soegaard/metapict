@@ -1,6 +1,13 @@
 #lang racket
 (require metapict)
 
+;;;
+;;; EXAMPLE
+;;;   This examples shows how a Bezier curve is constructed.
+;;;   Run to see a list of images.
+
+;;; Who turns this into a gif animation?
+
 (define (draw-bezier-controls b)
   (defm (bez p0 p1 p2 p3) b)
   (penscale 4 (draw p0 p1 p2 p3)))
