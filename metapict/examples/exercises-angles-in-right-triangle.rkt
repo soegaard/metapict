@@ -1,6 +1,10 @@
 #lang racket
 (require metapict math/base racket/math)
 
+;;;
+;;; EXAMPLE: The file generates a random right-angled triangle.
+;;;
+
 (define (random-letters)
   (def first-letter (string-ref "ads" (random 3)))
   (def small-letters (for/list ([i 3]) (~a (integer->char (+ (char->integer first-letter) i)))))

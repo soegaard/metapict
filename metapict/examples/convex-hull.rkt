@@ -1,4 +1,13 @@
 #lang racket
+;;;
+;;; Example: Non-finished implementation of the gift wrapping 
+;;;          algorithm for computing the convex hull of a set
+;;;          of poins. This is used to draw random race tracks.
+;;;
+;;; Inspiration: http://goo.gl/FyImwf
+;;;
+;;; Note:    The implementation can't handle repeated points.
+
 ; TODO : currently convex-hull can't handle repeated points in the input
 (require ; "pt-vec.rkt"
   metapict)
@@ -18,8 +27,6 @@
     [((pt px py) (pt qx qy))
      (if (or (< px qx) (and (= px qx) (> py qy)))
          p q)]))
-
-
 
 ; left-most-point : (listof pt) -> pt
 ;   find the leftmost, topmost point
@@ -85,6 +92,7 @@
   (check-equal? (right-most-wrt c all) d)
   (check-equal? (right-most-wrt d all) a))
 
+; Note: Assumes all points in ps are different
 (define (convex-hull ps) ; gift wrapping algorithm
   ; the left most point lie on the convex hull
   (def p0 (left-most-point ps))
@@ -112,9 +120,13 @@
 
 (define (race-track)
   (with-window (window -15 15 -15 15)
-    (def pts (for/list ([n 7]) (pt (random 10) (random 10))))  
+    (def pts (set->list (for/set ([n 7]) (pt (random 10) (random 10)))))
     (displayln pts)
     (scale (draw (penscale 3 (draw* pts))
                  (color "red" (draw (curve* (append (add-between (convex-hull pts) ..)
                                                     (list .. cycle))))))
-           4)))
+           2)))
+
+(for/list ([n 10]) (race-track))
+
+
