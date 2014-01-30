@@ -18,4 +18,4 @@
   eval)
 
 (define svg-picts 
-  (make-style "svg-picts" (list (render-pict-as 'svg-images))))
+  (make-style "svg-picts" (list (render-convertible-as '(svg-bytes png-bytes)))))
