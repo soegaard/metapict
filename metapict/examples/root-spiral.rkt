@@ -12,8 +12,8 @@
 
 (define (shade r) ; white -> dark-green -> almost-black
   (cond
-    [(<= 0 r 1/2) (color-med (* 2 r)         dark-green   "white")]
-    [(<=   r 1)   (color-med (* 2 (- r 1/2)) almost-black dark-green)]
+    [(<= 0 r 1/2) (color-med (* 2 r)         "white"    dark-green   )]
+    [(<=   r 1)   (color-med (* 2 (- r 1/2)) dark-green almost-black )]
     [else         (error 'shader (~a "got: " r))]))
 
 (current-font-size 2) ; due to scale 8 at the end
