@@ -20,7 +20,8 @@
           [reduce-angle/rad (-> deg?        -pi--pi)]  ; add ±2pi until result is in -pi--pi
           [turning-angle    (-> pt? pt? pt? -pi--pi)]  ; a polygonal line from p0 to p1 to p2 
           ;                                              turns left through this angle:
-          ))
+          )
+         arccos)
 
 (require "def.rkt" "structs.rkt" "pt-vec.rkt" "trig.rkt")
 (module+ test (require rackunit))

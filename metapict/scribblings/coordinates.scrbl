@@ -151,7 +151,7 @@ The displacement that moves a point @racket[a] to point @racket[b] is given by @
              (vec* 3 right)
              (pt- (pt 2 4) (pt 7 8))]
 
-It is common to need points that lies between two point @racket[A] and @racket[B].
+It is common to need points that lie between two point @racket[A] and @racket[B].
 The mediation operation is called @racket[med]. The call @racket[(med 0.25 A B)]
 will compute the point @racket[M] on the line from @racket[A] to @racket[B] whose 
 distance from @racket[A] is 25% of the length of @racket[AB].

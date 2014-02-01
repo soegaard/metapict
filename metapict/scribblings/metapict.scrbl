@@ -24,6 +24,8 @@ If you find any features in MetaPost or Tikz that you miss, don't hessitate to m
 @include-section["coordinates.scrbl"]
 
 @section{Reference}
-@itemlist[
-  @item{@racketmodname[metapict/pt]: Points}
-]
+@itemlist[@item{@racketmodname[metapict/pt]: Points}]
+
+
+@include-section["examples.scrbl"]
+
