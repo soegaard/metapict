@@ -4,7 +4,6 @@
 (require "structs.rkt" "def.rkt" "trig.rkt")
 (module+ test (require rackunit))
 
-
 ; Predefined points and vectors
 (def origo (pt 0 0))
 (defv (north south west east) (values (vec 0 1) (vec 0 -1) (vec -1 0) (vec 1 0)))
@@ -23,7 +22,7 @@
     [()    (pt 0 0)]
     [(p)   p]
     [(p v) (match* (p v) [((pt x y) (or (vec s t)(pt s t))) (pt(+ s x)(+ t y))])]
-    [ps    (foldl pt+ (pt 0 0) ps)]))
+    [ps    (for/fold ([sum (first ps)]) ([p (in-list (rest ps))]) (pt+ sum p))]))
 
 (define (pt* s p) (match p [(pt x y) (pt (* s x) (* s y))]))
 (define (dist p q) (norm (pt- q p)))
@@ -35,6 +34,7 @@
 
 (module+ test
   (check-equal? (pt+ (pt 1 2) (vec 3 4)) (pt 4 6))
+  (check-equal? (pt+ (pt 1 2) (vec 3 4) (vec 5 6)) (pt 9 12))
   (check-equal? (pt- (pt 1 2) (vec 3 4)) (pt -2 -2))
   (check-equal? (pt- (pt 1 2) (pt 3 4))  (vec -2 -2))
   (check-equal? (pt* 2 (pt 3 4)) (pt 6 8))
