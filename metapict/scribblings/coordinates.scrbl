@@ -168,7 +168,7 @@ distance from @racket[A] is 25% of the length of @racket[AB].
 
 Note: @racket[(med x A B)] is equivalent to @racket[(pt+ A (vec* x (pt- B A)))].
 
-Let us the knowledge from this section to write a small program to generate
+Let's use the knowledge from this section to write a small program to generate
 the character A. The shape depends on the parameters @racket[w] (width),
 @racket[h] (height) and the placement of the bar @racket[α].
 

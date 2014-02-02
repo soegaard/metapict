@@ -78,7 +78,7 @@
 
 ; mediate (interpolate) between colors 0<=t<=1
 (define (color-med t c1 c2)   
-  (color+ (color* t c1) (color* (- 1 t) c2)))
+  (color+ (color* (- 1 t) c1) (color* t c2)))
 
 (module+ test
   (check-equal? (color->list (color-med 1/2 "red" "blue")) '(127 0 127 1.)))

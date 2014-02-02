@@ -1,6 +1,5 @@
 #lang racket
 (require metapict)
-
 ;;; EXAMPLE
 ;;;   Inspiration:
 ;;;     http://www.texample.net/tikz/examples/rooty-helix/
@@ -15,8 +14,6 @@
     [(<= 0 r 1/2) (color-med (* 2 r)         "white"    dark-green   )]
     [(<=   r 1)   (color-med (* 2 (- r 1/2)) dark-green almost-black )]
     [else         (error 'shader (~a "got: " r))]))
-
-(current-font-size 2) ; due to scale 8 at the end
 
 (define (spiral drawing max-r)
   (def (node p r)
@@ -37,10 +34,10 @@
   (draw spiral 
         (node (scaled 4 (pt@ (sqrt max-r) θ)) max-r)))
 
+(set-curve-pict-size 600 600)
 (with-window (window -40 40 -40 40)
   (penwidth 0
-    (scale (for/fold ([drawing (draw)]) ([r '(86 38 15)])
-             (spiral drawing r))
-           8)))
+    (for/fold ([drawing (draw)]) ([r '(86 38 15)])
+      (spiral drawing r))))
 
 
