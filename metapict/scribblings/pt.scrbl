@@ -171,3 +171,137 @@ Same as @racket[pt@] but the angle is in degrees.}
                     (pt@d 1 45)
                     (pt@  1 (/ pi 4))]
 
+@subsection[]{Vector Operations}
+
+In this section the coordinates of @racket[vec]s @math{v} and @math{w} 
+will be referred to as @math{v=@coords{v}} and @math{w=@coords{w}}.
+
+@defproc[(vec+ [v vec?] [w vec?]) vec?]{
+Returns the vector sum of @math{v} and @math{w}, that is
+the vector @math{(v_1+w_1,v_2+w_2)} is returned.
+
+In terms of displacements the vector sum @math{v+w} can be
+thought of as the result of the displament @math{v} followed by
+the displacement @math{w}.}
+
+@interaction[#:eval eval 
+                    (def v   (vec 2 0))
+                    (def w   (vec 0 3))
+                    (def v+w (vec+ v w))
+                    v+w
+                    (define (arrow v [offset (vec 0 0)])
+                      (def A (pt+ origo offset))
+                      (draw-arrow (curve A -- (pt+ A v))))   ; adds arrow at the end of the curve
+                    (ahlength (px 12))                       ; length of arrow head
+                    (with-window (window -0.2 3.2 -0.2 3.2)
+                      (penwidth 2
+                        (draw (color "red"   (arrow v))
+                              (color "green" (arrow w v))
+                              (color "blue"  (arrow v+w)))))]
+
+@defproc[(vec- [v vec?] [w vec?]) vec?]{
+Returns the vector difference of @math{v} and @math{w}, that is
+the vector @math{(v_1-w_1,v_2-w_2)} is returned.}
+
+@defproc[(vec* [s real?] [v vec?]) vec?]{
+Scale the coordinates of @racket[v] with @racket[s].
+If the coordinates of @racket[v] are @math{(x,y)} then the vector @math{(sx,sy)} is returned.}
+@interaction[#:eval eval (vec* 3 (vec 1 2))]
+
+@defproc*[([(vec->pt [v vec?]) pt?]
+           [(pos     [v vec?]) pt?])]{
+Converts the vector @math{(x,y)} into a point with the same coordinates.
+If a point @math{A} has the same coordinates as a vector @math{v}, then
+the vector is said to a position vector for the point and @math{OA=v}.
+This function thus return a point (position), whose position vector is @math{v}.}
+@interaction[#:eval eval  (pos (vec 1 2))]
+
+@defproc[(vec= [v vec?] [w vec?]) boolean?]{
+Returns @racket[#t] if the coordinates of the vectors @racket[v] and @racket[w] are 
+equal with respect to @racket[=]. Otherwise @racket[#f] is returned.}
+@interaction[#:eval eval 
+                    (vec= (vec 1 2) (vec 1 2))
+                    (vec= (vec 1 2) (vec 1 42))]
+
+@defproc[(vec~ [v vec?] [w vec?] [ε 1e-15]) boolean?]{
+Returns @racket[#t] if the length of @math{v-w} is less than or equal to @racket[ε]. 
+The default value of @racket[ε] is 1e-15.}
+@interaction[#:eval eval 
+                    (vec~ (vec 1 2) (vec 1 2.09))
+                    (vec~ (vec 1 2) (vec 1 2.09) 0.1)]
+
+@defproc[(dot [v vec?] [w vec?]) real?]{
+Returns the dot product of the vectors @racket[v] and @racket[w].
+The dot product is the number @nonbreaking{@math{v_1 w_1 + v_2 w_2}}.
+
+The dot product of two vectors are the same as the product of the lengths 
+of the two vectors times the cosine of the angle between the vectors.
+Thus the dot product of two orthogonal vectors are zero, and the
+dot product of two vectors sharing directions are the product of their lengths.}
+@interaction[#:eval eval 
+                    (dot (vec 1 0) (vec 0 1))
+                    (dot (vec 0 2) (vec 0 3))]
+
+@defproc[(len2 [v vec?]) real?]{
+Returns the square of the length of the vector @racket[v].}
+@interaction[#:eval eval 
+                    (len2 (vec 1 1))
+                    (len2 (vec 3 4))]
+
+@defproc*[([(len  [v vec?]) real?]
+           [(norm [v vec?]) real?])]{
+Returns the length of the vector @racket[v].}
+@interaction[#:eval eval 
+                    (len (vec 1 1))
+                    (len (vec 3 4))]
+
+@defproc[(dir/rad [α real?]) vec?]{
+Returns the unit vector whose angle with the first axis is @math{α} radians.}
+@interaction[#:eval eval 
+                    (dir/rad 0)
+                    (dir/rad (/ pi 2))]
+
+@defproc[(dir [α real?]) vec?]{
+Returns the unit vector whose angle with the first axis is @math{α} degrees.}
+@interaction[#:eval eval 
+                    (dir 0)
+                    (dir 90)]
+
+@defproc[(vec@ [r real?] [α real?]) vec?]{
+Returns the vector of length @racket[r] whose angle with the first axis is @math{α} radians.
+In other words construct a vector form polar coordinates.}
+@interaction[#:eval eval 
+                    (vec@ 2 0)
+                    (vec@ 2 pi)]
+
+@defproc[(|@| [A-or-v (or pt? vec?)]) (values real? real?)]{
+Returns the polar coordinates of the point or vector.}
+@interaction[#:eval eval 
+                    (|@| (pt  3 4))
+                    (|@| (vec 3 4))]
+
+@defproc*[([(rot90  [A-or-v (or pt? vec?)]) (or pt? vec?)]
+           [(rot-90 [A-or-v (or pt? vec?)]) (or pt? vec?)])]{
+Rotates the point or vector 90 or -90 degrees around origo.}
+@interaction[#:eval eval 
+                    (rot90  (pt  1 0))
+                    (rot90  (vec 1 0))
+                    (rot-90 (pt  1 0))
+                    (rot-90 (vec 1 0))]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
