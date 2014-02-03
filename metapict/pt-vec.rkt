@@ -62,7 +62,16 @@
 (define (dir/rad α) (vec (cos α) (sin α)))
 (define (dir deg) (dir/rad (rad deg)))
 (define (vec@ r θ) (vec* r (dir/rad θ))) ; from polar
-(define (@ x) (if (pt? x) (@ (pos x)) (values (len x) (angle x)))) ; to polar
+(define (@ x) 
+  ; these are from "angles.rkt", but used to prevent a module cycle
+  (define (arccos x) ; this ensures a real result (rounding could lead to complex results)
+    (acos (min 1.0 (max -1.0 x))))
+  (define (angle2 v w) ; 0<= angle <= 2pi
+    (def α (arccos (/ (dot v w) (* (len v) (len w)))))
+    (cond [(negative? (dot w (rot90 v)))  (- (* 2. pi) α)] [α]))
+  (define (angle v) ; 0<= angle <2pi ; directed angle from east to v, 
+    (angle2 east v))
+  (if (pt? x) (@ (pos x)) (values (len x) (angle x)))) ; to polar
 
 (define (rot90 v)  
   (defm (or (vec x y) (pt x y)) v) 
