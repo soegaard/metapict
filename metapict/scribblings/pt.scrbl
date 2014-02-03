@@ -1,5 +1,6 @@
 #lang scribble/manual
-@(require (for-label (except-in racket angle open path? identity ...) metapict metapict/metapict/pt-vec)
+@(require (for-label (except-in racket angle open path? identity ...) 
+                     metapict metapict/metapict/pt-vec)
           scribble/extract scribble/eval scribble/base scribble/manual "utils.rkt")
 @(define eval (make-metapict-eval))
 @interaction-eval[#:eval eval (require metapict)]
@@ -66,22 +67,26 @@ current coordinate system has a positive orientation.
 
 @subsection[]{Point Operations}
 
-@deftogether[( @defproc[(pt+ [A pt?] [v vec?]) pt?]
-               @defproc[(pt+ [A pt?] [B pt?])  pt?]
-               @defproc[(pt+)                  pt?]
-               @defproc[(pt+ [A pt?])          pt?]               
-               @defproc[(pt+ [A pt] ...)       pt?])]{
+
+@defproc*[( [(pt+ [A pt?] [v vec?]) pt?]
+            [(pt+ [A pt?] [B pt?])  pt?]
+            [(pt+ [A pt]  [B-or-v (or pt? vec?)] ...) pt?])]{
+Let the coordinates of @math{A}, @math{B} and @math{v} be                                                              
+@math{A=@coords{a}}, @math{B=@coords{b}}, and, @math{v=@coords{v}}.
+                       
 The form @racket[(pt+ A v)] returns the displacement of the point 
-@racket[A] with the vector @racket[v].
+@racket[A] with the vector @racket[v]. 
+That is, @math{(a_1+v_1,a_2+v_2)} is returned.
 
 The form @racket[(pt+ A B)] adds the coordinates of @racket[A] and @racket[B] pairwise.
 The point @racket[A] is thus displaced with the vector @racket[OB].
+That is, @math{(a_1+b_1,a_2+b_2)} is returned.
 
-The form @racket[(pt+)] returns the origo @racket[(pt 0 0)].
+The form @racket[(pt+)] returns origo, @racket[(pt 0 0)].
 
 The form @racket[(pt+ A)] returns the point @racket[A].
 
-The form @racket[(pt+ A1 A2 ...)] returns the result of @racket[(pt+ A1 (pt+ A2 ...))]. }
+The form @racket[(pt+ A B-or-v ...)] returns the result of @racket[(pt+ (pt+ A B-or-v) ...)]. }
 @interaction[#:eval eval 
                     (pt+ (pt 1 2) (vec 3 7))
                     (pt+ (pt 1 2) (pt 3 7))
@@ -89,12 +94,18 @@ The form @racket[(pt+ A1 A2 ...)] returns the result of @racket[(pt+ A1 (pt+ A2 
                     (pt+ (pt 1 2))
                     (pt+ (pt 0.3 0.4) (vec 3 0) (vec 4 0))]
 
-@deftogether[(@defproc[(pt- [A pt?] [v vec?]) pt?]
-              @defproc[(pt- [A pt?])          pt?])]{
+@defproc*[( [(pt- [A pt?] [B pt?]) pt?]
+            [(pt- [A pt?] [v vec?]) pt?]
+            [(pt- [A pt?])          pt?])]{                                                     
+The form @racket[(pt- B A)] returns the vector @math{AB}. That is, if @math{A=@coords{a}} and 
+@math{B=@coords{b}}, then @math{(b_1-a_1,b_2-a_2)} is returned.
+         
 The form @racket[(pt- A v)] returns the displacement of the point @racket[A] with 
-the opposite of vector @racket[v].
+the opposite of vector @racket[v]. If @math{A=(a1,a2)} and @math{v=(v1,v2)} then
+the vector @math{(a1-v1,a2-v2)} is returned.
                                                    
-The form @racket[(pt- A)] returns the reflection of the point @racket[A] with respect to origo.}
+The form @racket[(pt- A)] returns the reflection of the point @racket[A] with respect to origo.
+If @math{A=(a1,a2)}, then the vector @math{(-a1,-a2)} is returned.}
 @interaction[#:eval eval 
                     (pt- (pt 1 2) (vec 3 7))
                     (pt- (pt 1 2))]
@@ -159,3 +170,4 @@ Same as @racket[pt@] but the angle is in degrees.}
 @interaction[#:eval eval 
                     (pt@d 1 45)
                     (pt@  1 (/ pi 4))]
+
