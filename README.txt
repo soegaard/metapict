@@ -7,7 +7,7 @@ This is a pre-alpha release.
 
 The documentation is being written. See the progress here:
 
-    https://dl.dropboxusercontent.com/u/42841/metapict/scribblings/metapict.html
+    http://soegaard.github.io/docs/metapict/metapict.html
 
 Please report any errors - including grammatical and spelling errors.
 
