@@ -25,6 +25,8 @@ If you find any features in MetaPost or Tikz that you miss, don't hessitate to m
 
 @section{Reference}
 @include-section["pt.scrbl"]
+@include-section["colors.scrbl"]
+
 
 @include-section["examples.scrbl"]
 
