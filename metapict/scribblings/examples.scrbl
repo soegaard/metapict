@@ -79,3 +79,17 @@ TikZ example.
   (penwidth 0
     (for/fold ([drawing (draw)]) ([r '(86 38 15)])
       (spiral drawing r))))]
+
+@; ----------------------------------------
+@section[#:tag "glider" #:style svg-picts]{Glider - Hacker Emblem}
+
+This figure is a glider, a hacker emblem. The inspiration was
+Alex Hirzel @hyperlink["http://www.texample.net/tikz/examples/glider/"]{Glider}.
+@interaction[#:eval eval 
+(set-curve-pict-size 100 100)
+(with-window (window 0 3 0 3)
+  (margin 5
+    (draw (grid (pt 0 0) (pt 3 3) (pt 0 0) 1)
+          (draw* (for/list ([p (list (pt 0 0) (pt 1 0) (pt 2 0) (pt 2 1) (pt 1 2))])
+                   (fill (circle-curve (pt+ p (vec .5 .5)) 0.42)))))))]
+

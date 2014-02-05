@@ -41,7 +41,16 @@
 
 (def unitsquare (curve (pt 0 0) -- (pt 1 0) -- (pt 1 1) -- (pt 0 1) -- cycle))
 
-(define (circle-curve center-x center-y radius)
+(define (circle-curve . args)
+  (match args
+    [(list center-x center-y radius)
+     (shifted center-x center-y (scaled radius unitcircle))]
+    [(list center radius)
+     (shifted (pt-x center) (pt-y center) (scaled radius unitcircle))]
+    [_ (error 'circle-curve (~a "got: " args))]))
+    
+
+#;(define (circle-curve center-x center-y radius)
   (shifted center-x center-y 
            (scaled radius unitcircle)))
 

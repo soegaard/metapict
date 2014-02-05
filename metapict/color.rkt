@@ -7,6 +7,7 @@
  color+        ; add colors componentwise
  color*        ; scale componentwise
  color-med     ; mediate (interpolate) between colors
+ color-med*    ; mediate (interpolate) between colors in a list
  change-red    ; change red component
  change-green  ; change green component
  change-blue   ; change blue component 
@@ -59,7 +60,7 @@
   (check-equal? (color->list (make-color* "red")) '(255 0 0 1.)))
 
 ; add colors componentwise
-(define (color+ color1 color2)  
+(define (color+ color1 color2)
   (defm (color r1 g1 b1 α1) color1)
   (defm (color r2 g2 b2 α2) color2)
   (make-color* (+ r1 r2) (+ g1 g2) (+ b1 b2) (min 1.0 (+ α1 α2))))
@@ -77,11 +78,23 @@
   (check-equal? (color->list (color* 2 (make-color* 1 2 3 .4))) '(2 4 6 .4)))
 
 ; mediate (interpolate) between colors 0<=t<=1
-(define (color-med t c1 c2)   
+(define (color-med t c1 c2)
   (color+ (color* (- 1 t) c1) (color* t c2)))
 
 (module+ test
   (check-equal? (color->list (color-med 1/2 "red" "blue")) '(127 0 127 1.)))
+
+; mediate between the colors in the list cs, 0<=t<=1
+(define (color-med* t cs)
+  (match cs
+    [(list)        (make-color "white")]
+    [(list c1)     (color-med t "white" c1)]
+    [(list c1 c2)  (color-med t c1 c2)]
+    [(list* c1 cs) (def n (length cs))
+                   (def 1/n (/ 1 n))
+                   (if (<= t 1/n)
+                       (color-med (* n t) c1 (first cs))
+                       (color-med* (/ (- (* n t) 1) (- n 1)) cs))]))
 
 ; change a single component 
 (define (change-red   c r) (defm (color _ g b α) c) (make-color* r g b α))

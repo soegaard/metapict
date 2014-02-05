@@ -6,14 +6,14 @@
          "def.rkt" "dc.rkt" "bez.rkt" "window.rkt"  "path.rkt" "curve.rkt"
          "structs.rkt" "trig.rkt" "pt-vec.rkt"  "angles.rkt" "trans.rkt"
          "color.rkt" "pict.rkt" "device.rkt" "arrow.rkt" "shapes.rkt" "pen-and-brush.rkt"
-         "draw.rkt" "label.rkt" "shapes.rkt" "parameters.rkt")
+         "draw.rkt" "label.rkt" "shapes.rkt" "parameters.rkt" "grid.rkt")
 
 (provide (all-from-out
           pict
           "def.rkt" "dc.rkt" "bez.rkt" "window.rkt"  "path.rkt" "curve.rkt"
           "structs.rkt" "trig.rkt" "pt-vec.rkt"  "angles.rkt" "trans.rkt"
           "color.rkt" "pict.rkt" "device.rkt" "arrow.rkt" "shapes.rkt" "pen-and-brush.rkt"
-          "draw.rkt" "label.rkt" "shapes.rkt" "parameters.rkt" "arrow.rkt")
+          "draw.rkt" "label.rkt" "shapes.rkt" "parameters.rkt" "arrow.rkt" "grid.rkt")
          ; macros from window.rkt
          with-window
          with-scaled-window
