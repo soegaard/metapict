@@ -36,7 +36,6 @@ closest to @racket[α] is used.}
                     (def purple   (make-color* "purple"))
                     (color->list red-ish)
                     (color->list purple)
-                    (color->list blue-ish)
                     (with-window (window 0 1 0 1)
                       (beside (color red-ish  (fill unitsquare))
                               (color purple   (fill unitsquare))))]
