@@ -208,13 +208,16 @@ Scale the coordinates of @racket[v] with @racket[s].
 If the coordinates of @racket[v] are @math{(x,y)} then the vector @math{(sx,sy)} is returned.}
 @interaction[#:eval eval (vec* 3 (vec 1 2))]
 
-@defproc*[([(vec->pt [v vec?]) pt?]
-           [(pos     [v vec?]) pt?])]{
+@defproc[(vec->pt [v vec?]) pt?]{
 Converts the vector @math{(x,y)} into a point with the same coordinates.
 If a point @math{A} has the same coordinates as a vector @math{v}, then
-the vector is said to a position vector for the point and @math{OA=v}.
-This function thus return a point (position), whose position vector is @math{v}.}
-@interaction[#:eval eval  (pos (vec 1 2))]
+the vector is said to a position vector for the point and @math{OA=v}.}
+@interaction[#:eval eval (vec->pt (vec 1 2))]
+
+@defproc[(pos [p pt?]) vec?]{
+Converts the point @racket[p] into a vector with the same coordinates.
+Such a vector is also called a position vector, hence the name.}
+@interaction[#:eval eval  (pos (pt 1 2))]
 
 @defproc[(vec= [v vec?] [w vec?]) boolean?]{
 Returns @racket[#t] if the coordinates of the vectors @racket[v] and @racket[w] are 
