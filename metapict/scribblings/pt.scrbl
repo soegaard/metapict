@@ -6,7 +6,7 @@
 @interaction-eval[#:eval eval (require metapict)]
 @(define math-style tt)
 
-@title[#:tag "points-and-vectors"]{Points and Vectors (pt and vec)}
+@title[#:tag "pt-and-vec"]{Points and Vectors (pt and vec)}
 @(author-jens-axel)
 
 @defmodule[metapict/pt-vec]
