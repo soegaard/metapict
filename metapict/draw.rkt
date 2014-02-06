@@ -8,6 +8,9 @@
          filldraw       ; fill closed curve with fill-color, then draw curve ontop
          clipped        ; draw the part of a pict that is inside a closed curve
          label->pict    ; convert label to pict
+         for/draw       ; comprehension that draws each iteration on top of the old
+         for*/draw
+         ; for/draw/fold
          )
 
 (require racket/draw pict "bez.rkt" "curve.rkt" "def.rkt" "device.rkt" "pen-and-brush.rkt" 
@@ -170,3 +173,26 @@
             [else   (error 'label->pict (~a "internal error, expected a placement:" placement))]))
         (draw-pict p dc (+ x0 Δx dx) (+ y0 Δy dy)))
       pw ph)) ; ?
+
+
+(define-syntax (for/draw stx)
+  (syntax-case stx ()
+    [(_ clauses . defs+exprs)
+     (with-syntax ([original stx])
+       #'(for/fold/derived original ([drawing (draw)]) clauses
+           (draw drawing (let () . defs+exprs))))]))
+
+(define-syntax (for*/draw stx)
+  (syntax-case stx ()
+    [(_ clauses . defs+exprs)
+     (with-syntax ([original stx])
+       #'(for*/fold/derived original ([drawing (draw)]) clauses
+           (draw drawing (let () . defs+exprs))))]))
+
+#;(define-syntax (for/draw/fold stx)
+  (syntax-case stx ()
+    [(_ (id+init-expr ...) clauses . defs+exprs)
+     (with-syntax ([original stx])
+       #'(for/fold/derived original ([drawing (draw)] id+init-expr ...) clauses
+           (draw drawing (let () . defs+exprs))))]))
+

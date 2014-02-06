@@ -61,7 +61,7 @@ TikZ example.
     (def label    (label-cnt (~a r) p))
     (draw filled circle label))
   (defv (spiral θ)
-    (for/fold ([drawing drawing] [θ 0])  
+    (for/fold ([drawing drawing] [θ 0])
               ([r (in-range 1 max-r)])
       (def √r (sqrt r))
       (def (rotθ c) (scaled 4 (rotated θ c)))
@@ -89,6 +89,6 @@ Alex Hirzel @hyperlink["http://www.texample.net/tikz/examples/glider/"]{Glider}.
 (with-window (window 0 3 0 3)
   (margin 5
     (draw (grid (pt 0 0) (pt 3 3) (pt 0 0) 1)
-          (draw* (for/list ([p (list (pt 0 0) (pt 1 0) (pt 2 0) (pt 2 1) (pt 1 2))])
-                   (fill (circle-curve (pt+ p (vec .5 .5)) 0.42)))))))]
+          (for/draw ([p (list (pt 0 0) (pt 1 0) (pt 2 0) (pt 2 1) (pt 1 2))])
+            (fill (circle-curve (pt+ p (vec .5 .5)) 0.42))))))]
 
