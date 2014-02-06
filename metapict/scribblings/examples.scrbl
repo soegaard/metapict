@@ -92,3 +92,14 @@ Alex Hirzel @hyperlink["http://www.texample.net/tikz/examples/glider/"]{Glider}.
           (for/draw ([p (list (pt 0 0) (pt 1 0) (pt 2 0) (pt 2 1) (pt 1 2))])
             (fill (circle-curve (pt+ p (vec .5 .5)) 0.42))))))]
 
+@section[#:tag "rainbow-circle" #:style svg-picts]{Rainbow Circle}
+@interaction[#:eval eval 
+(scale (with-window (window -5 5 -5 5)
+  (def colors (list "yellow" "orange" "red" "purple" "blue" "green" "yellow"))
+    (penwidth 16 
+      (margin 20 
+        (for*/draw ([θ (in-range 0 2π .01)])
+          (def f (/ θ 2π))
+          (def c (color-med* f colors))
+          (color (change-alpha c (- 1 f))
+                 (draw (pt@ 4 θ))))))) 3)]
