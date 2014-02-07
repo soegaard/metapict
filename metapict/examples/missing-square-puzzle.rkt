@@ -10,7 +10,7 @@
   (for/draw ([p positions]
              [d (list  red   green   yellow   blue)]
              [c (list "red" "green" "yellow" "blue")])
-    (def fill-color (color-med 0.2 c "magenta"))
+    (def fill-color (change-alpha (color-med 0.2 c "magenta") 0.7))
     (def piece (shifted p d))
     (draw (color fill-color (fill piece))
           piece)))
