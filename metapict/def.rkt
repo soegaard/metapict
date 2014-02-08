@@ -1,5 +1,8 @@
 #lang racket
-(provide (all-defined-out))
+(provide (except-out (all-defined-out) def defv defm)
+         (rename-out [define        def]
+                     [define-values defv]
+                     [match-define  defm]))
 
 ; shorter names
 (define-syntax defv (make-rename-transformer #'define-values))
