@@ -11,7 +11,7 @@
 ;;;       https://github.com/takikawa/pict-utils
 
 
-(define (grid lower-left upper-right reference step)
+#;(define (grid lower-left upper-right reference step)
   ; Draw a grid with the rectangle given by the lower-left 
   ; and upper-right corner. Reference is a point in
   ; which the horizontal and vertical lines intersection.
