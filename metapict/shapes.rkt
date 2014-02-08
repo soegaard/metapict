@@ -12,6 +12,7 @@
          ellipse-curve   ; ellipse with center (x0,y0) and width w and height h
          sector          ; sector of radius r with angles from f to t
          sector/deg      ; same but angles are in degrees rather than radians
+         box             ; curve of box from two corner points
          )     
 
 (require "def.rkt" "curve.rkt" "pt-vec.rkt" "path.rkt" "trig.rkt" "trans.rkt" "structs.rkt")
@@ -81,7 +82,14 @@
 (define (sector/deg r from to)
   (sector r (rad from) (rad to)))
   
-  
+;;; Boxes
+
+(define (box p1 p2)
+  (defm (pt x y) p1)
+  (defm (pt X Y) p2)
+  (defv (xmin xmax ymin ymax) (values (min x X) (max x X) (min y Y) (max y Y)))
+  (curve (pt xmin ymin) -- (pt xmax ymin) -- (pt xmax ymax) -- (pt xmin ymax) -- cycle))
+
   
   
   
