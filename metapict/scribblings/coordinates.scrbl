@@ -1,6 +1,6 @@
 #lang scribble/manual
 @(require scribble/core scribble/html-properties)
-@(require (for-label (except-in racket angle open path? identity ...))
+@(require (for-label metapict (except-in racket angle box open path? identity ...))
           scribble/extract
           scribble/eval
           scribble/base

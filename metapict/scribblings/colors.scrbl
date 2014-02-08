@@ -1,14 +1,14 @@
 #lang scribble/manual
-@(require (for-label (except-in racket angle open path? identity ...) 
-                     metapict/metapict/color)
+@(require (for-label (except-in racket angle box open path? identity ...) 
+                     metapict metapict/color)
           scribble/extract scribble/eval scribble/base scribble/manual "utils.rkt")
 @(define eval (make-metapict-eval))
 @interaction-eval[#:eval eval (require metapict)]
 @(define math-style tt)
-
+ 
 @title[#:tag "colors-title"]{Colors}
 
-@defmodule[metapict/metapict/color]
+@defmodule[metapict/color]
 
 @local-table-of-contents[]
 

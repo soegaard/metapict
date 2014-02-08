@@ -1,6 +1,6 @@
 #lang scribble/manual
-@(require (for-label (except-in racket angle open path? identity ...) 
-                     metapict/metapict/pt-vec)
+@(require (for-label metapict
+                     (except-in racket angle box open path? identity ...))
           scribble/extract scribble/eval scribble/base scribble/manual "utils.rkt")
 @(define eval (make-metapict-eval))
 @interaction-eval[#:eval eval (require metapict)]
@@ -9,7 +9,7 @@
 @title[#:tag "pt-and-vec"]{Points and Vectors (pt and vec)}
 @(author-jens-axel)
 
-@defmodule[metapict/metapict/pt-vec]
+@defmodule[metapict/pt-vec]
 
 @local-table-of-contents[]
 
