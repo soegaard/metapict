@@ -14,7 +14,7 @@
     (defm (ring p c) r)
     (def c1 (circle-curve p 1.9))
     (def c2 (circle-curve p 1.5))
-    (def connector (curve (point-of c1 (curve-length c1)) -- (point-of c2 0)))
+    (def connector (curve (end-point c1) -- (start-point c2)))
     (def circle-outline (curve-append c1 connector c2))
     (draw (pencolor c (fill circle-outline))
           (penwidth 4 (color "white" (draw c1 c2))))))

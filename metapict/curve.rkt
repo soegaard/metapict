@@ -30,6 +30,8 @@
  ; curve operations
  curve-length                 ; return number of bez in the curve
  point-of                     ; given time t (between 0 and the curve length) compute point on curve
+ start-point                  ; curve begins here 
+ end-point                    ; curve ends here
  curve-reverse                ; return the curve with time reversed
  curve-append                 ; concatenate two curves; the end and start points must match
  intersection-point-and-times ; compute a "first" intersection point and corresponding times
@@ -79,6 +81,9 @@
   (cond 
     [closed? (point-of-closed)]
     [else    (point-of-open)]))
+
+(define (start-point c) (point-of c 0))
+(define (end-point c)   (point-of c (curve-length c)))
 
 (define (curve-reverse c)
   (defm (curve c? bezs) c)
