@@ -53,7 +53,7 @@ of the color. The variable @racket[a] will be bound to the transparency.}
 @interaction-eval[#:eval eval (set-curve-pict-size 50 50)] 
 @interaction[#:eval eval 
                     (with-window (window 0 1 0 1)
-                      (apply beside (for/list ([f (in-range 0 1.1 .1)])
+                      (apply beside (for/list ([f (in-range 0 11/10 1/10)])
                                       (color f "red" (fill unitsquare)))))
                     (require racket/match)
                     (match "magenta"
@@ -91,7 +91,7 @@ For @math["t=0"] the color @racket[c1] is returned, and when
 
 @interaction-eval[#:eval eval (set-curve-pict-size 50 50)] 
 @interaction[#:eval eval (with-window (window 0 1 0 1)
-                           (apply beside (for/list ([t (in-range 0 1.1 .1)])
+                           (apply beside (for/list ([t (in-range 0 11/10 1/10)])
                                            (color (color-med t "red" "yellow")
                                                   (fill unitsquare)))))]
 

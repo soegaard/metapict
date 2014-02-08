@@ -14,7 +14,7 @@
           "structs.rkt" "trig.rkt" "pt-vec.rkt"  "angles.rkt" "trans.rkt"
           "color.rkt" "pict.rkt" "device.rkt" "arrow.rkt" "shapes.rkt" "pen-and-brush.rkt"
           "draw.rkt" "label.rkt" "shapes.rkt" "parameters.rkt" "arrow.rkt" "grid.rkt")
-         ; macros from def.rkt
+         ; macros from draw.rkt
          for/draw for*/draw
          ; macros from window.rkt
          with-window
