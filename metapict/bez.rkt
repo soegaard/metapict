@@ -219,8 +219,8 @@
 ; bez/dirs+tensions : pt pt vec vec [real] [real] -> bez
 (define (bez/dirs+tensions p0 p3 w0 w3 [τ0 1] [τ3 1])
   (def v (pt- p3 p0))
-  (def θ (angle2 w0 v))
-  (def φ (angle2 w3 v))
+  (def θ (angle2 v w0))  ; xxx was: w0 v
+  (def φ (angle2 v w3))  ; xxx was: w3 v
   (defv (p1 p2) (control-points p0 p3 θ φ τ0 τ3))
   (bez p0 p1 p2 p3))
 

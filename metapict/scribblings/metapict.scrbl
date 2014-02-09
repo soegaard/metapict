@@ -19,7 +19,7 @@ same as the one used in MetaPost.
 With this library I to hope narrow the gap between Scribble and LaTeX + MetaPost/Tikz.
 If you find any features in MetaPost or Tikz that you miss, don't hessitate to mail me. 
 
-@section{Guide}
+@section{Guide} 
 @local-table-of-contents[]
 @include-section["coordinates.scrbl"]
 
