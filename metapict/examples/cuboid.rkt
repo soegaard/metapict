@@ -1,4 +1,5 @@
 #lang racket
+; Inspiration: http://www.texample.net/tikz/examples/cuboid/
 (require metapict)
 (def p1 (pt -7 1.5))    ; left  vanishing point
 (def p2 (pt  8 1.5))    ; right vanishing point

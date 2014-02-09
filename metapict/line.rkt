@@ -7,7 +7,6 @@
 ; TODO: Use the line intersections in the computation of
 ; intersections of two Bezier curves in "bez.rkt".
 
-
 (require "def.rkt" "structs.rkt" "window.rkt")
 
 (struct line-equation (a b c) #:transparent) ; ax+by=c

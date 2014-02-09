@@ -26,7 +26,7 @@
 (require "def.rkt" "structs.rkt" "pt-vec.rkt" "trig.rkt")
 (module+ test (require rackunit))
 
-(define (arccos x) ; this ensures a real result (rounding could lead to complex results)
+(define (arccos x) ; this ensures a real result (rounding may lead to complex results)
   (acos (min 1.0 (max -1.0 x))))
 
 (define (angle2 v w) ; 0<= angle <= 2pi

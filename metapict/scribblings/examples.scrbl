@@ -132,7 +132,7 @@ Where is it?
                   (draw-pieces (map (shifted (pt 0 6)) upper))
                   (draw-pieces lower))))]
 
-@section[#:tag "olympic-rings" #:style svg-picts]{The Olympic Rings}
+@section[#:tag "olympic-rings"]{The Olympic Rings}
 The inspiration was Paul Gaborit's
 @hyperlink["http://www.texample.net/tikz/examples/the-olympic-rings/"]{The Olympic Rings}.
 @interaction[#:eval eval 
@@ -159,4 +159,36 @@ The inspiration was Paul Gaborit's
   (draw (clipped (draw-rings r5 r4 r3 r2 r1) (box (pt -6  2)   (pt 6 -1.0)))
         (clipped (draw-rings r1 r2 r3 r4 r5) (box (pt -6 -0.8) (pt 6 -3.8)))))]
 
+@section[#:tag "example-cuboid" #:style svg-picts]{Cuboid}
+A cuboid drawn with a two-point vanishing perspective.
+The inspiration was Florian Lesaint's
+@hyperlink["http://www.texample.net/tikz/examples/cuboid/"]{Cuboid}.
+@interaction[#:eval eval 
+(require metapict)
+(def p1 (pt -7 1.5))    ; left  vanishing point
+(def p2 (pt  8 1.5))    ; right vanishing point
+(def a1 (pt  0  0))     ; central top point
+(def a2 (pt  0 -2))     ; central bottom point
+(def a3 (med .8 p1 a2)) ; left bottom
+(def a4 (med .8 p1 a1)) ; left top
+(def a7 (med .7 p2 a2)) ; right bottom
+(def a8 (med .7 p2 a1)) ; right top
+(def a5 (intersection-point (curve a8 -- p1) (curve a4 -- p2)))
+(def a6 (intersection-point (curve a7 -- p1) (curve a3 -- p2)))
+(def f6 (curve a2 -- a3 -- a6 -- a7 -- cycle)) 
+(def f3 (curve a3 -- a4 -- a5 -- a6 -- cycle))
+(def f4 (curve a5 -- a6 -- a7 -- a8 -- cycle))
+(def (a i) (vector-ref (vector #f a1 a2 a3 a4 a5 a6 a7 a8) i))
+(set-curve-pict-size 300 240)
+(with-window (window -2 3 -2.5 1.5)
+  (draw (for/draw ([f (list f3 f4 f6)]
+                   [c (map (λ (x) (color* x "gray")) '(.9 .7 .6))])
+          (color c (fill f)))
+        (penwidth 2
+          (for/draw ([line '((5 6) (3 6) (7 6) (1 2) (3 4) (7 8) 
+                             (1 4) (1 8) (2 3) (2 7) (4 5) (8 5))])
+            (defm (list i j) line)
+            (curve (a i) -- (a j))))
+        (penwidth 8
+          (color "red" (draw a1 a2 a3 a4 a5 a6 a7 a8)))))]
 
