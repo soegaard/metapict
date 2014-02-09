@@ -7,7 +7,6 @@
 @(define math-style tt)
 
 @title[#:tag "pt-and-vec"]{Points and Vectors (pt and vec)}
-@(author-jens-axel)
 
 @defmodule[metapict/pt-vec]
 

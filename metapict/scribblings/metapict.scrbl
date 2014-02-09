@@ -24,7 +24,9 @@ If you find any features in MetaPost or Tikz that you miss, don't hessitate to m
 @include-section["coordinates.scrbl"]
 
 @section{Reference}
+@include-section["representation.scrbl"]
 @include-section["pt.scrbl"]
+@include-section["bez.scrbl"]
 @include-section["colors.scrbl"]
 
 

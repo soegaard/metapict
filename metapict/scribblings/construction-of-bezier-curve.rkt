@@ -1,5 +1,6 @@
 #lang racket
 (require metapict)
+(provide draw-bezier-diagram)
 
 ;;;
 ;;; EXAMPLE
@@ -44,21 +45,22 @@
                         (curve q1 -- q2)))
         (pencolor "blue" (draw (curve r0 -- r1)))))
 
-(def win (window -5 11 -5 11))
-(def c (curve (pt 0 0) (vec -0.5 2) .. (vec -2 -2) (pt 5 0)))
-(def b (first (curve:-bezs c)))
-(defm (bez p0 p1 p2 p3) b)
+(define (draw-bezier-diagram c t l1 l2 l3 l4)
+  (def b (first (curve:-bezs c)))
+  (defm (bez p0 p1 p2 p3) b)
+  (draw (pencolor "black" (draw-bezier-controls b))
+        (draw-bezier-labels b l1 l2 l3 l4)
+        (dashed (draw-bezier-polygon b))
+        (draw-bezier-construction b t #f)
+        (pencolor "red" (draw (subcurve c 0 t)))
+        (pencolor "gray" (dotted (draw (subcurve c t 1))))
+        (label (~a "t=" t) (pt+ (med 1/2 p0 p3) (vec* 2 down)) (bot))))
 
-(set-curve-pict-size 80 80)
+(module+ main 
+  (def win (window -5 11 -5 11))
+  (def c (curve (pt 0 0) (vec -0.5 2) .. (vec -2 -2) (pt 5 0)))
+  (set-curve-pict-size 180 180)
+  (with-window win
+    (for/list ([t (in-range 0 11/10 1/10)])
+      (draw-bezier-diagram c t "P0" "P1" "P2" "P3"))))
 
-(with-window win
-  (for/list ([t (in-range 0 11/10 1/10)])
-    (draw (pencolor "black" (draw-bezier-controls b))
-          (draw-bezier-labels b "P0" "P1" "P2" "P3")
-          (dashed (draw-bezier-polygon b))
-          (draw-bezier-construction b t #f)
-          (pencolor "red" (draw (subcurve c 0 t)))
-          (pencolor "gray" (dotted (draw (subcurve c t 1))))
-          (label (~a "t=" t) (pt+ (med 1/2 p0 p3) (vec* 2 down)) (bot)))))
-  
-  

@@ -6,8 +6,6 @@
 ; Our curves will be represented 
 
 (provide bez~             ; compare two Bezier curves, precision optional
-         control-points   ; Construct the bez from p0 to p3 that leaves p0 in direction w0
-         ;                ; and arrives in p3 in the direction w3 with tensions t0 and t3 respectively
          bez/dirs+tensions 
          bez->dc-path     ; convert a bez to a dc-path
          bezs->dc-path    ; convert a list of bezs to a single dc-path         
@@ -17,6 +15,10 @@
          bez-intersection-point  ; return intersection point of two Bezier curves
          bez-intersection-point-and-times
          (contract-out
+          [control-points (-> pt? pt? real? real? real? real?  (values pt? pt?))]
+          ; Return control points of the bez from p0 to p3 that leaves p0 in angle θ 
+          ; and arrives in p3 in the angle φ with tensions t0 and t3 respectively.
+          
           [bez-reverse  (-> bez?              bez?)] ; reverse orientation
           [point-of-bez (-> bez? real?        pt?)]  ; find the point γ(t)
           [bez-subpath  (-> bez? real? real?  bez?)] ; subpath from and to the given times
@@ -197,8 +199,9 @@
 
 ; control-points : pt pt real real real real -> (values pt pt)
 (define (control-points p0 p3 θ φ τ0 τ3)
-  ; Construct the Bezier curve from p0 to p3 that leaves p0 in direction w0
-  ; and arrives in p3 in the direction w3 with tensions t0 and t3 respectively.
+  ; Return the control points p1 and p2 of the 
+  ; the Bezier curve from p0 to p3 that leaves p0 in angle θ
+  ; and arrives in p3 in the angle φ with tensions t0 and t3 respectively.
   ; TODO: Minimum tension of 3/4 ?
   (def a (sqrt 2))
   (def b 1/16)
