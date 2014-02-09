@@ -34,7 +34,7 @@ is called a @math{parameter}. Thus for each value of the parameter @math{t} betw
 you get a point on the curve. The parameter value @math{t=0} corresponds to the start 
 point @racket[A] and the parameter value @math{t=1} corresponds to the end point.
 
-Let's see an example of a Bezier curve and its construction.}
+Let's see an example of a Bezier curve and its construction.
 @begin[
 (require metapict "construction-of-bezier-curve.rkt")                     
 (let ()
