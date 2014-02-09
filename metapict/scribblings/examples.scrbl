@@ -10,7 +10,7 @@
 @(define eval (make-metapict-eval))
 @interaction-eval[#:eval eval (require metapict)]
 @(define math-style tt)
-@title{Examples}
+@title[#:tag "examples"]{Examples}
 @; ----------------------------------------
 @section[#:tag "rotating triangle" #:style svg-picts]{Rotating Triangle}
 

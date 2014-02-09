@@ -6,14 +6,9 @@
 @interaction-eval[#:eval eval (require metapict)]
 @(define math-style tt)
  
-@title[#:tag "colors-title"]{Colors}
-
+@title[#:tag "ref-colors"]{Colors}
 @defmodule[metapict/color]
 
-@local-table-of-contents[]
-
-@; ----------------------------------------
-@section[#:tag "colors"]{Colors}
 
 @defproc*[([(make-color* [name string?]) (is-a?/c color%)]
            [(make-color* [r real?] [g real?] [b real?] [α 1.0]) (is-a?/c color%)])]{

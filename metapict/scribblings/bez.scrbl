@@ -5,14 +5,11 @@
 @interaction-eval[#:eval eval (require metapict)]
 @(define math-style tt)
 
-@title[#:tag "bez"]{Bezier Curves}
+@title[#:tag "ref-bez"]{Bezier Curves}
 
 @defmodule[metapict/bez]
 
-@local-table-of-contents[]
-
 @; ----------------------------------------
-@section[#:tag "ref-bez"]{Bezier Curves}
 
 A Bezier curve from point @racket[A] to point @racket[B] with
 control points @racket[A+] and @racket[B-] is represented as
@@ -38,7 +35,6 @@ you get a point on the curve. The parameter value @math{t=0} corresponds to the 
 point @racket[A] and the parameter value @math{t=1} corresponds to the end point.
 
 Let's see an example of a Bezier curve and its construction.}
-@interaction-eval[(require "construction-of-bezier-curve.rkt")]
 @begin[
 (require metapict "construction-of-bezier-curve.rkt")                     
 (let ()

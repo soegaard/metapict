@@ -9,10 +9,7 @@
 
 @defmodule[metapict/structs]
 
-@local-table-of-contents[]
-
 @; ----------------------------------------
-@section[#:tag "ref-bez"]{Representation}
 
 This section describes the representation of the MetaPict concepts.
 

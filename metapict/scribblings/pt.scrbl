@@ -10,8 +10,6 @@
 
 @defmodule[metapict/pt-vec]
 
-@local-table-of-contents[]
-
 @; ----------------------------------------
 @section[#:tag "points-and-vectors"]{Points and Vectors}
 
@@ -58,11 +56,11 @@ current coordinate system has a positive orientation.
 }
 
 @interaction[#:eval eval
-        (penwidth 4 (draw (color "red"    (draw      origo))
-                          (color "green"  (draw (pt+ origo north)))
-                          (color "blue"   (draw (pt+ origo south)))
-                          (color "yellow" (draw (pt+ origo left)))
-                          (color "purple" (draw (pt+ origo right)))))]
+        (penwidth 4 (draw (color "red"     (draw      origo))
+                          (color "green"   (draw (pt+ origo north)))
+                          (color "blue"    (draw (pt+ origo south)))
+                          (color "magenta" (draw (pt+ origo left)))
+                          (color "purple"  (draw (pt+ origo right)))))]
 
 @subsection[]{Point Operations}
 
