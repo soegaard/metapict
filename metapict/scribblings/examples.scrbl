@@ -90,7 +90,7 @@ Alex Hirzel @hyperlink["http://www.texample.net/tikz/examples/glider/"]{Glider}.
   (margin 5
     (draw (grid (pt 0 0) (pt 3 3) (pt 0 0) 1)
           (for/draw ([p (list (pt 0 0) (pt 1 0) (pt 2 0) (pt 2 1) (pt 1 2))])
-            (fill (circle-curve (pt+ p (vec .5 .5)) 0.42))))))]
+            (color "black" (fill (circle-curve (pt+ p (vec .5 .5)) 0.42)))))))]
 
 @section[#:tag "rainbow-circle" #:style svg-picts]{Rainbow Circle}
 @interaction[#:eval eval 
@@ -151,7 +151,7 @@ The inspiration was Paul Gaborit's
     (def c2 (circle-curve p 1.5))
     (def connector (curve (end-point c1) -- (start-point c2)))
     (def circle-outline (curve-append c1 connector c2))
-    (draw (pencolor c (fill circle-outline))
+    (draw (color c (fill circle-outline))
           (penwidth 4 (color "white" (draw c1 c2))))))
 
 (set-curve-pict-size 200 100)
