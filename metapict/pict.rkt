@@ -1,17 +1,19 @@
 #lang racket
-
-; General pict utilities 
-
+; General pict utilities
 (provide
+ ; color     ; use color for both the pen and brush color
  pencolor    ; use the pen color (doesn't affect brush)
  penwidth    ; use the pen width (alias for linewidth)
  penscale    ; scale the penwidth
  penstyle    ; use the pen style
  pencap      ; use the pen cap
  penjoin     ; use the pen join
+ pen         ; use the pen
  
+ brush       ; use the brush
  brushcolor  ; use the brush color
  brushstyle  ; use the brush style
+ brushshade  ; 
 
  dashed      ; use the pen style long-dash
  dotted      ; use the pen style dotted
@@ -20,7 +22,7 @@
  margin      ; inset with arguments swapped 
  )
 
-(require pict racket/draw (for-syntax syntax/parse) "def.rkt")
+(require pict racket/draw (for-syntax syntax/parse) "def.rkt" "color.rkt")
 
 (define (dashed p) (penstyle 'long-dash p))
 (define (dotted p) (penstyle 'dot p))
@@ -45,6 +47,9 @@
                  (draw-pict pict dc x y)
                  (send dc set-pen old-pen)))
              (pict-width pict) (pict-height pict)))]))
+
+(define-brushop pen (new-pen pict) b
+  new-pen)
 
 (define-penop pencolor (color pict) p
   (send the-pen-list find-or-create-pen 
@@ -93,6 +98,8 @@
     [(_ name (arg ... pict) old-brush
         expr ...)
      #'(define (name arg ... pict)
+         (unless (pict? pict)
+           (raise-arguments-error 'name "pict expected" "pict" pict))
          (dc (lambda (dc x y)
                (let ([old-brush (send dc get-brush)])
                  (def new-brush (let () expr ...))
@@ -101,17 +108,29 @@
                  (send dc set-brush old-brush)))
              (pict-width pict) (pict-height pict)))]))
 
+(define-brushop brush (new-brush pict) b
+  new-brush)
+
 (define-brushop brushcolor (color pict) b
   (send the-brush-list find-or-create-brush
-        color (send b get-style)))
+        (make-color* color) (send b get-style)))
 
 (define-brushop brushstyle (style pict) b
   (send the-brush-list find-or-create-brush
         (send b get-color) style))
+
+(define-brushop brushshade (from-color to-color pict) b
+  (new brush% 
+       [gradient       (new linear-gradient% [x0 0] [y0 400] [x1 400] [y1 400]
+                            [stops (list (list 0 from-color)
+                                         (list 1   to-color))])]
+       [style          (send b get-style)]
+       [stipple        (send b get-stipple)]
+       [transformation (send b get-transformation)]))
 
 (define (save-pict-as-png filename pict)
   (send (pict->bitmap pict)
         save-file filename 'png))
 
 (define (margin n p) (inset p n))
-
+colorize

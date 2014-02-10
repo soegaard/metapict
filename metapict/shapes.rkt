@@ -10,6 +10,7 @@
          arc/deg         ; same, f and t in degrees
          circle-curve    ; circle with center (x0,y0) and radius r
          ellipse-curve   ; ellipse with center (x0,y0) and width w and height h
+         ellipse-arc
          sector          ; sector of radius r with angles from f to t
          sector/deg      ; same but angles are in degrees rather than radians
          box             ; curve of box from two corner points
@@ -71,6 +72,13 @@
 (define (arc/deg radius from to)
   (arc radius (rad from) (rad to)))
 
+(define (ellipse-arc x-radius y-radius from-angle to-angle) ; radians
+  ; TODO: handle angles outside normal range
+  ; TODO: add optional center for arc
+  (subcurve (yscaled y-radius (xscaled x-radius unitcircle))
+            (* 8 (/ from-angle 2pi))
+            (* 8 (/ to-angle 2pi))))
+
 (define (sector radius from to)
   (def a  (arc radius from to))
   (def a0 (point-of a 0))
@@ -89,8 +97,3 @@
   (defm (pt X Y) p2)
   (defv (xmin xmax ymin ymax) (values (min x X) (max x X) (min y Y) (max y Y)))
   (curve (pt xmin ymin) -- (pt xmax ymin) -- (pt xmax ymax) -- (pt xmin ymax) -- cycle))
-
-  
-  
-  
-  

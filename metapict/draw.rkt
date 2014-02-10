@@ -32,14 +32,14 @@
 (define (draw* cs) 
   (apply draw (filter values cs)))
 
-(define (fill c #:draw-border? [draw-border? #t])
+(define (fill c #:draw-border? [draw-border? #f])
   (curve->filled-pict c #:draw-border? draw-border?))
 
 (define (filldraw c [fill-color #f] [draw-color #f])
   (cond
-    [(not fill-color) (draw (fill c) c)]
-    [(not draw-color) (draw (color fill-color (fill c)) c)]
-    [else             (draw (color fill-color (fill c))
+    [(not fill-color) (draw c (fill c))] ; draw first, fill later
+    [(not draw-color) (draw (brush fill-color (fill c)) c)]
+    [else             (draw (brush fill-color (fill c))
                             (color draw-color (draw c)))]))
 
 (define (draw-dot pos)
@@ -81,21 +81,24 @@
           (send dc set-clipping-region old-reg)))
       w h))
 
-(define (curve->filled-pict c #:draw-border? [draw-border? #t])
+(define (curve->filled-pict c #:draw-border? [draw-border? #f])
   (def w (curve-pict-width))
   (def h (curve-pict-height))
   (def T (stdtrans (curve-pict-window) w h))
-  (dc (λ (dc dx dy) 
+  (dc (λ (dc dx dy)
         (let ([b (send dc get-brush)] [p (send dc get-pen)])
           ; todo: use draw-bezs (takes care of t and pt)
-          (send dc set-brush (send the-brush-list find-or-create-brush
-                                   (send p get-color)
-                                   'solid))
+          #;(send dc set-brush 
+                (or (current-fill-brush)
+                    (send the-brush-list find-or-create-brush
+                          (send p get-color)
+                          'solid)))
           (unless draw-border?
             (send dc set-pen "black" 1 'transparent))
           (defm (curve closed? bs) c)
           (def Tp (bezs->dc-path (map T bs)))
-          (send dc draw-path Tp dx dy)
+          ; (send dc set-pen (find-white-transparent-pen))
+          (send dc draw-path Tp dx dy) ; todo add fill-style 'odd-even or 'winding
           (send dc set-brush b)
           (send dc set-pen p)))
       w h))
