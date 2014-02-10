@@ -32,7 +32,7 @@
 (define (draw* cs) 
   (apply draw (filter values cs)))
 
-(define (fill c #:draw-border? [draw-border? #f])
+(define (fill c #:draw-border? [draw-border? #t])
   (curve->filled-pict c #:draw-border? draw-border?))
 
 (define (filldraw c [fill-color #f] [draw-color #f])

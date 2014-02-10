@@ -192,3 +192,31 @@ The inspiration was Florian Lesaint's
         (penwidth 8
           (color "red" (draw a1 a2 a3 a4 a5 a6 a7 a8)))))]
 
+@section[#:tag "example-rgb-triangle" #:style png-picts]{RGB Triangle}
+This examples shows how linear gradients can be used to fill a triangle.
+The first example use gradients from one color to another along the
+edge of a triangle. The second example shows how @emph{fading} from a color 
+@racket[c] to @racket[(change-alpha c 0)] is done.
+
+The rgb-triangle was inspired by Andrew Stacey's
+@hyperlink["http://www.texample.net/tikz/examples/rgb-triangle/"]{RGB Triangle}.
+@interaction-eval[#:eval eval (set-curve-pict-size 300 300)]
+@interaction[#:eval eval 
+(defv (O A B C) (values (pt 0 0) (pt@d 1 90) (pt@d 1 210) (pt@d 1 330)))
+; Fill the three interior triangles using a 
+; gradient parallel with the outer edge.
+(with-window (window -1 1 -1 1) 
+  (def (tri P Q . colors)
+    (brushgradient P Q colors 
+      (fill (curve P -- Q -- O -- cycle))))
+  (draw (tri A B "yellow" "red")
+        (tri B C "red"    "blue")
+        (tri C A "blue"   "yellow")))
+; Fill the triangle ABC thrice. The gradients are strongest
+; at the corner. The direction is perpendicular to the side.
+(with-window (window -1 1 -1 1)
+  (def ABC (curve A -- B -- C -- cycle))
+  (def (tri P Q c) (brushgradient P Q (list c (change-alpha c 0)) (fill ABC)))
+  (draw (tri A (pt@d 1/2 (+  90 180)) "red")
+        (tri B (pt@d 1/2 (+ 210 180)) "green")
+        (tri C (pt@d 1/2 (- 330 180)) "blue")))]

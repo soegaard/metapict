@@ -1,28 +1,30 @@
 #lang racket
 ; General pict utilities
 (provide
- ; color     ; use color for both the pen and brush color
- pencolor    ; use the pen color (doesn't affect brush)
- penwidth    ; use the pen width (alias for linewidth)
- penscale    ; scale the penwidth
- penstyle    ; use the pen style
- pencap      ; use the pen cap
- penjoin     ; use the pen join
- pen         ; use the pen
+ ; color       ; use color for both the pen and brush color
+ pencolor      ; use the pen color (doesn't affect brush)
+ penwidth      ; use the pen width (alias for linewidth)
+ penscale      ; scale the penwidth
+ penstyle      ; use the pen style
+ pencap        ; use the pen cap
+ penjoin       ; use the pen join
+ pen           ; use the pen
  
- brush       ; use the brush
- brushcolor  ; use the brush color
- brushstyle  ; use the brush style
- brushshade  ; 
+ brush         ; use the brush
+ brushcolor    ; use the brush color
+ brushstyle    ; use the brush style
+ brushstipple  ; use the brush stipple
+ brushgradient ; use the brush gradient
 
- dashed      ; use the pen style long-dash
- dotted      ; use the pen style dotted
+ dashed        ; use the pen style long-dash
+ dotted        ; use the pen style dotted
  
  save-pict-as-png ; save the pict in a png-file
- margin      ; inset with arguments swapped 
+ margin        ; inset with arguments swapped 
  )
 
-(require pict racket/draw (for-syntax syntax/parse) "def.rkt" "color.rkt")
+(require pict racket/draw (for-syntax syntax/parse) 
+         "def.rkt" "color.rkt" "structs.rkt" "device.rkt")
 
 (define (dashed p) (penstyle 'long-dash p))
 (define (dotted p) (penstyle 'dot p))
@@ -48,7 +50,7 @@
                  (send dc set-pen old-pen)))
              (pict-width pict) (pict-height pict)))]))
 
-(define-brushop pen (new-pen pict) b
+(define-penop pen (new-pen pict) b
   new-pen)
 
 (define-penop pencolor (color pict) p
@@ -119,11 +121,49 @@
   (send the-brush-list find-or-create-brush
         (send b get-color) style))
 
-(define-brushop brushshade (from-color to-color pict) b
+(define-brushop brushstipple (stipple pict) b
   (new brush% 
-       [gradient       (new linear-gradient% [x0 0] [y0 400] [x1 400] [y1 400]
-                            [stops (list (list 0 from-color)
-                                         (list 1   to-color))])]
+       [color          (send b get-color)]
+       [style          (send b get-style)]
+       [stipple        stipple]
+       [gradient       (send b get-gradient)]
+       [transformation (send b get-transformation)]))
+
+(define (gradient p0 p1 colors [stops #f])
+  (defm (pt x0 y0) p0)
+  (defm (pt x1 y1) p1)
+  (def 1/n (/ (max 1 (sub1 (length colors)))))
+  (def stop+colors (for/list ([c colors] [s (or stops (in-range 0 (+ 1 1/n) 1/n))])
+                     (list s (make-color* c))))
+  (new linear-gradient% [x0 x0] [y0 y0] [x1 x1] [y1 y1] [stops stop+colors]))
+
+#;(define (gradient p0 p1 colors [stops #f])
+  (defm (pt x0 y0) p0)
+  (defm (pt x1 y1) p1)
+  (def 1/n (/ (max 1 (sub1 (length colors)))))
+  (def stop+colors (for/list ([c colors] [s (or stops (in-range 0 (+ 1 1/n) 1/n))])
+                     (list s (make-color* c))))
+  (new linear-gradient% [x0 x0] [y0 y0] [x1 x1] [y1 y1] [stops stop+colors]))
+
+(define-brushop brushgradient (p0 p1 colors pict) b
+  (def w (curve-pict-width))
+  (def h (curve-pict-height))
+  (def T (stdtrans (curve-pict-window) w h))
+  (new brush% 
+       [color          (send b get-color)]
+       [style          (send b get-style)]
+       [stipple        (send b get-stipple)]
+       [gradient       (gradient (T p0) (T p1) colors)]
+       [transformation (send b get-transformation)]))
+
+(define-brushop brushshade (from to p0 p1 pict) b
+  (defm (pt x0 y0) p0)
+  (defm (pt x1 y1) p1)
+  (def (to-color c) (if (string? c) (make-color* c) c))
+  (new brush% 
+       [gradient       (new linear-gradient% [x0 x0] [y0 y0] [x1 x1] [y1 y1]
+                            [stops (list (list 0 (to-color from))
+                                         (list 1 (to-color to)))])]
        [style          (send b get-style)]
        [stipple        (send b get-stipple)]
        [transformation (send b get-transformation)]))
@@ -133,4 +173,3 @@
         save-file filename 'png))
 
 (define (margin n p) (inset p n))
-colorize

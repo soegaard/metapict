@@ -47,10 +47,10 @@
 ; (make-color r g b [α 1.0]) like make-color but accepts out-of-range numbers
 (define make-color* 
   (case-lambda
-    [(name) (let () 
-              (def c (send the-color-database find-color name))
-              (unless c (error 'make-color* (~a "expected color name, got ")))
-              c)]
+    [(name) (cond [(is-a? name color%) name]
+                  [else (def c (send the-color-database find-color name))
+                        (unless c (error 'make-color* (~a "expected color name, got ")))
+                        c])]
     [(r g b)   (make-color* r g b 1.0)]
     [(r g b α) (def (f x) (min 255 (max 0 (exact-floor x))))
                (make-color (f r) (f g) (f b) (max 0.0 (min 1.0 α)))]))

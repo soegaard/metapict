@@ -2,6 +2,7 @@
 (provide author-jens-axel    ; name and email
          make-metapict-eval  ; make evaluator that knows metapict
          svg-picts           ; style: render picts as svg images
+         png-picts           ; style: render picts as png images
          coords              ; (coords a i) -> (a_1,a_2)
          a1 a2 b1 b2         ; a_1 a_2 b_1 b_2
          )
@@ -19,6 +20,9 @@
 
 (define svg-picts 
   (make-style "svg-picts" (list (render-convertible-as '(svg-bytes png-bytes)))))
+
+(define png-picts 
+  (make-style "svg-picts" (list (render-convertible-as '(png-bytes svg-bytes)))))
 
 (define (sub a i)
   (nonbreaking a (subscript i)))
