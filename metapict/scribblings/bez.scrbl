@@ -56,7 +56,7 @@ De Casteljau's algorithm is used to compute the point.}
   (for/list ([t '(0 1/2 1)])
     (point-of-bez b t))]
 
-@defproc[(bez~ [b1 bez?] [b2 bez?] [ε 0.0001]) boolean?]{
+@defproc[(bez~ [b1 bez?] [b2 bez?] [ε real? 0.0001]) boolean?]{
 Returns @racket[#t] if the defining points of the two Bezier curves
 are within a distance of ε. The default value of ε=0.0001 was chosen
 to mimick the precision of MetaPost.}

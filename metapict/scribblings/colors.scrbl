@@ -61,7 +61,7 @@ The color can be a @racket[color%] object or a color name (string).}
 @interaction[#:eval eval (color->list "magenta")]
 
 @defproc[(color+ [c1 color] [c2 color]) (is-a?/c color%)]{
-Returns a @racket[color%] objects, whose color components are
+Returns a @racket[color%] object, whose color components are
 the components of @racket[c1] and @racket[c2] added componentwise.
 The transparency is @racket[(min 1.0 (+ α1 α2))] where 
 @racket[α1] and @racket[α2] the transparencies of the two colors.}
@@ -105,7 +105,7 @@ and @math{"t=1"} corresponds to the last color.}
                @defproc[(change-blue  [c color] [r real?]) (is-a?/c color%)]
                @defproc[(change-green [c color] [r real?]) (is-a?/c color%)]
                @defproc[(change-alpha [c color] [r real?]) (is-a?/c color%)])]{
-Returns a color objects like @racket[c] where one component has been changed to @racket[r].}
+Returns a @racket[color%] object like @racket[c] where one component has been changed to @racket[r].}
 
 @interaction[#:eval eval (color->list (change-red "blue" 42))]
 

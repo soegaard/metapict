@@ -18,9 +18,9 @@ is a structure that holds information on how to draw a picture.
 A @racket[pict] can be @emph{rendered} to produce an image in various
 formats such as png, pdf, and, svg. 
 
-The standard library @racket[pict] defines lots of functions to
+The standard library @racket[pict] defines several functions to
 construct and manipulate @racket[pict]s. MetaPict provides and
-offer a some extra operations. Since they are not MetaPict specific,
+offers some extra operations. Since they are not MetaPict specific,
 they are also useful outside the world of MetaPict.
 
 A few of the @racket[pict] operations are provided under new names. 
