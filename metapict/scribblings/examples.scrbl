@@ -228,7 +228,7 @@ The rgb-triangle was inspired by Andrew Stacey's
 (with-window (window -1 1 -1 1)
   (def ABC (curve A -- B -- C -- cycle))
   (def (tri P Q c) (brushgradient P Q (list c (change-alpha c 0)) 
-                                  (debug 'tri-p (fill ABC))))
+                                  (fill ABC)))
   (def p (draw (tri A (pt@d 1/2 (+  90 180)) "red")
                (tri B (pt@d 1/2 (+ 210 180)) "green")
                (tri C (pt@d 1/2 (- 330 180)) "blue")))
@@ -240,8 +240,8 @@ The rgb-triangle was inspired by Andrew Stacey's
   (def (tri P Q . colors)
     (brushgradient P Q colors 
       (fill (curve P -- Q -- O -- cycle))))
-  (def q (debug 'q (draw (tri A B "yellow" "red")
+  (def q (draw (tri A B "yellow" "red")
                (tri B C "red"    "blue")
-               (tri C A "blue"   "yellow"))))
+               (tri C A "blue"   "yellow")))
   "These should display the same"
   (list q (pict->bitmap q)))] 
