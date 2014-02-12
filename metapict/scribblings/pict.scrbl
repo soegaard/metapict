@@ -21,7 +21,7 @@ formats such as png, pdf, and, svg.
 The standard library @racket[pict] defines several functions to
 construct and manipulate @racket[pict]s. MetaPict provides and
 offers some extra operations. Since they are not MetaPict specific,
-they are also useful outside the world of MetaPict.
+they are also useful outside of the world of MetaPict.
 
 A few of the @racket[pict] operations are provided under new names. 
 The basic concept in MetaPict is the curve. Therefore it makes sense 
