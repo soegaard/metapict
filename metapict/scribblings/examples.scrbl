@@ -236,7 +236,7 @@ The rgb-triangle was inspired by Andrew Stacey's
   (list p (pict->bitmap p)))
 ; Fill the three interior triangles using a 
 ; gradient parallel with the outer edge.
-(with-window (window -10 10 -10 10) 
+(with-window (window -1 1 -1 11) 
   (def (tri P Q . colors)
     (brushgradient P Q colors 
       (fill (curve P -- Q -- O -- cycle))))
