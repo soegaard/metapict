@@ -19,12 +19,14 @@
          ; macros from window.rkt
          with-window
          with-scaled-window
-         above 
-         beside
+         above  above*
+         beside beside*
          ~vec)
 
 (define above  vc-append)
 (define beside hc-append)
+(define (beside* ps) (apply beside ps))
+(define (above* ps)  (apply above ps))
 
 (define (~vec v) 
   (define (t x) (text (~a x)))
