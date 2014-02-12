@@ -8,6 +8,8 @@
 
 @defmodule[metapict/pict]
 
+@title[#:tag "reference-pict"]{Pict}
+
 @; ----------------------------------------
 @section[#:tag "ref-pict"]{Pict Adjusters}
 
