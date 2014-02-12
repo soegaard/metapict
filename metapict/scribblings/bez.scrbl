@@ -16,9 +16,9 @@ control points @racket[A+] and @racket[B-] is represented as
 an instance of a @racket[bez] structure: @racket[(bez A A+ B- B)].
 
 Graphically such a curve begins at point @racket[A] and ends in point @racket[B].
-The direction in which the curve leaves point @racket[A] is directed towards 
+The curve leaves point @racket[A] directed towards 
 the control point @racket[A+]. The direction in which the curve enters the
-end point @racket[B] is direction from @racket[B-]. 
+end point @racket[B] is from @racket[B-]. 
 
 The points @racket[A] and @racket[B] are referred to as start and end point 
 of the Bezier curve. The points @racket[A+] and @racket[B-] are refererred
@@ -28,8 +28,8 @@ and the point @racket[B-] is the pre control of @racket[B].
 Most users will not have reason to work with @racket[bez] structures directly.
 The @racket[curve] constructor is intended to cover all use cases.
 
-Each point on the Bezier curve is corresponds to a real number @math{t} between 0 and 1.
-The correspondance is called a @math{parametrization} of the curve. The number @math{t}
+Each point on the Bezier curve corresponds to a real number @math{t} between 0 and 1.
+The correspondence is called a @math{parameterization} of the curve. The number @math{t}
 is called a @math{parameter}. Thus for each value of the parameter @math{t} between 0 and 1,
 you get a point on the curve. The parameter value @math{t=0} corresponds to the start 
 point @racket[A] and the parameter value @math{t=1} corresponds to the end point.
@@ -57,8 +57,9 @@ De Casteljau's algorithm is used to compute the point.}
     (point-of-bez b t))]
 
 @defproc[(bez~ [b1 bez?] [b2 bez?] [ε real? 0.0001]) boolean?]{
-Returns @racket[#t] if the defining points of the two Bezier curves
-are within a distance of ε. The default value of ε=0.0001 was chosen
+Returns @racket[#t] if the defining points of the two Bezier curves 
+are within pairwise distance @racket[ε] of each other.
+The default value of @math{ε=0.0001} was chosen
 to mimick the precision of MetaPost.}
 @interaction[#:eval eval 
                     (bez~ (bez (pt 0     0) (pt 0 1) (pt 3 2) (pt 5 0))
@@ -102,7 +103,7 @@ such that the graph of @racket[c] is a subset of the graph of @racket[b].}
     (penwidth 4 
       (beside (draw b) 
               (color c (draw (bez-subpath b t (+ t 1/4))))))))]
-Note: The example show that the parameterization is not an arc-length (aka unit-speed) 
+Note: The example shows that the parameterization is not an arc-length (aka unit-speed) 
 parameterization.
 
 @defproc[(bez-intersection-point [b1 bez?] [b2 bez?]) (or pt? #f)]{
@@ -173,7 +174,7 @@ to @racket[b] before the conversion.}
 @defproc[(bezs->dc-path [bs (listof bez?)] [t trans? #f]) (is-a? dc<%>)]{
 Convert the "consecutive" Bezier curves @racket[bs] into a @racket[dc-path%].
 If the optional transformation @racket[t] is present, it is applied 
-to te @racket[bs] before the conversion.}
+to the @racket[bs] before the conversion.}
 
 @defproc[(bez/dirs+tensions [p0 pt?]     [p3 pt?] 
                             [w0 vec?]    [w3 vec?] 

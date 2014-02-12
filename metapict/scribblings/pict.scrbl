@@ -103,8 +103,8 @@ The available joins are: @racket['round], @racket['bevel], and, @racket['miter].
 The join determines how the transition from one curve section to the next is
 drawn. The default join is @racket['round].
 
-Note: If you want to draw a rectangle with crisp 90 degree 
-      outer angle, then use the @racket['miter] join.}
+Note: If you want to draw a rectangle with a crisp 90 degree 
+outer angle, then use the @racket['miter] join.}
 @interaction[#:eval eval 
   (define (squiggle join) 
     (def l (curve (pt -1/2 0) -- (pt 0 0) .. (pt 1/2 1/2)))
@@ -115,7 +115,7 @@ Note: If you want to draw a rectangle with crisp 90 degree
   (beside* (map squiggle joins))]
 
 @defproc[(pen [a-pen pen%] [p pict?]) pict?]{
-Use the pen @racket[a-pen] as the current pent, then draw the pict @racket[p].}
+Use the pen @racket[a-pen] as the current pen, then draw the pict @racket[p].}
 @interaction-eval[#:eval eval (set-curve-pict-size 100 100)]
 @interaction[#:eval eval
   (def teacher-pen
@@ -134,15 +134,15 @@ Use the pen style @racket['dot] to draw the pict @racket[p]}
 TODO: Fill in these.
 
 @defproc[(brush [b brush%] [p pict?]) pict]{
-Use the brush @racket[b] to draw the pict @racket[p]}
+Use the brush @racket[b] to draw the pict @racket[p].}
 @defproc[(brushcolor [c color?] [p pict?]) pict]{
-Adjust the brush with to use the color @racket[b], then draw the pict @racket[p]}
+Adjust the brush to use the color @racket[b], then draw the pict @racket[p].}
 @defproc[(brushstyle [s style?] [p pict?]) pict]{
-Adjust the brush style to use the style @racket[s], then draw the pict @racket[p]}
+Adjust the brush to use the style @racket[s], then draw the pict @racket[p].}
 @defproc[(brushstipple [s style?] [p pict?]) pict]{
-Adjust the brush stipple to use the stipple @racket[s], then draw the pict @racket[p]}
+Adjust the brush to use the stipple @racket[s], then draw the pict @racket[p].}
 @defproc[(brushgradient [TODO:TO-BE-DETERMINED gradient?]) pict]{
-Use a gradient as brush, then draw the pict @racket[p]}
+Use a gradient as brush, then draw the pict @racket[p].}
 @defproc[(save-pict-as-png [filename path?] [p pict?]) (void)]{
 Save the pict @racket[p] as a png-file named  @racket[filename].}
 @defproc[(margin [r real?] [p pict?]) pict?]{

@@ -51,7 +51,7 @@ The compass directions as @racket[vec]s.
                @defthing[down  (vec  0 -1)]
                @defthing[left  (vec -1  0)]
                @defthing[right (vec  1  0)])]{
-Alternative directions names. Note that the direction names makes sense only if, the 
+Alternative directions names. Note that the direction names make sense only if, the 
 current coordinate system has a positive orientation.
 }
 
