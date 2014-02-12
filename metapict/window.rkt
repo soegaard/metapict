@@ -6,6 +6,7 @@
 (provide
  with-window
  with-scaled-window
+ window/aspect
  (contract-out
   [window-overlap? (-> window? window?  boolean?)] ; do the windows overlap?
   [window-center   (-> window?          pt?)]      ; return pt in center
@@ -37,6 +38,18 @@
   (defm (window xmin xmax ymin ymax) w)
   (and (<= xmin x xmax)
        (<= ymin y ymax)))
+
+(define (window/aspect xmin xmax [ymin #f] [aspect #f])
+  (match (list ymin aspect)
+    [(list #f   #f) (window/aspect xmin xmax xmin #f)]
+    [(list ymin #f) (def w (curve-pict-width))
+                    (def h (curve-pict-height))
+                    (def aspect (/ w h))
+                    (window/aspect xmin xmax ymin aspect)]
+    [_ (def dx (- xmax ymin))
+       (def dy (/ dx aspect))
+       (def ymax (+ ymin dy))
+       (window xmin xmax ymin ymax)]))
 
 (module+ test (require rackunit)
   (def w (window 2 4 6 10))

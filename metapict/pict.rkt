@@ -97,7 +97,7 @@
 
 (define-syntax (define-brushop stx)
   (syntax-parse stx
-    [(_ name (arg ... pict) old-brush
+    [(_ name (arg ... pict x y) old-brush
         expr ...)
      #'(define (name arg ... pict)
          (unless (pict? pict)
@@ -110,18 +110,18 @@
                  (send dc set-brush old-brush)))
              (pict-width pict) (pict-height pict)))]))
 
-(define-brushop brush (new-brush pict) b
+(define-brushop brush (new-brush pict x y) b
   new-brush)
 
-(define-brushop brushcolor (color pict) b
+(define-brushop brushcolor (color pict x y) b
   (send the-brush-list find-or-create-brush
         (make-color* color) (send b get-style)))
 
-(define-brushop brushstyle (style pict) b
+(define-brushop brushstyle (style pict x y) b
   (send the-brush-list find-or-create-brush
         (send b get-color) style))
 
-(define-brushop brushstipple (stipple pict) b
+(define-brushop brushstipple (stipple pict x y) b
   (new brush% 
        [color          (send b get-color)]
        [style          (send b get-style)]
@@ -135,6 +135,7 @@
   (def 1/n (/ (max 1 (sub1 (length colors)))))
   (def stop+colors (for/list ([c colors] [s (or stops (in-range 0 (+ 1 1/n) 1/n))])
                      (list s (make-color* c))))
+  (new linear-gradient% [x0 x0] [y0 y0] [x1 x1] [y1 y1] [stops stop+colors])
   (new linear-gradient% [x0 x0] [y0 y0] [x1 x1] [y1 y1] [stops stop+colors]))
 
 #;(define (gradient p0 p1 colors [stops #f])
@@ -145,7 +146,7 @@
                      (list s (make-color* c))))
   (new linear-gradient% [x0 x0] [y0 y0] [x1 x1] [y1 y1] [stops stop+colors]))
 
-(define-brushop brushgradient (p0 p1 colors pict) b
+(define-brushop brushgradient (p0 p1 colors pict x y) b
   (def w (curve-pict-width))
   (def h (curve-pict-height))
   (def T (stdtrans (curve-pict-window) w h))
@@ -156,7 +157,7 @@
        [gradient       (gradient (T p0) (T p1) colors)]
        [transformation (send b get-transformation)]))
 
-(define-brushop brushshade (from to p0 p1 pict) b
+(define-brushop brushshade (from to p0 p1 pict x y) b
   (defm (pt x0 y0) p0)
   (defm (pt x1 y1) p1)
   (def (to-color c) (if (string? c) (make-color* c) c))
