@@ -138,8 +138,9 @@ If no such numbers exist the result is @racket[(values #f #f)]. }
 
 @defproc[(bez-intersection-point-and-times [b1 bez?] [b2 bez?]) 
          (or (list pt? real? real?) #f)]{
-If the graphs of the Bezier curves intersect a list of the intersection point
-and two numbers @math{t_1} and @math{t_2} such that @math{b_1(t_1)=b_2(t_2)} is returned. 
+If the graphs of the Bezier curves intersect, returns a list of
+the intersection point and two numbers @math{t_1} and @math{t_2} 
+such that  @math{b_1(t_1)=b_2(t_2)}.
 If there are more than one intersection, the parameter values for the first 
 intersection is returned. If no such numbers exist the result is @racket[(values #f #f)]. }
 @interaction[#:eval eval
