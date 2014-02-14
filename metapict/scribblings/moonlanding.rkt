@@ -10,11 +10,10 @@
                 [(and (gui-available?) (is-a? f (gui-dynamic-require 'image-snip%)))
                  (send f get-bitmap)]
                 [else #f]))
-  (displayln args)
   (cond [(and bm (send bm ok?))
          (def w (send bm get-width))
          (def h (send bm get-height))
-         (defv (x0 y0 width) ; (x0,y0) in logical coordinates
+         (defv (x0 y0 width) ; (x0,y0) and width in logical coordinates
            (match args
              [(or (list x0 y0 width) (list (pt x0 y0) width)) 
               (displayln (list 'a x0 y0 width))
@@ -25,13 +24,23 @@
              [(list)
               (values 0 0 w)]
              [_ (error 'mpbitmap (~a "yada yada, got: " args))]))
-         (def T (stdtrans (curve-pict-window) w h))
+         (def win (curve-pict-window))
+         (def T (stdtrans win w h)) ; logical -> device
+         (defm (window xmin xmax ymin ymax) win)
+         (def lw (- xmax xmin)) ; logical width
          (dc (lambda (dc dx dy) ; (x,y) in device coordinates
-               (defm (pt x y) (T (pt dx dy)))
-               (displayln (list 'dx dx 'dy dy 'x x 'y y 'w w 'h h))
-               (send dc draw-bitmap bm x y
+               (defm (pt x y) (T (pt x0 y0)))
+               (defm (pt dw _) (T (pt width 0)))
+               (displayln (list 'dx dx 'dy dy 'x x 'y y 'w w 'h h 'dw dw))
+               (defv (old-scale-x old-scale-y) (send dc get-scale))               
+               (displayln (list 'lw lw))
+               (def s (* (/ width lw) (/ (curve-pict-width) w)))
+               (displayln (list 's s))
+               (send dc set-scale s s)
+               (send dc draw-bitmap bm (/ (+ dx x) s) (/ (+ dy y) s)
                      'solid black-color ; only relevant for monochrome images
-                     (send bm get-loaded-mask)))
+                     (send bm get-loaded-mask))
+               (send dc set-scale old-scale-x old-scale-y))
              w h)]
         (frame (inset (colorize (text "bitmap failed") "red") 2))))
 
@@ -45,5 +54,8 @@
         (color (change-alpha "red" 0.5) 
                (grid (pt 0 0) (pt w h) (pt 0 0) 20))))
 
-
+(with-window (window -1 1 -1 1)
+  (draw (mpbitmap "moonlanding-scott-salutes-flag.jpg" -1/4 -1/4 1/8)
+       ; (mpbitmap "moonlanding-scott-salutes-flag.jpg"  1/4  1/4 1/8)
+        (grid (pt -1 -1) (pt 1 1) (pt 0 0) 1/4)))
 
