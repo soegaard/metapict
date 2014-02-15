@@ -13,36 +13,39 @@
   (cond [(and bm (send bm ok?))
          (def w (send bm get-width))
          (def h (send bm get-height))
-         (defv (x0 y0 width) ; (x0,y0) and width in logical coordinates
+         (defv (x0 y0 width height) ; (x0,y0) and width in logical coordinates
            (match args
-             [(or (list x0 y0 width) (list (pt x0 y0) width)) 
-              (displayln (list 'a x0 y0 width))
-              (values x0 y0 width)]
+             [(or (list x0 y0 width height) (list (pt x0 y0) width height))
+              (values x0 y0 width height)]
+             [(or (list x0 y0 width) (list (pt x0 y0) width))
+              (values x0 y0 width #f)]
              [(or (list x0 y0) (list (pt x0 y0)))
               (displayln (list 'b x0 y0))
-              (values x0 y0 w)]
+              (values x0 y0 w h)] ; todo ...
              [(list)
-              (values 0 0 w)]
+              (values 0 0 w #f)] ; todo
              [_ (error 'mpbitmap (~a "yada yada, got: " args))]))
          (def win (curve-pict-window))
          (def T (stdtrans win w h)) ; logical -> device
          (defm (window xmin xmax ymin ymax) win)
          (def lw (- xmax xmin)) ; logical width
+         (def lh (- ymax ymin)) ; logical height
          (dc (lambda (dc dx dy) ; (x,y) in device coordinates
                (defm (pt x y) (T (pt x0 y0)))
                (defm (pt dw _) (T (pt width 0)))
                (displayln (list 'dx dx 'dy dy 'x x 'y y 'w w 'h h 'dw dw))
-               (defv (old-scale-x old-scale-y) (send dc get-scale))               
-               (displayln (list 'lw lw))
-               (def s (* (/ width lw) (/ (curve-pict-width) w)))
-               (displayln (list 's s))
-               (send dc set-scale s s)
-               (send dc draw-bitmap bm (/ (+ dx x) s) (/ (+ dy y) s)
+               (defv (old-scale-x old-scale-y) (send dc get-scale))
+               (def sx (* (/ width  lw) (/ (curve-pict-width)  w)))
+               (def sy (if height 
+                           (* (/ height lw) (/ (curve-pict-height) w))
+                           sx))                           
+               (send dc set-scale sx sy)
+               (send dc draw-bitmap bm (/ (+ dx x) sx) (/ (+ dy y) sy)
                      'solid black-color ; only relevant for monochrome images
                      (send bm get-loaded-mask))
                (send dc set-scale old-scale-x old-scale-y))
              w h)]
-        (frame (inset (colorize (text "bitmap failed") "red") 2))))
+        (frame (inset (colorize (text "bitmap failed x") "red") 2))))
 
 (with-window (window -1 1 -1 1)
   (def bm (mpbitmap "moonlanding-scott-salutes-flag.jpg" 0 0))

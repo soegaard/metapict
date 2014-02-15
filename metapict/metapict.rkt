@@ -1,16 +1,16 @@
 #lang racket
 
 (require racket/draw  math/flonum
-         (except-in pict arrow)
+         (except-in pict arrow rectangle)
          (only-in srfi/1 zip unzip2)
-         "angles.rkt" "arrow.rkt" "bez.rkt" "color.rkt" "curve.rkt" 
+         "angles.rkt" "arrow.rkt" "bez.rkt" "bitmap.rkt" "color.rkt" "curve.rkt" 
          "dc.rkt" "def.rkt" "device.rkt" "draw.rkt" "grid.rkt" "label.rkt"
          "parameters.rkt" "path.rkt" "pen-and-brush.rkt" "pict.rkt" "pt-vec.rkt"
          "shapes.rkt" "structs.rkt" "trans.rkt" "trig.rkt" "window.rkt")
 
 (provide (all-from-out
           pict
-          "def.rkt" "dc.rkt" "bez.rkt" "window.rkt"  "path.rkt" "curve.rkt"
+          "bitmap.rkt" "def.rkt" "dc.rkt" "bez.rkt" "window.rkt"  "path.rkt" "curve.rkt"
           "structs.rkt" "trig.rkt" "pt-vec.rkt"  "angles.rkt" "trans.rkt"
           "color.rkt" "pict.rkt" "device.rkt" "arrow.rkt" "shapes.rkt" "pen-and-brush.rkt"
           "draw.rkt" "label.rkt" "shapes.rkt" "parameters.rkt" "arrow.rkt" "grid.rkt")

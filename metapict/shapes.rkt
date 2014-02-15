@@ -13,8 +13,8 @@
          ellipse-arc
          sector          ; sector of radius r with angles from f to t
          sector/deg      ; same but angles are in degrees rather than radians
-         box             ; curve of box from two corner points
-         )     
+         rectangle       ; rectangle given two opposite points, or point and diagonal vector
+         )
 
 (require "def.rkt" "curve.rkt" "pt-vec.rkt" "path.rkt" "trig.rkt" "trans.rkt" "structs.rkt")
 
@@ -90,10 +90,14 @@
 (define (sector/deg r from to)
   (sector r (rad from) (rad to)))
   
-;;; Boxes
+(define (rectangle a1 a2)
+  (match (list a1 a2)
+    [(list (pt x y) (vec dx dy)) ; point and diagonal vector
+     (rectangle a1 (pt (+ x dx) (+ y dy)))]
+    [(list (pt x y) (pt X Y))    ; opposite points
+     (defv (xmin xmax ymin ymax) (values (min x X) (max x X) (min y Y) (max y Y)))
+     (curve (pt xmin ymin) -- (pt xmax ymin) -- (pt xmax ymax) -- (pt xmin ymax) -- cycle)]
+    [_ (error 'rectangle (~a "expected two points, or a point and a vec, got: " a1 " and " a2))]))
 
-(define (box p1 p2)
-  (defm (pt x y) p1)
-  (defm (pt X Y) p2)
-  (defv (xmin xmax ymin ymax) (values (min x X) (max x X) (min y Y) (max y Y)))
-  (curve (pt xmin ymin) -- (pt xmax ymin) -- (pt xmax ymax) -- (pt xmin ymax) -- cycle))
+
+
