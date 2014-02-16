@@ -1,5 +1,5 @@
 #lang racket
-(require pict "../metapict.rkt")
+(require metapict)
 
 (define (save-as-png filename pict)
   (send (pict->bitmap pict)

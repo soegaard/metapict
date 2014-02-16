@@ -1,6 +1,5 @@
 #lang racket
-(require racket/draw math/base
-         pict "../metapict.rkt")
+(require metapict racket/draw math/base)
 
 ; A study card has two sides: a front and a back.
 ; Both sides are represented as picts.

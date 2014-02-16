@@ -2,7 +2,7 @@
 ;;; function-tables.rkt
 ;; TODO: Generalize the example into a library for function table drawing.
 
-(require "../metapict.rkt" pict 
+(require metapict
          (only-in srfi/1 zip unzip2)
          (only-in unstable/gui/pict tag-pict find-tag)
          (for-syntax syntax/parse))
