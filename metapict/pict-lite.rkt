@@ -4,7 +4,7 @@
 ;;; that doesn't collide with MetaPict.
 
 (provide (except-out (all-from-out pict)
-                     rectangle))
+                     arrow rectangle))
 
 (require pict)
 

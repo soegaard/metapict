@@ -1,7 +1,7 @@
 #lang racket/base
 
 (require racket/draw math/flonum racket/format
-         (except-in pict arrow rectangle)
+         "pict-lite.rkt"
          (only-in srfi/1 zip unzip2)
          "angles.rkt" "arrow.rkt" "bez.rkt" "bitmap.rkt" "color.rkt" "curve.rkt" 
          "dc.rkt" "def.rkt" "device.rkt" "draw.rkt" "grid.rkt" "label.rkt"
@@ -9,7 +9,7 @@
          "shapes.rkt" "structs.rkt" "trans.rkt" "trig.rkt" "window.rkt")
 
 (provide (all-from-out
-          pict
+          "pict-lite.rkt"
           "bitmap.rkt" "def.rkt" "dc.rkt" "bez.rkt" "window.rkt"  "path.rkt" "curve.rkt"
           "structs.rkt" "trig.rkt" "pt-vec.rkt"  "angles.rkt" "trans.rkt"
           "color.rkt" "pict.rkt" "device.rkt" "arrow.rkt" "shapes.rkt" "pen-and-brush.rkt"
