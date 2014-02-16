@@ -20,7 +20,8 @@
  dotted        ; use the pen style dotted
  
  save-pict-as-png ; save the pict in a png-file
- margin        ; inset with arguments swapped 
+ margin           ; inset with arguments swapped 
+ pict-size        ; returns width and height
  )
 
 (require pict racket/draw (for-syntax syntax/parse) 
@@ -174,3 +175,6 @@
         save-file filename 'png))
 
 (define (margin n p) (inset p n))
+
+(define (pict-size p) (values (pict-width p) (pict-height p)))
+
