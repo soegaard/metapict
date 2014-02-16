@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 
 (provide
  color         ; match-expander for color% objects and color names (strings)
@@ -14,7 +14,9 @@
  change-alpha  ; change transparency
  )
 
-(require "def.rkt" racket/draw (for-syntax syntax/parse) (only-in pict colorize))
+(require "def.rkt" racket/draw racket/match racket/class racket/format racket/math racket/list
+         (for-syntax racket/base syntax/parse)
+         (only-in pict colorize))
 (module+ test (require rackunit))
 
 ; (color r g b a) matches a color name (as a string) or a color% object.

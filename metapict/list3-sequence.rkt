@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 ;;; List Sequence
 
    ;  (in-path (p q r) a-path) 
@@ -8,6 +8,8 @@
    ;    If q is the last  node, then r is #f.
 
 (provide make-3-sequence)
+
+(require racket/match racket/list)
 
 (define (make-3-sequence xs)
   (make-do-sequence ; this assumes a path consists of at least two knots

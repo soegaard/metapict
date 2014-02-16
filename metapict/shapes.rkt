@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 ;;; Curves with common shapes.
 
 (provide unitcircle      ; center (0,0) radius 1
@@ -16,7 +16,8 @@
          rectangle       ; rectangle given two opposite points, or point and diagonal vector
          )
 
-(require "def.rkt" "curve.rkt" "pt-vec.rkt" "path.rkt" "trig.rkt" "trans.rkt" "structs.rkt")
+(require "def.rkt" "curve.rkt" "pt-vec.rkt" "path.rkt" "trig.rkt" "trans.rkt" "structs.rkt"
+         racket/match racket/format)
 
 (def unitcircle
   (curve (pt@ 1 0)         (dir  90) ..

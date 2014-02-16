@@ -1,8 +1,9 @@
-#lang racket
+#lang racket/base
 ;;; A Window is represented as:
 ;;;   (struct window (minx maxx miny maxy) #:transparent)
 ;;; Conceputally a window represents a rectangular shaped part of the coordinate plane.
 
+(require racket/contract/base)
 (provide
  with-window
  with-scaled-window
@@ -15,7 +16,7 @@
   ))
 
 (require "def.rkt" "structs.rkt" "pt-vec.rkt" "device.rkt"
-         (for-syntax syntax/parse))
+         (for-syntax racket/base syntax/parse) racket/match)
 
 (define (scale-window k win)
   (defm (window a b c d) win)

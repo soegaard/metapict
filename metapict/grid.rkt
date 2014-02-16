@@ -1,6 +1,5 @@
-#lang racket
+#lang racket/base
 (provide grid)
-
 
 (require "def.rkt" "pt-vec.rkt" "structs.rkt" "draw.rkt" "curve.rkt" "path.rkt")
 

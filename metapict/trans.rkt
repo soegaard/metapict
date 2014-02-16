@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 ;;; Affine transformations are represented by
 ;;;     (struct trans (xx yx xy yy x0 y0) ...]
 ;;; The point (x,y) is transformed to:
@@ -6,6 +6,7 @@
 ;;;     ynew = yx*x + yy*y + y0
 ;;; Think of an affine transformation as a linear transformation followed by a translation.
 
+(require racket/contract/base)
 (provide (struct-out trans)
          ; Predefined transformations
          identity rotated90 rotated180 rotated270 flipx flipy 
@@ -16,7 +17,8 @@
                        [trans->vector (-> trans? vector?)] ; convert to vector
                        ))
 
-(require "def.rkt" "structs.rkt" "trig.rkt" "mat.rkt" "pt-vec.rkt")
+(require "def.rkt" "structs.rkt" "trig.rkt" "mat.rkt" "pt-vec.rkt"
+         (for-syntax racket/base) racket/match racket/format racket/list racket/math)
 
 (define (constructor o)
   (cond [(vec? o)  vec] 

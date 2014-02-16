@@ -1,10 +1,11 @@
-#lang racket
+#lang racket/base
 ;;; Bezier Curves
 
 ; A Bezier curve is represented as
 ;     (struct bez (p0 p1 p2 p3) #:transparent)
 ; Our curves will be represented 
 
+(require racket/contract/base)
 (provide bez~             ; compare two Bezier curves, precision optional
          bez/dirs+tensions 
          bez->dc-path     ; convert a bez to a dc-path
@@ -26,17 +27,9 @@
           ; [bez-large-bounding-box (-> bez? window?)] ; bounding box (maybe larger than curve)
           ))
 
-(require racket/draw pict
-         "angles.rkt"
-         "pen-and-brush.rkt"
-         "dc.rkt"
-         "def.rkt"         
-         "pt-vec.rkt"
-         "mat.rkt"         
-         "trans.rkt"
-         "trig.rkt"
-         "structs.rkt"
-         "window.rkt")
+(require racket/draw racket/match racket/list racket/class
+         "angles.rkt" "dc.rkt" "def.rkt" "mat.rkt" "pen-and-brush.rkt" "pict-lite.rkt"
+         "pt-vec.rkt" "trans.rkt" "trig.rkt" "structs.rkt" "window.rkt")
 
 ; point-of-bez : bez number -> pt
 (define (point-of-bez b t)

@@ -1,6 +1,6 @@
-#lang racket
+#lang racket/base
 
-(require racket/draw  math/flonum
+(require racket/draw math/flonum racket/format
          (except-in pict arrow rectangle)
          (only-in srfi/1 zip unzip2)
          "angles.rkt" "arrow.rkt" "bez.rkt" "bitmap.rkt" "color.rkt" "curve.rkt" 

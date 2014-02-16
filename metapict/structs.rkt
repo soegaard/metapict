@@ -1,4 +1,6 @@
-#lang racket
+#lang racket/base
+(require (for-syntax racket/base))
+
 (define-syntax (provide-structs stx)
   (syntax-case stx ()
     [(_ id ...)

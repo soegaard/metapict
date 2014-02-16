@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 ;;; Arrows
 
 ; The shape is inspired by:

@@ -1,8 +1,10 @@
-#lang racket
+#lang racket/base
 (provide (except-out (all-defined-out) def defv defm)
          (rename-out [define        def]
                      [define-values defv]
                      [match-define  defm]))
+
+(require (for-syntax racket/base) racket/match racket/math)
 
 ; shorter names
 (define-syntax defv (make-rename-transformer #'define-values))

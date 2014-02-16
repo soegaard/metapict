@@ -1,8 +1,8 @@
-#lang racket
+#lang racket/base
 (provide find-white-transparent-brush
          find-white-transparent-pen)
 
-(require racket/draw)
+(require racket/draw racket/class)
 
 (define (find-white-transparent-brush) 
   (send the-brush-list find-or-create-brush "white" 'transparent))

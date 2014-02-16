@@ -1,7 +1,6 @@
-#lang racket
+#lang racket/base
 (provide (all-defined-out))
-
-(require "structs.rkt" "def.rkt" "trig.rkt")
+(require "structs.rkt" "def.rkt" "trig.rkt" racket/match racket/list racket/math)
 (module+ test (require rackunit))
 
 ; Predefined points and vectors

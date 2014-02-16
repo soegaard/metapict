@@ -1,9 +1,10 @@
-#lang racket
+#lang racket/base
 ;;; This module implements 2x2 matrices and rotations of pt and vec.
 ;;; Since matrices are for internal use, only mat*vec and mat-inv are defined.
 ;;; An 2x2 matrix is represented as: 
 ;;;   (struct mat (a b c d) #:transparent)
 
+(require racket/contract/base)
 (provide (contract-out 
           [rot         (-> deg? vec?  vec?)] ; rotate vec the given degrees
           [rot/rad     (-> rad? vec?  vec?)] ; rotate vec the given radian
@@ -13,7 +14,8 @@
           [rotmat/rad  (-> rad?       mat?)] ; construct rotation matrix for the given radians
           ))
 
-(require "structs.rkt" "def.rkt" "trig.rkt" "pt-vec.rkt")        
+(require "structs.rkt" "def.rkt" "trig.rkt" "pt-vec.rkt"
+         racket/match)
 
 (define (mat*vec A v)
   (match* (A v) 

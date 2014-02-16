@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 ;;; This module implements
 ;;;   i) angles between vecs (signed and unsigned)
 ;;;  ii) angle of vec measured from x-axis
@@ -11,6 +11,7 @@
 (define -pi--pi real?)              ; ]-pi;pi]
 (define -180--180 real?) 
 
+(require racket/contract/base)
 (provide (contract-out 
           [angle2           (-> vec? vec?     0--2pi)] ;        angle (rad) between vecs
           [signed-angle2    (-> vec? vec?   -pi--pi)]  ; signed angle (rad) between vecs
@@ -23,7 +24,7 @@
           )
          arccos)
 
-(require "def.rkt" "structs.rkt" "pt-vec.rkt" "trig.rkt")
+(require racket/math "def.rkt" "structs.rkt" "pt-vec.rkt" "trig.rkt")
 (module+ test (require rackunit))
 
 (define (arccos x) ; this ensures a real result (rounding may lead to complex results)

@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 ; General pict utilities
 (provide
  ; color       ; use color for both the pen and brush color
@@ -24,8 +24,9 @@
  pict-size        ; returns width and height
  )
 
-(require pict racket/draw (for-syntax syntax/parse) 
-         "def.rkt" "color.rkt" "structs.rkt" "device.rkt")
+(require (for-syntax racket/base syntax/parse)
+         racket/draw racket/class
+         "pict-lite.rkt" "def.rkt" "color.rkt" "structs.rkt" "device.rkt")
 
 (define (dashed p) (penstyle 'long-dash p))
 (define (dotted p) (penstyle 'dot p))

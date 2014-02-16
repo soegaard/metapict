@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 (module+ test (require rackunit))
 
 ;;; Fix: (curve (pt 0 0) .. (pt 0 0) .. cycle)
@@ -21,7 +21,9 @@
 ; A match-expander  curve  is also exported, s.t. one can use (curve closed? bezs)
 ; as a pattern in a match clause.
 
-(require math/matrix "structs.rkt" "path.rkt" "def.rkt" "pt-vec.rkt" "angles.rkt" "bez.rkt")
+(require math/matrix racket/match racket/list racket/math racket/function
+         (for-syntax racket/base)
+         "structs.rkt" "path.rkt" "def.rkt" "pt-vec.rkt" "angles.rkt" "bez.rkt")
 
 (provide 
  ; high level constructors

@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 ;;;
 ;;;  i) Transformation from logical to device coordinates
 ;;; ii) px, xpx and ypx:  compute logical size of a pixels
@@ -12,8 +12,9 @@
          px xpx ypx
          devpt)
 
-(require pict "def.rkt" "structs.rkt" "trans.rkt" "pt-vec.rkt"
-         (for-syntax syntax/parse))
+(require "def.rkt" "pict-lite.rkt" "pt-vec.rkt" "structs.rkt" "trans.rkt"
+         (for-syntax syntax/parse racket/base)
+         racket/list racket/math)
 
 
 (def curve-pict-width  (make-parameter 100))

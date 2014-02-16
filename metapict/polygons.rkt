@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 (provide regular-polygon
          triangle
          square
@@ -6,7 +6,7 @@
 
 ; TODO: Make these polygones closed
 
-(require math/flonum 
+(require math/flonum racket/match
          "def.rkt" "structs.rkt" "pt-vec.rkt" "trans.rkt" "curve.rkt" "path.rkt")
 
 (define (regular-polygon n 

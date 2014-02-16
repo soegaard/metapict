@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 ;;; Labels
 ; A label consists of a picture and a position in logical coordinates.
 ;    (struct label (string-or-pict pos plc) #:transparent)
@@ -12,7 +12,8 @@
 
 (provide (all-defined-out)) ; todo
 
-(require pict
+(require (for-syntax racket/base) racket/match racket/format
+         "pict-lite.rkt"
          "def.rkt" "device.rkt" "draw.rkt"  "pt-vec.rkt" "structs.rkt" 
          "pict.rkt" "parameters.rkt" "curve.rkt" "path.rkt" "color.rkt")
 

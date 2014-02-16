@@ -1,5 +1,6 @@
-#lang racket
-(require (for-syntax syntax/parse))
+#lang racket/base
+(require (for-syntax racket/base racket/syntax syntax/parse)
+         racket/match)
 
 (define-syntax (match-case-lambda stx)
   (syntax-parse stx

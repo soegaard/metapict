@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 ; TODO: TOP PRIORITY
 ;  Handle direction after last point.
 
@@ -48,7 +48,8 @@
  path:
  display-path)
 
-(require "def.rkt" "structs.rkt" "angles.rkt" "pt-vec.rkt")
+(require "def.rkt" "structs.rkt" "angles.rkt" "pt-vec.rkt"
+         racket/format racket/match racket/list)
 
 (define tension
   (case-lambda

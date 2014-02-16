@@ -1,9 +1,10 @@
-#lang racket
+#lang racket/base
 ;;;
 ;;; This module implements 
 ;;;   i) the contracts rad? and deg?
 ;;;  ii) conversion between radiand and degrees
 ;;; iii) trigonometric function with input is degrees
+(require racket/contract/base)
 (provide (contract-out
           [rad     (-> deg? rad?)]                ; convert from degrees to radians
           [deg     (-> rad? deg?)]                ; convert from radians to degrees
@@ -14,6 +15,8 @@
           [rad?    (-> any/c boolean?)]             ; radian predicate (for contracts)
           [deg?    (-> any/c boolean?)]             ; degree predicate (for contracts)
           ))
+
+(require racket/math)
 
 (define rad? real?) 
 (define deg? real?) 

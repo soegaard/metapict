@@ -1,11 +1,11 @@
-#lang racket
+#lang racket/base
 (provide get-pixel         ; get color% at (x,y) in bitmap
          bitmap-width      
          bitmap-height
          bitmap-size       ; (values width height)
          read-bitmap)      ; read bitmap from file
 
-(require "def.rkt" racket/draw)
+(require "def.rkt" racket/draw racket/class)
 
 ; weakly held hash of bitmap dcs.
 (define cached-dcs (make-weak-hash))

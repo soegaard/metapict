@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 ; TODO:
 ;  - & to append paths  (use curve-append)
 ;  - tight bounding boxes
@@ -21,7 +21,8 @@
 ;  - spark lines
 ;  - functions from asymptote
 
-(require pict "metapict.rkt")
+(require "pict-lite.rkt" "metapict.rkt"
+         racket/math)
 
 (require 
  (except-in unstable/gui/pict 
