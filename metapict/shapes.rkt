@@ -8,7 +8,7 @@
          unitsquare      ; side length 1, first quadrant
          arc             ; arc of circle of radius r from f to t (f and t is in radian)
          arc/deg         ; same, f and t in degrees
-         circle-curve    ; circle with center (x0,y0) and radius r
+         circle          ; circle with center (x0,y0) and radius r
          ellipse-curve   ; ellipse with center (x0,y0) and width w and height h
          ellipse-arc
          sector          ; sector of radius r with angles from f to t
@@ -16,7 +16,8 @@
          rectangle       ; rectangle given two opposite points, or point and diagonal vector
          )
 
-(require "def.rkt" "curve.rkt" "pt-vec.rkt" "path.rkt" "trig.rkt" "trans.rkt" "structs.rkt"
+(require "angles.rkt" "def.rkt" "curve.rkt" "pt-vec.rkt" "path.rkt" 
+         "trig.rkt" "trans.rkt" "structs.rkt"
          racket/match racket/format)
 
 (def unitcircle
@@ -44,18 +45,15 @@
 
 (def unitsquare (curve (pt 0 0) -- (pt 1 0) -- (pt 1 1) -- (pt 0 1) -- cycle))
 
-(define (circle-curve . args)
+(define (circle . args)
   (match args
-    [(list center-x center-y radius)
-     (shifted center-x center-y (scaled radius unitcircle))]
-    [(list center radius)
-     (shifted (pt-x center) (pt-y center) (scaled radius unitcircle))]
-    [_ (error 'circle-curve (~a "got: " args))]))
+    [(list (? real? r))                          (scaled r unitcircle)]
+    [(list (pt x y) (? real? r))                 (shifted x y (scaled r unitcircle))]
+    [(list (? real? x) (? real? y) (? real? r))  (shifted x y (scaled r unitcircle))]
+    [(list (and (pt x y) C) (? pt? P))           (def r (dist C P))
+                                                 (shifted x y (scaled r unitcircle))]
+    [_ (error 'circle (~a "got: " args))]))
     
-
-#;(define (circle-curve center-x center-y radius)
-  (shifted center-x center-y 
-           (scaled radius unitcircle)))
 
 (define (ellipse-curve center-x center-y radius-x radius-y)
   (shifted center-x center-y 
@@ -63,12 +61,26 @@
 
 ;; Circle related
 
-(define (arc radius from-angle to-angle) ; radians
+#;(define (arc radius from-angle to-angle) ; radians
   ; TODO: handle angles outside normal range
   ; TODO: add optional center for arc
   (subcurve (scaled radius unitcircle)
             (* 8 (/ from-angle 2pi))
             (* 8 (/ to-angle 2pi))))
+
+(define (arc . args)
+  (match args
+    [(list (? real? r) (? real? from) (? real? to)) ; angles in radian
+     (cond [(>= from 2pi) (arc r (- from 2pi) (- to 2pi))]
+           [(> from to) (curve-append (arc r from 2pi) (arc r 0 to))]
+           [else        (subcurve (scaled r unitcircle)
+                                  (* 8 (/ from 2pi))
+                                  (* 8 (/ to   2pi)))])]
+    [(list (? pt? C) (? pt? A) (? pt? B)) ; arc through A with center C
+     (def from-angle (angle (pt- A C)))
+     (def to-angle   (+ from-angle (abs (angle2 (pt- C A) (pt- C B)))))
+     (shifted C (arc (dist C A) from-angle to-angle))]
+    [_ (error 'arc "")]))
 
 (define (arc/deg radius from to)
   (arc radius (rad from) (rad to)))

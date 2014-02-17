@@ -16,8 +16,8 @@
 
 ; A is intersection point of circles with centers B and C
 ; and radii b and c respectively
-(def circ-B (circle-curve B b))
-(def circ-C (circle-curve C c))
+(def circ-B (circle B b))
+(def circ-C (circle C c))
 (def A      (intersection-point circ-B circ-C))
 
 ; The point D is on the extension of BC.

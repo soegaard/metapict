@@ -14,8 +14,8 @@
          )
 
 (require (for-syntax racket/base)
-         racket/draw racket/class racket/format racket/match racket/list pict
-         "bez.rkt" "curve.rkt" "def.rkt" "device.rkt" "pen-and-brush.rkt" 
+         racket/draw racket/class racket/format racket/match racket/list 
+         "bez.rkt" "curve.rkt" "def.rkt" "device.rkt" "pen-and-brush.rkt" "pict-lite.rkt"
          "structs.rkt" "parameters.rkt" "pict.rkt" "pt-vec.rkt" "color.rkt")
 
 (define (draw . cs)

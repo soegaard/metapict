@@ -6,8 +6,8 @@
 
 (defv (p0 p1 p2) (values (pt 0 0) (pt -1 0) (pt 1 0)))
 (def r 1.5)
-(def c1 (circle-curve p1 r))
-(def c2 (circle-curve p2 r))
+(def c1 (circle p1 r))
+(def c2 (circle p2 r))
 (def p (pt 0 -2))
 (def v (pt- p p0))
 (def m 3)

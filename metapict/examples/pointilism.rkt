@@ -20,7 +20,7 @@
     ; find color of the (x,y)th pixel in the image
     (def c (get-pixel bm x y))
     ; use the color to draw a filled circle
-    (color c (fill (circle-curve (pt x y) size)))))
+    (color c (fill (circle (pt x y) size)))))
 
 (set-curve-pict-size 300 300)
 (with-window (window 0 w h 0)

@@ -17,10 +17,10 @@
 
 (define (spiral drawing max-r)
   (def (node p r)
-    (def circle   (circle-curve (pt-x p) (pt-y p) 1.5))
-    (def filled   (color "white" (fill circle)))
+    (def circ     (circle p 1.5))
+    (def filled   (color "white" (fill circ)))
     (def label    (label-cnt (~a r) p))
-    (draw filled circle label))
+    (draw filled circ label))
   (defv (spiral θ)
     (for/fold ([drawing drawing] [θ 0])  
               ([r (in-range 1 max-r)])

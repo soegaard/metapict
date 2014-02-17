@@ -25,7 +25,7 @@
  )
 
 (require (for-syntax racket/base syntax/parse)
-         racket/draw racket/class
+         racket/draw racket/class racket/format
          "pict-lite.rkt" "def.rkt" "color.rkt" "structs.rkt" "device.rkt")
 
 (define (dashed p) (penstyle 'long-dash p))
@@ -113,7 +113,12 @@
              (pict-width pict) (pict-height pict)))]))
 
 (define-brushop brush (new-brush pict x y) b
-  new-brush)
+  (cond [(is-a? new-brush brush%) new-brush]
+        [(is-a? new-brush color%) (new brush% [color new-brush] [style 'solid])]
+        [(string? new-brush)      (new brush% [color (make-color* new-brush)] [style 'solid])]
+        [else (error 'brush (~a "expected a brush%, a color% or a color string, got: "
+                                new-brush))]))
+
 
 (define-brushop brushcolor (color pict x y) b
   (send the-brush-list find-or-create-brush

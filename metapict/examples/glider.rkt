@@ -5,7 +5,7 @@
 ;;;   Glider, Hacker Emblem
 ;;;   http://www.texample.net/tikz/examples/glider/
 
-(def circ (circle-curve 0.5 0.5 0.42))
+(def circ (circle 0.5 0.5 0.42))
 
 (with-window (window 0 3 0 3)
   (margin 5
