@@ -45,7 +45,7 @@
                             (color draw-color (draw c)))]))
 
 (define (draw-dot pos)
-  (fill (curve pos)))
+  (filldraw (curve pos))) ; todo dot color ?
 
 (define (curves->pict cs)
   (def w (curve-pict-width))
@@ -88,13 +88,11 @@
   (def h (curve-pict-height))
   (def T (stdtrans (curve-pict-window) w h))
   (dc (λ (dc dx dy)
-        (displayln (list dc (use-default-brush?)))
         (let ([b (send dc get-brush)] [p (send dc get-pen)])
           (when (use-default-brush?)
             (send dc set-brush 
                   (send the-brush-list find-or-create-brush
                         "black" 'solid)))
-          (displayln (send b get-style))
           ; todo: use draw-bezs (takes care of t and pt)
           #;(send dc set-brush 
                 (or (current-fill-brush)

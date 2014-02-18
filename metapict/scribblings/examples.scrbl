@@ -56,10 +56,10 @@ TikZ example.
 
 (define (spiral drawing max-r)
   (def (node p r)
-    (def circle   (circle-curve (pt-x p) (pt-y p) 1.5))
-    (def filled   (color "white" (fill circle)))
+    (def circ (circle p 1.5))
+    (def filled   (color "white" (fill circ)))
     (def label    (label-cnt (~a r) p))
-    (draw filled circle label))
+    (draw filled circ label))
   (defv (spiral θ)
     (for/fold ([drawing drawing] [θ 0])
               ([r (in-range 1 max-r)])
@@ -90,7 +90,7 @@ Alex Hirzel @hyperlink["http://www.texample.net/tikz/examples/glider/"]{Glider}.
   (margin 5
     (draw (grid (pt 0 0) (pt 3 3) (pt 0 0) 1)
           (for/draw ([p (list (pt 0 0) (pt 1 0) (pt 2 0) (pt 2 1) (pt 1 2))])
-            (color "black" (fill (circle-curve (pt+ p (vec .5 .5)) 0.42)))))))]
+            (color "black" (fill (circle (pt+ p (vec .5 .5)) 0.42)))))))]
 
 @section[#:tag "rainbow-circle" #:style svg-picts]{Rainbow Circle}
 @interaction[#:eval eval 
@@ -147,8 +147,8 @@ The inspiration was Paul Gaborit's
 (define (draw-rings . rings)
   (for/draw ([r rings])
     (defm (ring p c) r)
-    (def c1 (circle-curve p 1.9))
-    (def c2 (circle-curve p 1.5))
+    (def c1 (circle p 1.9))
+    (def c2 (circle p 1.5))
     (def connector (curve (end-point c1) -- (start-point c2)))
     (def circle-outline (curve-append c1 connector c2))
     (draw (color c (fill circle-outline))
@@ -156,8 +156,8 @@ The inspiration was Paul Gaborit's
 
 (set-curve-pict-size 200 100)
 (with-window (window -6 6 -4 2)
-  (draw (clipped (draw-rings r5 r4 r3 r2 r1) (box (pt -6  2)   (pt 6 -1.0)))
-        (clipped (draw-rings r1 r2 r3 r4 r5) (box (pt -6 -0.8) (pt 6 -3.8)))))]
+  (draw (clipped (draw-rings r5 r4 r3 r2 r1) (rectangle (pt -6  2)   (pt 6 -1.0)))
+        (clipped (draw-rings r1 r2 r3 r4 r5) (rectangle (pt -6 -0.8) (pt 6 -3.8)))))]
 
 @section[#:tag "example-cuboid" #:style svg-picts]{Cuboid}
 A cuboid drawn with a two-point vanishing perspective.
@@ -236,7 +236,7 @@ The rgb-triangle was inspired by Andrew Stacey's
   (list p (pict->bitmap p)))
 ; Fill the three interior triangles using a 
 ; gradient parallel with the outer edge.
-(with-window (window -1 1 -1 11) 
+(with-window (window -1 1 -1 1)
   (def (tri P Q . colors)
     (brushgradient P Q colors 
       (fill (curve P -- Q -- O -- cycle))))

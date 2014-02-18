@@ -1,9 +1,9 @@
 #lang scribble/manual
-@(require (for-label metapict pict racket/draw
+@(require (for-label metapict racket/draw
                      (except-in racket angle box open path? identity ...))
           scribble/extract scribble/eval scribble/base scribble/manual "utils.rkt")
 @(define eval (make-metapict-eval))
-@interaction-eval[#:eval eval (require metapict)]
+@interaction-eval[#:eval eval (require metapict racket/class racket/draw)]
 @(define math-style tt)
 
 @defmodule[metapict/pict]
@@ -109,7 +109,7 @@ outer angle, then use the @racket['miter] join.}
   (define (squiggle join) 
     (def l (curve (pt -1/2 0) -- (pt 0 0) .. (pt 1/2 1/2)))
     (draw (penwidth 40 (penjoin join (draw l)))
-          (penwidth 2 (color "red" (draw (circle-curve (pt 1/4 -1/3) 1/3))))
+          (penwidth 2 (color "red" (draw (circle (pt 1/4 -1/3) 1/3))))
           (label-bot (~a join) (pt 0 -1/2))))
   (def joins '(round bevel miter))
   (beside* (map squiggle joins))]
@@ -131,10 +131,13 @@ Use the pen style @racket['dot] to draw the pict @racket[p]}
 
 @subsection[#:tag "ref-pict-brush-adjusters"]{Brush Adjusters}
 
-TODO: Fill in these.
-
 @defproc[(brush [b brush%] [p pict?]) pict]{
 Use the brush @racket[b] to draw the pict @racket[p].}
+@interaction[#:eval eval
+  (def hatch (new brush% [color "black"] [style 'crossdiag-hatch]))
+  (brush hatch (filldraw unitcircle))]
+
+
 @defproc[(brushcolor [c color?] [p pict?]) pict]{
 Adjust the brush to use the color @racket[b], then draw the pict @racket[p].}
 @defproc[(brushstyle [s style?] [p pict?]) pict]{

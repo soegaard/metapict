@@ -38,7 +38,7 @@
                        (list r g b a))))]))
   (λ (stx) (syntax-parse stx
              [(_ c p)   #'((colorizer) c p)]
-             [(_ f c p) #'((colorizer) (color* f c))])))
+             [(_ f c p) #'((colorizer) (color* f c) p)])))
 
 ; return components as a list
 (define (color->list c)

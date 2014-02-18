@@ -32,7 +32,10 @@
 (define (dotted p) (penstyle 'dot p))
 
 ; color is stored in colorizer due to the match-expander in color.rkt
-(colorizer (λ (c p) (pencolor c (brushcolor c p))))
+(colorizer (case-lambda [(  c p) (pencolor c (brushcolor c p))]
+                        [(f c p) (let ([c (color* f c)]) (pencolor c (brushcolor c p)))]
+                        [else    (error 'color "expected (color [f] c p)")]))
+              
 
 ;; (define-penop name (arg ... pict) old-pen expr ...)
 ;; Defines a function name such that 
