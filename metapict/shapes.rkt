@@ -73,10 +73,10 @@
     [(list (? real? r) (? real? from) (? real? to)) ; angles in radian
      (cond [(>= from 2pi) (arc r (- from 2pi) (- to 2pi))]
            [(<  from 0)   (arc r (+ from 2pi) (+ to 2pi))]
-           [(> from to) (curve-append (arc r from 2pi) (arc r 0 to))]
-           [else        (subcurve (scaled r unitcircle)
-                                  (* 8 (/ from 2pi))
-                                  (* 8 (/ to   2pi)))])]
+           [(> from to)   (curve-append (arc r from 2pi) (arc r 0 to))]
+           [else          (subcurve (scaled r unitcircle)
+                                    (* 8 (/ from 2pi))
+                                    (* 8 (/ to   2pi)))])]
     [(list (? pt? C) (? pt? A) (? pt? B)) ; arc through A with center C
      (def from-angle (angle (pt- A C)))
      (def to-angle   (+ from-angle (abs (angle2 (pt- C A) (pt- C B)))))

@@ -26,10 +26,13 @@
 
 (require (for-syntax racket/base syntax/parse)
          racket/draw racket/class racket/format
-         "pict-lite.rkt" "def.rkt" "color.rkt" "structs.rkt" "device.rkt")
+         "pict-lite.rkt" "def.rkt" "color.rkt" "structs.rkt" "device.rkt" "parameters.rkt")
 
 (define (dashed p) (penstyle 'long-dash p))
 (define (dotted p) (penstyle 'dot p))
+
+; color is stored in colorizer due to the match-expander in color.rkt
+(colorizer (λ (c p) (pencolor c (brushcolor c p))))
 
 ;; (define-penop name (arg ... pict) old-pen expr ...)
 ;; Defines a function name such that 
@@ -46,10 +49,10 @@
            (raise-arguments-error 'name "pict expected" "pict" pict))           
          (dc (lambda (dc x y)
                (let ([old-pen (send dc get-pen)])
-                 (def new-pen (let () expr ...))
-                 (send dc set-pen new-pen)
-                 (draw-pict pict dc x y)
-                 (send dc set-pen old-pen)))
+                   (def new-pen (let () expr ...))
+                   (send dc set-pen new-pen)
+                   (draw-pict pict dc x y)
+                   (send dc set-pen old-pen)))
              (pict-width pict) (pict-height pict)))]))
 
 (define-penop pen (new-pen pict) b
@@ -105,11 +108,12 @@
          (unless (pict? pict)
            (raise-arguments-error 'name "pict expected" "pict" pict))
          (dc (lambda (dc x y)
-               (let ([old-brush (send dc get-brush)])
-                 (def new-brush (let () expr ...))
-                 (send dc set-brush new-brush)
-                 (draw-pict pict dc x y)
-                 (send dc set-brush old-brush)))
+               (parameterize ([use-default-brush? #f])
+                 (let ([old-brush (send dc get-brush)])
+                   (def new-brush (let () expr ...))
+                   (send dc set-brush new-brush)
+                   (draw-pict pict dc x y)
+                   (send dc set-brush old-brush))))
              (pict-width pict) (pict-height pict)))]))
 
 (define-brushop brush (new-brush pict x y) b

@@ -34,7 +34,7 @@
 (define (draw* cs) 
   (apply draw (filter values cs)))
 
-(define (fill c #:draw-border? [draw-border? #t])
+(define (fill c #:draw-border? [draw-border? #f])
   (curve->filled-pict c #:draw-border? draw-border?))
 
 (define (filldraw c [fill-color #f] [draw-color #f])
@@ -88,7 +88,13 @@
   (def h (curve-pict-height))
   (def T (stdtrans (curve-pict-window) w h))
   (dc (λ (dc dx dy)
+        (displayln (list dc (use-default-brush?)))
         (let ([b (send dc get-brush)] [p (send dc get-pen)])
+          (when (use-default-brush?)
+            (send dc set-brush 
+                  (send the-brush-list find-or-create-brush
+                        "black" 'solid)))
+          (displayln (send b get-style))
           ; todo: use draw-bezs (takes care of t and pt)
           #;(send dc set-brush 
                 (or (current-fill-brush)

@@ -14,9 +14,9 @@
  change-alpha  ; change transparency
  )
 
-(require "def.rkt" racket/draw racket/match racket/class racket/format racket/math racket/list
-         (for-syntax racket/base syntax/parse)
-         (only-in pict colorize))
+(require "def.rkt" "parameters.rkt"
+         racket/draw racket/match racket/class racket/format racket/math racket/list
+         (for-syntax racket/base syntax/parse))
 (module+ test (require rackunit))
 
 ; (color r g b a) matches a color name (as a string) or a color% object.
@@ -26,19 +26,19 @@
 ; In an expression context (color f c p) will be equivalent to (colorize p (color* f c))
 
 (define-match-expander color
-  (λ (stx) 
-    (syntax-parse stx 
+  (λ (stx)
+    (syntax-parse stx
       [(_ r g b a)
-       #'(or (and (? string?) 
+       #'(or (and (? string?)
                   (app (λ(s) (def c (send the-color-database find-color s))
                          (list (send c red) (send c green) (send c blue) (send c alpha)))
                        (list r g b a)))
              (and (? object?)
                   (app (λ(c) (list (send c red) (send c green) (send c blue) (send c alpha)))
                        (list r g b a))))]))
-  (λ (stx) (syntax-parse stx 
-             [(_ c p)   #'(colorize p c)]
-             [(_ f c p) #'(colorize p (color* f c))])))
+  (λ (stx) (syntax-parse stx
+             [(_ c p)   #'((colorizer) c p)]
+             [(_ f c p) #'((colorizer) (color* f c))])))
 
 ; return components as a list
 (define (color->list c)
