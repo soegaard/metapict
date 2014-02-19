@@ -4,7 +4,7 @@
 (provide draw           ; render arguments, then superimpose them
          draw*          ; draw a list of curves (or other drawables) on a new pict
          draw-dot       ; draw a dot; the size is determined by the current pen size
-         fill           ; draw curve and fill it with the brush
+         fill           ; fill curves with brush using winding rule
          filldraw       ; fill closed curve with fill-color, then draw curve ontop
          clipped        ; draw the part of a pict that is inside a closed curve
          label->pict    ; convert label to pict
@@ -34,8 +34,8 @@
 (define (draw* cs) 
   (apply draw (filter values cs)))
 
-(define (fill c #:draw-border? [draw-border? #f])
-  (curve->filled-pict c #:draw-border? draw-border?))
+(define (fill . cs)
+  (curves->filled-pict cs))
 
 (define (filldraw c [fill-color #f] [draw-color #f])
   (cond
@@ -83,28 +83,55 @@
           (send dc set-clipping-region old-reg)))
       w h))
 
+(def black-solid-brush (send the-brush-list find-or-create-brush "black" 'solid))
+(define (set-transparent-pen dc) (send dc set-pen "black" 1 'transparent))
+
 (define (curve->filled-pict c #:draw-border? [draw-border? #f])
   (def w (curve-pict-width))
   (def h (curve-pict-height))
-  (def T (stdtrans (curve-pict-window) w h))
+  (def T (stdtrans (curve-pict-window) w h)) ; logical -> device coords
   (dc (λ (dc dx dy)
         (let ([b (send dc get-brush)] [p (send dc get-pen)])
-          (when (use-default-brush?)
-            (send dc set-brush 
-                  (send the-brush-list find-or-create-brush
-                        "black" 'solid)))
-          ; todo: use draw-bezs (takes care of t and pt)
-          #;(send dc set-brush 
-                (or (current-fill-brush)
-                    (send the-brush-list find-or-create-brush
-                          (send p get-color)
-                          'solid)))
+          (when (use-default-brush?) 
+            ; this overrides the brush in a new dc (it is white !?!)
+            (send dc set-brush black-solid-brush))
           (unless draw-border?
-            (send dc set-pen "black" 1 'transparent))
+            (set-transparent-pen dc))
           (defm (curve closed? bs) c)
+          ; transform to device coordinates:
           (def Tp (bezs->dc-path (map T bs)))
-          ; (send dc set-pen (find-white-transparent-pen))
+          ; todo: use draw-bezs (takes care of t and pt)
+          ; see PostScript reference for fill-styles 'winding and 'odd-even
+          ; 'winding is the default
           (send dc draw-path Tp dx dy) ; todo add fill-style 'odd-even or 'winding
+          (send dc set-brush b)
+          (send dc set-pen p)))
+      w h))
+
+(define (curves->filled-pict cs #:draw-border? [draw-border? #f])
+  (def w (curve-pict-width))
+  (def h (curve-pict-height))
+  (def T (stdtrans (curve-pict-window) w h)) ; logical -> device coords
+  (dc (λ (dc dx dy)
+        (let ([b (send dc get-brush)] [p (send dc get-pen)])
+          (when (use-default-brush?) 
+            ; this overrides the brush in a new dc (it is white !?!)
+            (send dc set-brush black-solid-brush))
+          (unless draw-border?
+            (set-transparent-pen dc))
+          (def paths (new dc-path%))
+          (for ([c (in-list cs)])
+            (defm (curve closed? bs) c)
+            ; transform to device coordinates:
+            (def Tp (bezs->dc-path (map T bs)))
+            (send Tp close)
+            (send paths append Tp)
+            ; todo: use draw-bezs (takes care of t and pt)
+            ; see PostScript reference for fill-styles 'winding and 'odd-even
+            ; 'winding is the default
+             ; todo add fill-style 'odd-even or 'winding
+            )
+          (send dc draw-path paths dx dy 'winding)
           (send dc set-brush b)
           (send dc set-pen p)))
       w h))

@@ -195,10 +195,3 @@
 (define (plot-xy xs ys)
   (draw (axes)
         (penscale 4 (color "red" (draw* (map pt xs ys))))))
-
-
-
-
-
-
-

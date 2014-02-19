@@ -58,14 +58,14 @@
   (def n (curve-length c))
   (defm (and tip (pt tipx tipy)) (point-of c n))
   (def d   (direction-of c n))
-  (draw c (fill ((shifted tipx tipy) 
-                 (rotated (angle d)) 
-                 (shifted (- (ahlength)) 0) 
-                 (arrow-head #:length            l
-                             #:length-ration     r
-                             #:head-angle        α
-                             #:flank-indentation β
-                             #:tail-indentation  γ)))))
+  (draw c (filldraw ((shifted tipx tipy) 
+                     (rotated (angle d)) 
+                     (shifted (- (ahlength)) 0) 
+                     (arrow-head #:length            l
+                                 #:length-ration     r
+                                 #:head-angle        α
+                                 #:flank-indentation β
+                                 #:tail-indentation  γ)))))
 
 
 (def (draw-double-arrow c 
