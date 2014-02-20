@@ -149,9 +149,7 @@ The inspiration was Paul Gaborit's
     (defm (ring p c) r)
     (def c1 (circle p 1.9))
     (def c2 (circle p 1.5))
-    (def connector (curve (end-point c1) -- (start-point c2)))
-    (def circle-outline (curve-append c1 connector c2))
-    (draw (color c (fill circle-outline))
+    (draw (color c (fill c1 (curve-reverse c2)))
           (penwidth 4 (color "white" (draw c1 c2))))))
 
 (set-curve-pict-size 200 100)

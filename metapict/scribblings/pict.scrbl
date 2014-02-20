@@ -47,8 +47,9 @@ It is equivalent to @racket[(pencolor c (brushcolor c p))].}
 Draws the pict @racket[p] with a solid pen color @racket[c]. 
 The brush is not affected by @racket[pencolor].}
 @interaction[#:eval eval 
-                    (beside (pencolor "red" (brushcolor "orange" (filldraw unitcircle)))
-                            (pencolor "red" (filldraw unitcircle)))]
+           (penwidth 4
+             (beside (pencolor "red" (brushcolor "orange" (filldraw unitcircle)))
+                     (pencolor "red" (filldraw unitcircle))))]
 
 @defproc[(penwidth [w real?] [p pict?]) pict?]{
 Draws the pict @racket[p] with a pen of width @racket[w], a real number between 0 and 255.
@@ -125,9 +126,11 @@ Use the pen @racket[a-pen] as the current pen, then draw the pict @racket[p].}
 
 @defproc[(dashed [p pict?]) pict]{
 Use the pen style @racket['long-dash] to draw the pict @racket[p]}
+@interaction[#:eval eval (dashed (draw unitcircle))]
 
 @defproc[(dotted [p pict?]) pict]{
 Use the pen style @racket['dot] to draw the pict @racket[p]}
+@interaction[#:eval eval (dotted (draw unitcircle))]
 
 @subsection[#:tag "ref-pict-brush-adjusters"]{Brush Adjusters}
 
@@ -137,13 +140,37 @@ Use the brush @racket[b] to draw the pict @racket[p].}
   (def hatch (new brush% [color "black"] [style 'crossdiag-hatch]))
   (brush hatch (filldraw unitcircle))]
 
-
 @defproc[(brushcolor [c color?] [p pict?]) pict]{
 Adjust the brush to use the color @racket[b], then draw the pict @racket[p].}
+@interaction[#:eval eval
+  (brushcolor "red" (fill unitcircle))]
+
 @defproc[(brushstyle [s style?] [p pict?]) pict]{
-Adjust the brush to use the style @racket[s], then draw the pict @racket[p].}
+Adjust the brush to use the style @racket[s], then draw the pict @racket[p].
+The example below shows the available styles. The brush style 
+@racket[hilite] is black with a 30% alpha.}
+@interaction[#:eval eval 
+(define (styled-circle style) 
+  (draw (color "red" (filldraw unitsquare))
+        (brushcolor "black" (brushstyle style (fill unitcircle)))
+        (brushcolor "white" (draw (label-bot (~a style) (pt 0 0))))))
+(def styles1 '(solid transparent hilite ))
+(def styles2 '(bdiagonal-hatch fdiagonal-hatch crossdiag-hatch))
+(def styles3 '(horizontal-hatch vertical-hatch cross-hatch))
+(above (beside* (map styled-circle styles1))
+       (beside* (map styled-circle styles2))
+       (beside* (map styled-circle styles3)))]
+
 @defproc[(brushstipple [s style?] [p pict?]) pict]{
 Adjust the brush to use the stipple @racket[s], then draw the pict @racket[p].}
+@interaction[#:eval eval 
+(set-curve-pict-size 256 256)
+(define stipple (bitmap "texture.jpeg"))
+(with-window (window -1 1 -1 1)
+  (beside stipple (blank 64 64)
+          (brushstipple (pict->bitmap stipple) 
+                        (fill (circle 1)))))]
+
 @defproc[(brushgradient [TODO:TO-BE-DETERMINED gradient?]) pict]{
 Use a gradient as brush, then draw the pict @racket[p].}
 @defproc[(save-pict-as-png [filename path?] [p pict?]) (void)]{
