@@ -5,6 +5,7 @@
          draw*          ; draw a list of curves (or other drawables) on a new pict
          draw-dot       ; draw a dot; the size is determined by the current pen size
          fill           ; fill curves with brush using winding rule
+         eofill         ; fill curves with brush using even-odd rule
          filldraw       ; fill closed curve with fill-color, then draw curve ontop
          clipped        ; draw the part of a pict that is inside a closed curve
          label->pict    ; convert label to pict
@@ -35,7 +36,10 @@
   (apply draw (filter values cs)))
 
 (define (fill . cs)
-  (curves->filled-pict cs))
+  (curves->filled-pict cs #:rule 'winding))
+
+(define (eofill . cs)
+  (curves->filled-pict cs  #:rule 'odd-even))
 
 (define (filldraw c [fill-color #f] [draw-color #f])
   (cond
@@ -108,7 +112,9 @@
           (send dc set-pen p)))
       w h))
 
-(define (curves->filled-pict cs #:draw-border? [draw-border? #f])
+(define (curves->filled-pict cs 
+                             #:draw-border? [draw-border? #f]
+                             #:rule [rule 'winding])
   (def w (curve-pict-width))
   (def h (curve-pict-height))
   (def T (stdtrans (curve-pict-window) w h)) ; logical -> device coords
@@ -131,7 +137,7 @@
             ; 'winding is the default
              ; todo add fill-style 'odd-even or 'winding
             )
-          (send dc draw-path paths dx dy 'winding)
+          (send dc draw-path paths dx dy rule)
           (send dc set-brush b)
           (send dc set-pen p)))
       w h))
