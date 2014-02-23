@@ -1,16 +1,47 @@
 #lang racket
 ; TODO: NOT DONE
 ;
-; This module exports dc-path->curve, which converts a da-path oject
+; This module exports dc-path->curve, which converts a dc-path object
 ; to a curve (represented as a list of Bezier curves).
 ; This can be used to convert a text outline into a curve.
 
-(require racket/draw "def.rkt")
+(require racket/draw "def.rkt" "structs.rkt" "curve.rkt" "path.rkt")
 
 (define (dc-path->curve dcp)
   (def dc (new record-dc%))
   (send dc draw-path dcp)
-  (send dc get-recorded-datum))  ; TODO : Extract the Bezier curves from the draw-path element
+  (def datum (send dc get-recorded-datum))
+  (match (drawn-path datum)
+    [(list (list segments ...) x y fill-rule)
+     (flatten
+      (for/list ([ss segments])
+       (for/list ([s ss])
+         (recorded-segment->bezs s))))]))
+
+(define (drawn-path datum)
+  (for/or ([d datum])
+    (match d [(list 'draw-path p ...) p] [_ #f])))
+
+(define (recorded-segment->bezs segment)
+  (displayln segment) (newline)
+  (match segment
+    [(list* (cons x0 y0) more)
+     (define (to-curves curves bezs x0 y0 more)
+       ; (displayln x0) (displayln y0) (displayln more) (newline)
+       (match more
+         [(list* (vector x1 y1 x2 y2) (cons x3 y3) more)
+          (defv (p0 p1 p2 p3) (values (pt x0 y0) (pt x1 y1) (pt x2 y2) (pt x3 y3)))
+          (to-curves curves (cons (bez p0 p1 p2 p3) bezs) x3 y3 more)]
+         [(list* (cons x1 y1) more)
+          (to-curves (cons (curve (pt x0 y0) -- (pt x1 y1)) curves) '() x1 y1 more)]
+         [_ (reverse (if (empty? bezs)
+                         curves
+                         (cons (curve: #f (reverse bezs)) curves)))]))
+     (to-curves '() '() x0 y0 more)]
+    [_ (error 'recorded-segment->bezs "huh?")]))
+    
+    
+  
 
 (def dcp (new dc-path%))
 (def default-font (make-object font%))
@@ -18,10 +49,10 @@
 (dc-path->curve dcp)
 
 #;(draw-path
- (( ((1.1171875 . 11.6015625)
-     (1.1171875 . 2.9296875)
-     (5.96484375 . 2.9296875)
-     (5.96484375 . 3.8515625)
+ (( ((1.1171875 . 11.6015625)   ;    p1
+     (1.1171875 . 2.9296875)    ; -- p2
+     (5.96484375 . 2.9296875)   ; -- p3
+     (5.96484375 . 3.8515625)   ; ...
      (2.3515625 . 3.8515625)
      (2.3515625 . 6.7578125)
      (5.3828125 . 6.7578125)
@@ -30,7 +61,7 @@
      (2.3515625 . 11.6015625))
     
      ((9.64453125 . 11.75)
-      #(8.734375 11.75 8.0078125 11.4453125)
+      #(8.734375 11.75 8.0078125 11.4453125)        ; control points for bezier curve
       (7.46484375 . 10.84375)
       #(6.921875 10.23828125 6.6484375 9.4296875)
       (6.6484375 . 8.421875)
