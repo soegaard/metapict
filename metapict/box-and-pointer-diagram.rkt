@@ -3,7 +3,7 @@
 
 (ahlength (px 8))
 
-(defv (xmin xmax ymin ymax) (values -8 8 -8 8))
+(defv (xmin xmax ymin ymax) (values -10 10 -10 10))
 
 (def dr   (vec+ down right))
 (def dr/2 (vec* 1/2 dr))
@@ -26,7 +26,7 @@
 
 (define (depth v)
   (match v
-    [(cons a d) (max (+ 1 (depth a)) (+ 2 (depth d)))]
+    [(cons a d) (+ (depth a) (depth d))]
     [(list)     1]
     [_ 2]))
 
