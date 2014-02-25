@@ -21,43 +21,78 @@
   (def dm (pt+ ul right dr/2))
   (match d
     [(list) (draw-null-box (pt+ ul right))]
-    [_      (draw (draw-arrow (curve dm -- (pt+ dm (vec* 3/2 right))))
-                  (recur (pt+ ul (vec* 3 right)) d))]))
+    [_      (match (recur (pt+ ul (vec* 3 right)) d)
+              [(? pt? ul-d) (draw-arrow (curve dm right .. (pt+ ul-d (vec 1/2 0)) down))]
+              [d-pict       (draw (draw-arrow (curve dm -- (pt+ dm (vec* 3/2 right))))
+                                  d-pict)])]))
 
 (define (depth v)
-  (match v
-    [(cons a d) (+ (depth a) (depth d))]
-    [(list)     1]
-    [_ 2]))
+  (def seen-pairs (make-hasheq))
+  (define (seen! p) (hash-set! seen-pairs p #t))
+  (define (seen? p) (hash-ref  seen-pairs p #f))
+  (define (recur v)
+    (cond [(seen? v) 0]
+          [else      (seen! v)
+                     (match v
+                       [(cons a d) (+ (recur a) (recur d))]
+                       [(list)     1]
+                       [_ 2])]))
+  (recur v))
+
+(define (draw-car upper-left a depth-d recur)
+  (def ul upper-left)
+  (def am (pt+ ul dr/2))
+  (match a
+    [(list) (draw-null-box ul)]
+    [_ (match (recur (pt+ ul (vec* (+ depth-d 1) down)) a)
+         [(? pt? ul-a) 
+          (draw-arrow (curve (pt+ am (vec 0 -1/2)) down .. (pt+ ul-a (vec 0 -1/2)) right))]
+         [a-pict       
+          (draw (draw-arrow (curve am -- (pt+ am (vec* (+ depth-d 1/2) down))))
+                a-pict)])]))
 
 (define (draw-box-and-pointer-diagram v)
+  (def seen-pairs (make-hasheq))
+  (define (seen! p ul) (hash-set! seen-pairs p ul))
+  (define (seen? p) (hash-ref  seen-pairs p #f))
   (define (recur upper-left v)
     (def ul upper-left)
-    (match v
-      [(list)     
-       (draw-null-box ul)]
-      [(cons a d) 
-       (def am (pt+ ul       dr/2))
-       (def depth-d (depth d))
-       (draw (rectangle ul             (pt+ ul dr))
-             (rectangle (pt+ ul right) (pt+ ul right dr))
-             (draw-cdr ul d recur)
-             (draw-arrow (curve am -- (pt+ am (vec* (+ depth-d 1/2) down))))
-             (recur (pt+ ul (vec* (+ depth-d 1) down)) a)
-             )]
-      [_ (label-cnt (~a v) (pt+ ul dr/2))]))
-  (recur (pt xmin ymax) v))
+    (cond
+      [(seen? v) (hash-ref seen-pairs v)]
+      [else      
+       (seen! v ul)
+       (match v
+         [(list)       (draw-null-box ul)]
+         [(cons a d)   (def depth-d (depth d))
+                       (draw (rectangle ul             (pt+ ul dr))
+                             (rectangle (pt+ ul right) (pt+ ul right dr))
+                             (draw-cdr ul d recur)
+                             (draw-car ul a depth-d recur))]
+         [_            (label-cnt (~a v) (pt+ ul dr/2))])]))
+  (recur (pt+ (pt+ (pt xmin ymax) right) down) v))
 
-(def val (list "1" "2" (list "3" "4") 5))
+
                
 (set-curve-pict-size 400 400)
-(with-window (window xmin xmax ymin ymax)
-  (draw (color "gray" (grid (pt xmin ymin) (pt xmax ymax) (pt 0 0) 1))
-        (draw-box-and-pointer-diagram val)))
+(curve-pict-window (window xmin xmax ymin ymax))
+(def gray-grid (color "gray" (grid (pt xmin ymin) (pt xmax ymax) (pt 0 0) 1)))
 
-(set-curve-pict-size 400 400)
-  (with-window (window xmin xmax ymin ymax)
-  (draw (color "gray" (grid (pt xmin ymin) (pt xmax ymax) (pt 0 0) 1))
-        (draw-box-and-pointer-diagram (list 2 (list 1) (list 3 (list 4 5) 6) 7))))
-    
+(draw gray-grid
+      (draw-box-and-pointer-diagram
+       (list "1" "2" (list "3" "4") 5)))
+
+(draw gray-grid
+      (draw-box-and-pointer-diagram 
+       (list 2 (list 1) (list 3 (list 4 5) 6) 7)))
+
+(draw gray-grid
+      (draw-box-and-pointer-diagram 
+       (shared ([a (cons 1 a)]) a)))
+
+(draw-box-and-pointer-diagram 
+   (shared ([a (cons 1 a)]) (list a 'b a 'c a)))
+
+
+
+
     
