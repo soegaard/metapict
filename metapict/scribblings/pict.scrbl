@@ -150,16 +150,16 @@ Adjust the brush to use the style @racket[s], then draw the pict @racket[p].
 The example below shows the available styles. The brush style 
 @racket[hilite] is black with a 30% alpha.}
 @interaction[#:eval eval 
-(define (styled-circle style) 
-  (draw (color "red" (filldraw unitsquare))
-        (brushcolor "black" (brushstyle style (fill unitcircle)))
-        (brushcolor "white" (draw (label-bot (~a style) (pt 0 0))))))
-(def styles1 '(solid transparent hilite ))
-(def styles2 '(bdiagonal-hatch fdiagonal-hatch crossdiag-hatch))
-(def styles3 '(horizontal-hatch vertical-hatch cross-hatch))
-(above (beside* (map styled-circle styles1))
-       (beside* (map styled-circle styles2))
-       (beside* (map styled-circle styles3)))]
+    (define (styled-circle style) 
+      (draw (color "red" (filldraw (scaled 0.7 unitsquare)))
+            (brushcolor "black" (brushstyle style (fill (scaled 0.7 unitcircle))))
+            (brushcolor "white" (draw (label-bot (~a style) (pt 0 -0.7))))))
+    (def styles1 '(solid transparent hilite ))
+    (def styles2 '(bdiagonal-hatch fdiagonal-hatch crossdiag-hatch))
+    (def styles3 '(horizontal-hatch vertical-hatch cross-hatch))
+    (above (beside* (map styled-circle styles1))
+           (beside* (map styled-circle styles2))
+           (beside* (map styled-circle styles3)))]
 
 @defproc[(brushstipple [s style?] [p pict?]) pict]{
 Adjust the brush to use the stipple @racket[s], then draw the pict @racket[p].}
