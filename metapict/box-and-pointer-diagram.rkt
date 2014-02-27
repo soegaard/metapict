@@ -46,7 +46,9 @@
     [(list) (draw-null-box ul)]
     [_ (match (recur (pt+ ul (vec* (+ depth-d 1) down)) a)
          [(? pt? ul-a) 
-          (draw-arrow (curve (pt+ am (vec 0 -1/2)) down .. (pt+ ul-a (vec 0 -1/2)) right))]
+          (draw-arrow (curve am down ..
+                             (pt+ am (vec 0 -1/2)) down .. 
+                             (pt+ ul-a (vec 0 -1/2)) right))]
          [a-pict       
           (draw (draw-arrow (curve am -- (pt+ am (vec* (+ depth-d 1/2) down))))
                 a-pict)])]))
@@ -60,7 +62,8 @@
     (cond
       [(seen? v) (hash-ref seen-pairs v)]
       [else      
-       (seen! v ul)
+       (unless (or (number? v) (symbol? v)) ; shared numbers and symbols clutters the diagram
+         (seen! v ul))
        (match v
          [(list)       (draw-null-box ul)]
          [(cons a d)   (def depth-d (depth d))
@@ -91,6 +94,9 @@
 
 (draw-box-and-pointer-diagram 
    (shared ([a (cons 1 a)]) (list a 'b a 'c a)))
+
+(draw-box-and-pointer-diagram 
+   (shared ([a (cons 1 a)]) (list a 'b (list 1 "foo" a "foo") a 'c a)))
 
 
 
