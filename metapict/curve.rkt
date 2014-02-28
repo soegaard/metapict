@@ -39,6 +39,7 @@
  intersection-point-and-times ; compute a "first" intersection point and corresponding times
  intersection-point           ; compute "first" intersection point
  intersection-times           ; compute times for "first" intersection point
+ intersection-points          ; compute all intersection points
  subcurve                     ; curve between two times; reverse orientation if t2<t1
  cut-before        ; cut the part of c1 that lie before the "first" intersection point of c1 and c2
  cut-after         ; cut the part of c1 that lie after  the "last"  intersection point of c1 and c2
@@ -183,6 +184,18 @@
       (def ptu (bez-intersection-point-and-times b1 b2))
       (and ptu (let () (defm (list p t u) ptu)
                  (list p (+ l t) (+ k u)))))))
+
+(define (intersection-points c1 c2)
+  (def ε 0.000001)
+  (def n1 (curve-length c1))
+  (match (intersection-point-and-times c1 c2)
+    [#f '()]
+    [(list p t u) 
+     (def pre1  (subcurve c1 0 (- t ε)))
+     (def post1 (subcurve c1 (+ t ε) n1))
+     (append (intersection-points  pre1 c2)
+             (list p)
+             (intersection-points  post1 c2))]))
 
 (define (cut-before c1 c2)
   ; cuts the parts of c1 that lie before the "first" intersection point of c1 and c2
