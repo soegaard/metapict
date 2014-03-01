@@ -19,9 +19,9 @@
  dashed        ; use the pen style long-dash
  dotted        ; use the pen style dotted
  
- save-pict-as-png ; save the pict in a png-file
- margin           ; inset with arguments swapped 
- pict-size        ; returns width and height
+ save-pict     ; save pict to file, default is png, other formats include jpeg
+ margin        ; inset with arguments swapped 
+ pict-size     ; returns width and height
  )
 
 (require (for-syntax racket/base syntax/parse)
@@ -183,9 +183,13 @@
        [stipple        (send b get-stipple)]
        [transformation (send b get-transformation)]))
 
-(define (save-pict-as-png filename pict)
-  (send (pict->bitmap pict)
-        save-file filename 'png))
+(define (save-pict filename pict [type 'png])
+  (define (save-bitmap type)
+    (send (pict->bitmap pict) save-file filename type))
+  (case type
+    [(png jpeg xbm xpm bmp) (save-bitmap type)]
+    [(jpg)                  (save-bitmap 'jpeg)]
+    [else (error 'save-pict (~a "expected one of: png jpeg xbm xpm bmp, got: " type))]))
 
 (define (margin n p) (inset p n))
 
