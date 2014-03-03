@@ -1,30 +1,55 @@
 #lang racket/base
 (require metapict racket/format racket/match racket/list)
 
+;;; Tree Drawing
+
+;;; Goals 
+; 1. Implement the Reingold-Tilford algorithm for drawing trees.
+;        http://emr.cs.iit.edu/~reingold/tidier-drawings.pdf
+; 2. Implement the improvement of Buchheim et al
+;        http://dirk.jivas.de/papers/buchheim02improving.pdf
+; 3. Consider the variations in "Compact layout of Layered Trees"
+
+;;; Reference
+; Bill Mill's blog post "Drawing Presentable Trees"
+; http://billmill.org/pymag-trees/
+
 ;;; Principles
 ; 1. Edges should not cross
 ; 2. All nodes at the same depth should be drawn on a horizontal line. 
+;    (And for ordered trees the children should be in the correct order)
 ; 3. Tree should be drawn as a narrow as possible.
 
-(struct tree (elm children pos contour))
 
-;         A
-;     B     C
-;    D E   F G
-;      H   I
-(define a-tree '(a (b (d) (e (h)))
-                   (c (f (i)) (g))))
-
+; These functions are for testing purposes.
+; The final interface will receive accesors in order
+; to make the actual representation of the tree irrelevant.
 (define (leaf? t)    (not (pair? t)))
 (define (element t)  (car t))
 (define (children t) (cdr t))
 
+(module+ test
+  ;         A
+  ;     B     C
+  ;    D E   F G
+  ;      H   I
+  (define a-tree '(a (b (d) (e (h)))
+                     (c (f (i)) (g)))))
+
+
+; depth : tree -> natural
+;   returns the length of the longest path in the tree t
 (define (depth t)
   (if (leaf? t)
       1
       (+ 1 (for/fold ([m 0]) ([c (children t)])
              (max m (depth c))))))
 
+; minimum-width-tree-positions : tree ->  hash from trees to pt
+;   this naive strategy illustrates computes the placements
+;   of all subtrees and returns them as a hash table from
+;   subtrees to points (pt). The hash table is to be used
+;   as input for draw-tree.
 (define (minimum-width-tree-positions t)
   ; Minimum width tree, principle 1, 2, and, 3.  
   ; Track positions of subtrees (not elements).
@@ -59,8 +84,10 @@
   
   (def offsets (make-hash))
   (define (offset d)    (hash-ref! offsets d 0))
-  (define (offset! d o) (displayln (list 'offset! d o)) (hash-set! offsets d o))
+  (define (offset! d o) #;(displayln (list 'offset! d o)) (hash-set! offsets d o))
   
+  ; mod[t]=m means that all nodes in the tree t (except for the root)
+  ; should be shifted m to the right in the second traversal.
   (def mods (make-hasheq))
   (define (mod t)    (hash-ref! mods t 0))
   (define (mod! t m) (hash-set! mods t m))
@@ -69,7 +96,7 @@
   (define (recur t depth)
     (for ([c (children t)])
       (recur c (+ depth 1)))
-    (displayln (list t depth offsets mods))
+    ; (displayln (list t depth offsets mods))
     (def y depth)
     (def cs (if (leaf? t) '() (children t)))
     (def place (match cs
@@ -82,8 +109,9 @@
     (next! depth (+ (next depth) 2))
     (mod! t (offset depth)))
   
+  ;; Traversal 2
   (define (addmods t modsum)
-    (displayln (list modsum t))
+    ; (displayln (list modsum t))
     (posn! t (pt+ (posn t) (vec modsum 0)))
     (def newmodsum (+ modsum (mod t)))
     (for ([c (children t)])
@@ -91,14 +119,18 @@
   
   (recur t 0)
   (addmods t 0)
-  (displayln positions)
-  (displayln offsets)
-  (displayln mods)
+  ; (displayln (list 'positions positions))
+  ; (displayln (list 'offsets offsets))
+  ; (displayln (list 'mods mods))
   positions)
 
 ;;; Principle
 ; 5. A subtree should be drawn the same no matter where it is in the tree
+; TODO: Implement Reingold-Tilford. Use "threads" to describe the contour
+; of the tree.
 
+; TODO: Introduce the concept of nodes, and use them to render the
+; elements of the tree.
 (define (draw-tree tree positions)
   (define (posn t) (hash-ref positions t))
   (define (recur tree drawing)
@@ -110,12 +142,13 @@
                                                 (recur c d))))]))
   (recur tree (draw)))
 
-(set-curve-pict-size 300 300)
-(define (draw-example calculate-positions)
-  (with-window (window -1 10 -1 10)
-    (def t a-tree)
-    (draw (color "gray" (grid (pt 0 0) (pt 10 10) (pt 0 0) 1))
-          (draw-tree t (calculate-positions t)))))
-
-(draw-example minimum-width-tree-positions)
-(draw-example simple-centered-tree-positions)
+(module+ test
+  (set-curve-pict-size 300 300)
+  (define (draw-example calculate-positions)
+    (with-window (window -1 10 -1 10)
+      (def t a-tree)
+      (draw (color "gray" (grid (pt 0 0) (pt 10 10) (pt 0 0) 1))
+            (draw-tree t (calculate-positions t)))))
+  
+  (draw-example minimum-width-tree-positions)
+  (draw-example simple-centered-tree-positions))
