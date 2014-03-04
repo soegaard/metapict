@@ -11,6 +11,8 @@
 ; 3. Consider the variations in "Compact layout of Layered Trees"
 
 ;;; Reference
+; Wetherell and Shannon: Tidy Drawing of Trees
+; http://poincare.matf.bg.ac.rs/~tijana/geometrija/seminarski/tree_drawing.pdf
 ; Bill Mill's blog post "Drawing Presentable Trees"
 ; http://billmill.org/pymag-trees/
 
@@ -103,8 +105,8 @@
                  [(list)             (next depth)]
                  [(list c)           (pt-x (posn c))]
                  [(list c0 c ... cn) (/ (+ (pt-x (posn c0)) (pt-x (posn cn))) 2)]))
-    (offset! depth (max (offset depth) (- (next depth) place)))
-    (def x (+ place (if (empty? cs) 0 (offset depth))))
+    (offset! depth (max (offset depth) (+ (- (next depth) place) 1)))
+    (def x (if (leaf? t) place (+ place (offset depth))))
     (posn! t (pt x y))
     (next! depth (+ (next depth) 2))
     (mod! t (offset depth)))
