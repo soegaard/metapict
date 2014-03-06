@@ -1,5 +1,5 @@
 #lang racket
-(require metapict)
+(require metapict compatibility/mlist)
 
 ;;; Box and Pointer Diagrams
 
@@ -76,7 +76,18 @@
           (draw (draw-arrow (curve am -- (pt+ am (vec* (+ depth-d 1/2) down))))
                 a-pict)])]))
 
-(define (draw-box-and-pointer-diagram v)
+(define (draw-label ul v labels)
+  ; Labels is a hash table from that maps cons cells to be labelled into 
+  ; strings, picts or one-argument procedures mapping a point (upper-left corner
+  ; of the cons cell) into a label
+  (match (hash-ref labels v #f)
+    [(? string? l)    (label-top l ul)]
+    [(? pict? l)      (label-top l ul)]
+    [(? procedure? f) (f ul)]
+    [#f               (blank)]
+    [_ (error 'draw-label (~a "expect label, pict or string, got: " v))]))
+
+(define (draw-box-and-pointer-diagram v #:labels [labels (hash)])
   (def seen-pairs (make-hasheq))
   (define (seen! p ul) (hash-set! seen-pairs p ul))
   (define (seen? p) (hash-ref  seen-pairs p #f))
@@ -92,7 +103,8 @@
           (draw-null-box ul)]
          [(or (cons a d) (mcons a d))   
           (def depth-d (depth d))
-          (draw (rectangle ul             (pt+ ul dr))
+          (draw (draw-label ul v labels)
+                (rectangle ul             (pt+ ul dr))
                 (rectangle (pt+ ul right) (pt+ ul right dr))
                 (draw-cdr ul d recur)
                 (draw-car ul a depth-d recur))]
@@ -115,8 +127,9 @@
        (list 2 (list 1) (list 3 (list 4 5) 6) 7)))
 
 (draw gray-grid
-      (draw-box-and-pointer-diagram 
-       (shared ([a (cons 1 a)]) a)))
+      (shared ([a (cons 1 a)]) 
+        (draw-box-and-pointer-diagram 
+         a #:labels (hash a "a"))))
 
 (draw-box-and-pointer-diagram 
    (shared ([a (cons 1 a)]) (list a 'b a 'c a)))
@@ -130,6 +143,11 @@
   (set-mcar! (mcdr l) (mcdr (mcdr l)))
   (draw-box-and-pointer-diagram l))
 
-
+(margin 
+   5 (draw (shared ([a (cons 1 a)]
+                    [b (cons c a)]
+                    [c (list 2)])
+             (draw-box-and-pointer-diagram 
+              b #:labels (hash  a "a" b "b" c "c")))))
 
     
