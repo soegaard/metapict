@@ -38,7 +38,6 @@
   (define a-tree '(a (b (d) (e (h)))
                      (c (f (i)) (g)))))
 
-
 ; depth : tree -> natural
 ;   returns the length of the longest path in the tree t
 (define (depth t)
@@ -68,8 +67,12 @@
   positions)
 
 ;;; Principles 
+
 ; 4. A parent should be centered over its children
 (define (simple-centered-tree-positions t)
+  ; NOTE: This algorithm assumes t is a binary tree. 
+  ;       An extension is needed to support nary trees.
+  
   ; Principle 1, 2, and, 4.  (i.e. narrowness not a goal)
   ; Traversal 1: Use post order traversal (root x-pos is mean of childrens)
   ;              Use mods to store horizontal movements of subtrees.
@@ -102,10 +105,17 @@
     (def y depth)
     (def cs (if (leaf? t) '() (children t)))
     (def place (match cs
+                 ; a leaf gets the next available place
                  [(list)             (next depth)]
+                 ; parents with one child is right above
                  [(list c)           (pt-x (posn c))]
+                 ; parents with multiple childs are centered
                  [(list c0 c ... cn) (/ (+ (pt-x (posn c0)) (pt-x (posn cn))) 2)]))
-    (offset! depth (max (offset depth) (+ (- (next depth) place) 1)))
+    ; Leafs have been placed in available place, 
+    ; but a parent may need to be moved if a the place is taken already.
+    ; The offset table holds the total amount of padding needed on a row. 
+    ; (i.e. the offset is cumulative)
+    (offset! depth (max (offset depth) (+ (- (next depth) place) 1))) ; no op for leafs !
     (def x (if (leaf? t) place (+ place (offset depth))))
     (posn! t (pt x y))
     (next! depth (+ (next depth) 2))
@@ -154,3 +164,20 @@
   
   (draw-example minimum-width-tree-positions)
   (draw-example simple-centered-tree-positions))
+
+
+#;(let ()
+    (set-curve-pict-size 300 300)
+    (define (draw-example calculate-positions)
+      (with-window (window -1 10 -1 10)
+        (def t '(a (b (c (d) 
+                         (e) 
+                         (f)
+                         (i)
+                         (j)))
+                   (g)
+                   (h)))
+        (draw (color "gray" (grid (pt 0 0) (pt 10 10) (pt 0 0) 1))
+              (draw-tree t (calculate-positions t)))))
+    (beside (draw-example minimum-width-tree-positions)
+            (draw-example simple-centered-tree-positions)))
