@@ -61,22 +61,7 @@
              [0 (list -- B)]
              [_ (cons -- (cons B (loop (+ i q))))])))))
 
-
-#;(define (triangle #:inradius     [inradius #f] 
-                  #:circumradius [circumradius #f] 
-                  #:side         [side #f])
-  ; use one of these: r inradius, R circumradius, s side length
-  ; default: s=1
-  (define (s->R s) (* 1/2 (flcscpix (* 1/3 1.))))
-  (define (r->R s) (* 1/2 (flsecpix (* 1/3 1.))))
-  (def R (cond 
-           [side         (s->R side)]
-           [inradius     (r->R inradius)]
-           [circumradius circumradius] 
-           [else         (s->R 1)]))
-  (def rot (rotated (/ 2π 3)))
-  (def A (pt 0 R))
-  (curve A -- (rot A) -- (rot (rot A)) -- A))
-
-
-
+;;; Test
+#;(draw (circle 1/2)
+        (triangle #:inradius 1)
+        (square   #:inradius 1))
