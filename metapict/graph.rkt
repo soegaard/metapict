@@ -59,6 +59,27 @@
           (color "orange" (draw (graph g 0 4) (label-rt "g(x) = 1/20 e^x" (pt 4 (g 4)))))
           (color "blue"   (draw (graph h 0 4) (label-rt "h(x) = sin(x)"   (pt 4 (h 4))))))))
 
+(let ()
+  ; draw parabola and sine - fill the area between them
+  (defv (xmin xmax ymin ymax) (values -1.2 1.7 -1.2 1.7))
+  (def win (window xmin xmax ymin ymax))
+  (with-window win
+    (def (f x) (* x x))
+    (def (g x) (sin x))
+    (def F (graph f -1 1))
+    (def G (graph g -1 1))
+    (defm (list (pt x0 _) (pt x1 _)) (intersection-points F G))
+    (define (cut-between c x0 x1)
+      (def (vert x) (curve (pt x ymin) -- (pt x ymax)))
+      (cut-after (cut-before c (vert x0)) (vert x1)))
+    (draw (color "gray" (grid (pt -1.1 -1.1) (pt 1.1 1.1) #:step 0.2))
+          (draw-arrow (curve (pt -1.2 0) -- (pt 1.2 0))) (label-rt  "x" (pt 1.2 0))
+          (draw-arrow (curve (pt 0 -1.2) -- (pt 0 1.2))) (label-top "y" (pt 0 1.2))
+          (color "yellow" (fill (curve-append (cut-between F x0 x1) 
+                                              (cut-between G x0 x1))))
+          (color "red"    (draw F (label-rt "f(x) = x^2"    (pt 1.1 (f 1)))))
+          (color "orange" (draw G (label-rt "g(x) = sin(x)" (pt 1.1 (g 1))))))))
+
 
 
 
