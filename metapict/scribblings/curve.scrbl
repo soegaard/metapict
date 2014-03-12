@@ -15,9 +15,9 @@
 
 @defproc[(draw [d drawable?] ...) pict?]{
 Converts each argument to a pict. The picts are then superimposed with @racket[cc-superimpose].
-The bottom layer is from the first argument, and the top layer from the last argument.
+The first argument becomes the first layer and the last argument becomes the top layer.
 
-If there are no argument, then @racket[(draw)] returns a blank @racket[pict]
+If there are no arguments, then @racket[(draw)] returns a blank @racket[pict]
 of width @racket[(curve-pict-width)] and height @racket[(curve-pict-width)].
 
 The objects @racket[draw] can render to picts are: @racket[curve], @racket[pict], 
@@ -27,24 +27,46 @@ TODO: Expand the discussion: describe how each type is converted.
 }
 
 @defproc[(draw* [ds (listof drawable?)]) pict?]{
-Equivalent to @racket[(apply draw* ds)].}
+Equivalent to @racket[(apply draw ds)].}
 
 @defproc[(fill [c curve?]) pict?]{
 Draws the curve @racket[c] and fills it.
 
 In detail: A new @racket[pict] is created. Then the contents
-of the curve is filled with the current brush. 
+of the curve is filled with the current brush. The pen is
+not used.
 
 The default fill rules is TODO.
 
 The default brush is TODO.
 }
+@interaction[#:eval eval
+    (def triangle (curve (pt 0 0) -- (pt 1/2 1) -- (pt 1 0) -- cycle))
+    (beside (fill triangle)
+            (pencolor "red" (brushcolor "pink" (fill triangle))))]
+
 
 @defproc[(filldraw [c curve?]) pict?]{
 Draws, then fills, the curve @racket[c]. 
                              
 That is, @racket[filldraw] is equivalent to @racket[(draw (fill c))]. 
 }
+@interaction[#:eval eval
+    (def triangle (curve (pt 0 0) -- (pt 1/2 1) -- (pt 1 0) -- cycle))
+    (beside (filldraw triangle)
+            (pencolor "red" (brushcolor "pink" (filldraw triangle))))]
+@interaction[#:eval eval
+    (def triangle (curve (pt 0 0) -- (pt 1/2 1) -- (pt 1 0) -- cycle))
+    (pencolor "red" (brushcolor "pink" (filldraw triangle)))]
+@interaction[#:eval eval
+    (def triangle (curve (pt 0 0) -- (pt 1/2 1) -- (pt 1 0) -- cycle))
+    (draw (brushcolor "pink" (fill  triangle))
+          (pencolor "red" (draw triangle)))]
+@interaction[#:eval eval
+    (def triangle (curve (pt 0 0) -- (pt 1/2 1) -- (pt 1 0) -- cycle))
+    (draw (brushcolor "pink" (fill  triangle))
+          (color "red" (draw triangle)))]
+
 
 @defproc[(clipped [p pict?] [c curve?]) pict?]{
 Draws the parts of the pict @racket[p] inside the curve @racket[c].
