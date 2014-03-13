@@ -66,15 +66,41 @@ That is, @racket[filldraw] is equivalent to @racket[(draw (fill c))].
     (def triangle (curve (pt 0 0) -- (pt 1/2 1) -- (pt 1 0) -- cycle))
     (draw (brushcolor "pink" (fill  triangle))
           (color "red" (draw triangle)))]
-
+@interaction[#:eval eval
+    (def triangle (curve (pt 0 0) -- (pt 1/2 1) -- (pt 1 0) -- cycle))
+    (draw (color "red" (draw triangle))
+          (brushcolor "pink" (fill  triangle)))]
 
 @defproc[(clipped [p pict?] [c curve?]) pict?]{
 Draws the parts of the pict @racket[p] inside the curve @racket[c].
 }
 @interaction[#:eval eval
    (def c unitcircle)
-   (def p (grid (pt -1 -1) (pt 1 1) (pt 0 0) 1/3))
+   (def p (grid (pt -1 -1) (pt 1 1) #:step 1/3))
    (beside p (draw c) (clipped p c))]
+
+@defproc[(curve-length [c curve?]) integer?]{
+Returns the number of Bezier segments in the curve.}
+@interaction[#:eval eval
+  (curve-length (curve (pt 0 0) .. (pt 1 1) .. (pt 2 2)))]
+
+@defproc[(curve-reverse [c curve?]) integer?]{
+Returns a curve whose image is the same as the curve @racket[c],
+but the orientation is reverse. Denote the curve length by @racket[n]. 
+The curve @racket[r] returned, fullfills 
+@racket[(point-of r t)] = @racket[(point-of c (- n t))].}
+@interaction[#:eval eval
+  (def c (curve (pt 0 0) .. (pt 1 1) .. (pt 2 2)))
+  (def r (curve-reverse c))
+  (for/list ([t (in-range 0 2 1/2)])
+    (list (point-of r t) (point-of c (- 2 t))))]
+    
+    
+    
+    
+
+
+
 
 
 
