@@ -3,7 +3,7 @@
 
 (require "def.rkt" "pt-vec.rkt" "structs.rkt" "draw.rkt" "curve.rkt" "path.rkt")
 
-(define (grid lower-left upper-right reference step)
+(define (grid lower-left upper-right [reference origo] #:step [step 1])
   ; Draw a grid with the rectangle given by the lower-left 
   ; and upper-right corner. Reference is a point in
   ; which the horizontal and vertical lines intersection.
