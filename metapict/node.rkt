@@ -11,9 +11,13 @@
 ;  - normal           vector normal to the outline pointing outwards
 (struct node (pos curve anchor normal) #:transparent)
 
+(define current-node-size (make-parameter 0.2)) ; which unit?
+
 (define (circle-node . args)
   (match args
-    [(list x y r) (node (pt x y) r)]
+    [(list (? number? x) (? number? y))  (circle-node x y (current-node-size))]
+    [(list x y r)                        (circle-node (pt x y) r)]
+    [(list (? pt? p))                    (circle-node p (current-node-size))]
     [(list p r)   (define (anchor v) (pt+ p (vec* (/ r (norm v)) v)))
                   (define (normal v) (vec* (/ 1 (norm v)) v))
                   (node p (circle p r) anchor normal)]
@@ -29,7 +33,9 @@
 
 (define (square-node . args)
   (match args
-    [(list x y r) (node (pt x y) r)]
+    [(list (? number? x) (? number? y))  (square-node x y (current-node-size))]
+    [(list x y r)                        (square-node (pt x y) r)]
+    [(list (? pt? p))                    (square-node p (current-node-size))]
     [(list p r)   (define (normal v) 
                     (def α (angle v))
                     (cond [(<=    0 α  π/4) right]
@@ -51,7 +57,7 @@
   (draw (node-curve n)))
 
 (define (filled-node n)
-  (fill (node-curve n)))
+  (filldraw (node-curve n)))
 
 (define (draw-edge n1 n2 . args)
   (def p1 (node-pos n1))
@@ -60,6 +66,8 @@
   (match args
     [(list)
      (draw-edge n1 n2 v (vec* -1 v))]
+    [(list v1)
+     (draw-edge n1 n2 v1 (vec* -1 v))]
     [(list v1 v2)
      (cond 
        [(vec= v1 (vec* -1 v2))
@@ -69,7 +77,6 @@
        [else
         (draw-arrow 
          (curve (anchor n1 v1) (normal n1 v1) .. (vec* -1 (normal n2 v2)) (anchor n2 v2)))])]))
-    
 
 (require metapict)
   
@@ -87,5 +94,3 @@
                        (draw-edge n1 n3 west west)
                        (draw-edge n1 n4))
                  4))
-
-
