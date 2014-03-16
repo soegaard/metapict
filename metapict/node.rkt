@@ -1,25 +1,47 @@
 #lang racket/base
 
+; TODO: Support nodes in draw and fill in draw.rkt
+
 (require racket/generic racket/match)
 
 ; A NODE has 
-;  - a position pos   (the node is centered over pos)
-;  - a curve          (the curve determines the outline of the node)
-;  - anchor           (vec -> pt function, returns a point on the outline in the given direction)
-(struct node (pos curve anchor) #:transparent)
+;  - a position pos   the node is centered over pos
+;  - a curve          the curve determines the outline of the node
+;  - anchor           vec -> pt function, returns a point on the outline in the given direction
+;  - normal           vector normal to the outline pointing outwards
+(struct node (pos curve anchor normal) #:transparent)
 
 (define (circle-node . args)
   (match args
     [(list x y r) (node (pt x y) r)]
-    [(list p r)   (define (anchor v) (vec* (/ (norm v)) v))
-                  (node p (circle p r) anchor)]
+    [(list p r)   (define (anchor v) (pt+ p (vec* (/ r (norm v)) v)))
+                  (define (normal v) (vec* (/ 1 (norm v)) v))
+                  (node p (circle p r) anchor normal)]
     [_            (error 'circle-node "expected a position and a radius")]))
 
 (define (anchor n v)
   ((node-anchor n) v))
 
+(define (normal n v)
+  ((node-normal n) v))
+
 (define (draw-node n)
   (draw (node-curve n)))
+
+(define (filled-node n)
+  (fill (node-curve n)))
+
+(define (draw-edge n1 n2 . args)
+  (def p1 (node-pos n1))
+  (def p2 (node-pos n2))
+  (def v  (pt- p2 p1))
+  (match args
+    [(list)
+     (draw-edge n1 n2 v (vec* -1 v))]
+     
+     [(list v1 v2)
+     (draw-arrow (curve (anchor n1 v1) (normal n1 v1) .. (vec* -1 (normal n2 v2)) (anchor n2 v2)))]))
+    
 
 (require metapict)
   
@@ -28,13 +50,14 @@
 (define n3 (circle-node (pt 0 1) .1))
 (define n4 (circle-node (pt 1 1) .1))
 
-(draw (draw-node n1)
-      (draw-node n2)
-      (draw-node n3)
-      (draw-node n4))
-
-
-
-
+(margin 5
+          (scale (draw (draw-node n1)
+                       (draw-node n2)
+                       (draw-node n3)
+                       (filled-node n4)
+                       (draw-edge n1 n2)
+                       (draw-edge n1 n3 west west)
+                       (draw-edge n1 n4))
+                 4))
 
 
