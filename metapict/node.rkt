@@ -19,6 +19,28 @@
                   (node p (circle p r) anchor normal)]
     [_            (error 'circle-node "expected a position and a radius")]))
 
+(define (square p r)
+  (def -r (- r))
+  (shifted p
+           (curve (pt -r -r) --
+                  (pt  r -r) --
+                  (pt  r  r) --
+                  (pt -r  r) -- cycle)))
+
+(define (square-node . args)
+  (match args
+    [(list x y r) (node (pt x y) r)]
+    [(list p r)   (define (normal v) 
+                    (def α (angle v))
+                    (cond [(<=    0 α  π/4) right]
+                          [(<=  π/4 α 3π/4) up]
+                          [(<= 3π/4 α 5π/4) left]
+                          [(<= 5π/4 α 7π/4) down]
+                          [else             right]))
+                  (define (anchor v) (pt+ p (vec* r (normal v))))
+                  (node p (square p r) anchor normal)]
+    [_            (error square-node "expected a position and a side length")]))
+
 (define (anchor n v)
   ((node-anchor n) v))
 
@@ -38,16 +60,22 @@
   (match args
     [(list)
      (draw-edge n1 n2 v (vec* -1 v))]
-     
-     [(list v1 v2)
-     (draw-arrow (curve (anchor n1 v1) (normal n1 v1) .. (vec* -1 (normal n2 v2)) (anchor n2 v2)))]))
+    [(list v1 v2)
+     (cond 
+       [(vec= v1 (vec* -1 v2))
+        (def m (pt+ p1 (vec* 0.5 v)))
+        (draw-arrow 
+         (curve (anchor n1 v1) (normal n1 v1) .. m .. (vec* -1 (normal n2 v2)) (anchor n2 v2)))]
+       [else
+        (draw-arrow 
+         (curve (anchor n1 v1) (normal n1 v1) .. (vec* -1 (normal n2 v2)) (anchor n2 v2)))])]))
     
 
 (require metapict)
   
 (define n1 (circle-node (pt 0 0) .1))
 (define n2 (circle-node (pt 1 0) .1))
-(define n3 (circle-node (pt 0 1) .1))
+(define n3 (square-node (pt 0 1) .1))
 (define n4 (circle-node (pt 1 1) .1))
 
 (margin 5
