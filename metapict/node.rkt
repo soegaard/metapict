@@ -1,5 +1,21 @@
 #lang racket/base
-(require "structs.rkt")
+(require "structs.rkt" racket/match)
+
+(provide circle-node          ; create node shaped as a circle
+         square-node          ; create node shaped as a square
+         draw-node            ; draw node
+         draw-edge            ; draw edge from one to node to another
+         anchor               ; find anchor i.e. point on the outline
+         normal               ; find normal vector to the outline 
+         current-node-size)   ; default size for circles and half-diameter for squares
+
+;; Defaults
+
+; current-node-side determines the radius in circles and
+; the half-diameter for squares when no size is given.
+(define current-node-size (make-parameter 0.2)) ; which unit?
+
+
 ; TODO: Support nodes in draw and fill in draw.rkt
 
 ; TODO: Improve anchors and normals for square nodes.
@@ -14,10 +30,7 @@
                        (label-bot "1" (anchor n down)))
                  4)))
 
-(require racket/generic racket/match)
 
-
-(define current-node-size (make-parameter 0.2)) ; which unit?
 
 (define (circle-node . args)
   (match args
