@@ -108,3 +108,13 @@
 (struct llft placement()) ; lower left
 (struct lrt  placement()) ; lower right
 (struct cnt  placement()) ; center
+
+;;; Nodes
+; A NODE has 
+;  - a position pos   the node is centered over pos
+;  - a curve          the curve determines the outline of the node
+;  - anchor           vec -> pt function, returns a point on the outline in the given direction
+;  - normal           vector normal to the outline pointing outwards
+(struct node (pos curve anchor normal) #:transparent)
+(provide-structs node)
+

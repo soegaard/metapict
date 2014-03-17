@@ -1,15 +1,21 @@
 #lang racket/base
-
+(require "structs.rkt")
 ; TODO: Support nodes in draw and fill in draw.rkt
+
+; TODO: Improve anchors and normals for square nodes.
+
+#;(with-window (window -3 3 -3 3)
+    (def n (circle-node (pt 0 0)))
+    (def m (square-node (pt 1 1)))
+    (margin 5
+          (scale (draw (draw-node n)
+                       (filled-node m)
+                       (draw-edge n m)
+                       (label-bot "1" (anchor n down)))
+                 4)))
 
 (require racket/generic racket/match)
 
-; A NODE has 
-;  - a position pos   the node is centered over pos
-;  - a curve          the curve determines the outline of the node
-;  - anchor           vec -> pt function, returns a point on the outline in the given direction
-;  - normal           vector normal to the outline pointing outwards
-(struct node (pos curve anchor normal) #:transparent)
 
 (define current-node-size (make-parameter 0.2)) ; which unit?
 
