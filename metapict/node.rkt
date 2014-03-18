@@ -84,16 +84,20 @@
   (def p2 (node-pos n2))
   (def v  (pt- p2 p1))
   (match args
-    [(list)    (draw-edge n1 n2 v (vec* -1 v))]
-    [(list v1) (draw-edge n1 n2 v1 (vec* -1 v))]
-    [(list v1 v2)
+    [(list)       (draw-edge n1 n2 v  (vec* -1 v))]
+    [(list a1)    (draw-edge n1 n2 a1 (vec* -1 a1))]
+    [(list a1 a2)
+     ; (def v (pt- (anchor n2 a2) (anchor n1 a1)))
+     (draw-edge n1 n2 a1 a2 (normal n1 a1) (vec* -1 (normal n2 a2)))]
+    [(list a1 a2 v1 v2)     
      (draw-arrow
       (cond 
-        [(vec= v1 (vec* -1 v2))        ; the special case 
-         (def m (pt+ p1 (vec* 0.5 v))) ; "mid" point to achieve a prettier path
-         (curve (anchor n1 v1) (normal n1 v1) .. m .. (vec* -1 (normal n2 v2)) (anchor n2 v2))]
+        #;[#t (curve (anchor n1 a1) v1 .. v2 (anchor n2 a2))]
+        #;[(vec= v1 (vec* -1 v2))        ; the special case 
+           (def m (pt+ p1 (vec* 0.5 v))) ; "mid" point to achieve a prettier path
+           (curve (anchor n1 a1) (normal n1 v1) .. m .. (vec* -1 (normal n2 v2)) (anchor n2 a2))]
         [else                          ; the general case
-         (curve (anchor n1 v1) (normal n1 v1) .. (vec* -1 (normal n2 v2)) (anchor n2 v2))]))]))
+         (curve (anchor n1 a1) v1 .. v2 (anchor n2 a2))]))]))
 
 
 ;;; TESTING
