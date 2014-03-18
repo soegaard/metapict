@@ -155,16 +155,41 @@
   (recur tree (draw)))
 
 (module+ test
-  (set-curve-pict-size 300 300)
+  (set-curve-pict-size 400 400)
   (define (draw-example calculate-positions)
     (with-window (window -1 10 -1 10)
       (def t a-tree)
-      (draw (color "gray" (grid (pt 0 0) (pt 10 10) (pt 0 0) 1))
-            (draw-tree t (calculate-positions t)))))
-  
+      (def positions (calculate-positions t))
+      (draw (color "gray" (grid (pt 0 0) (pt 10 10) (pt 0 0) #:step 1))
+            (draw-tree t positions))))
+
   (draw-example minimum-width-tree-positions)
   (draw-example simple-centered-tree-positions))
 
+
+(require "node.rkt")
+
+(define (draw-tree/nodes tree positions)
+  (define (posn t) (hash-ref positions t))
+  (def w (* 3 (current-node-size)))
+  (define (pos->node-pos p)
+    (defm (pt x y) p)
+    (pt (* w x) (* (+ w 1) y)))
+  (define (recur tree drawing)
+    (def p (pos->node-pos (posn tree)))
+    (def n (square-node p))
+    (def d (draw drawing (draw-node n) (label-cnt (~a (element tree)) p)))
+    (cond [(leaf? tree) d]
+          [else         (draw d (for/draw ([c (children tree)])
+                                          (def nc (square-node (pos->node-pos (posn c))))
+                                          (draw (draw-edge n nc up down)
+                                                (recur c d))))]))
+  (recur tree (draw)))
+
+(set-curve-pict-size 300 300)
+(with-window (window 0 6 -1 5)
+  (define a-tree '(a (b (d) (e (h))) (c (f (i)) (g))))
+  (draw-tree/nodes a-tree (simple-centered-tree-positions a-tree)))
 
 #;(let ()
     (set-curve-pict-size 300 300)

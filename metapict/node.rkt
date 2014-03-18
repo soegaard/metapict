@@ -9,15 +9,23 @@
          normal               ; find normal vector to the outline 
          current-node-size)   ; default size for circles and half-diameter for squares
 
-;; Defaults
+; A NODE has 
+;  - a position pos   the node is centered over pos
+;  - a curve          the curve determines the outline of the node
+;  - anchor           vec -> pt function, returns a point on the outline in the given direction
+;  - normal           vector normal to the outline pointing outwards
+; (struct node (pos curve anchor normal) #:transparent)
 
+(define (anchor n v) ((node-anchor n) v))
+(define (normal n v) ((node-normal n) v))
+
+;; Defaults
 ; current-node-side determines the radius in circles and
 ; the half-diameter for squares when no size is given.
 (define current-node-size (make-parameter 0.2)) ; which unit?
 
 
 ; TODO: Support nodes in draw and fill in draw.rkt
-
 ; TODO: Improve anchors and normals for square nodes.
 
 #;(with-window (window -3 3 -3 3)
@@ -29,8 +37,6 @@
                        (draw-edge n m)
                        (label-bot "1" (anchor n down)))
                  4)))
-
-
 
 (define (circle-node . args)
   (match args
@@ -66,11 +72,6 @@
                   (node p (square p r) anchor normal)]
     [_            (error square-node "expected a position and a side length")]))
 
-(define (anchor n v)
-  ((node-anchor n) v))
-
-(define (normal n v)
-  ((node-normal n) v))
 
 (define (draw-node n)
   (draw (node-curve n)))
@@ -83,19 +84,19 @@
   (def p2 (node-pos n2))
   (def v  (pt- p2 p1))
   (match args
-    [(list)
-     (draw-edge n1 n2 v (vec* -1 v))]
-    [(list v1)
-     (draw-edge n1 n2 v1 (vec* -1 v))]
+    [(list)    (draw-edge n1 n2 v (vec* -1 v))]
+    [(list v1) (draw-edge n1 n2 v1 (vec* -1 v))]
     [(list v1 v2)
-     (cond 
-       [(vec= v1 (vec* -1 v2))
-        (def m (pt+ p1 (vec* 0.5 v)))
-        (draw-arrow 
-         (curve (anchor n1 v1) (normal n1 v1) .. m .. (vec* -1 (normal n2 v2)) (anchor n2 v2)))]
-       [else
-        (draw-arrow 
-         (curve (anchor n1 v1) (normal n1 v1) .. (vec* -1 (normal n2 v2)) (anchor n2 v2)))])]))
+     (draw-arrow
+      (cond 
+        [(vec= v1 (vec* -1 v2))        ; the special case 
+         (def m (pt+ p1 (vec* 0.5 v))) ; "mid" point to achieve a prettier path
+         (curve (anchor n1 v1) (normal n1 v1) .. m .. (vec* -1 (normal n2 v2)) (anchor n2 v2))]
+        [else                          ; the general case
+         (curve (anchor n1 v1) (normal n1 v1) .. (vec* -1 (normal n2 v2)) (anchor n2 v2))]))]))
+
+
+;;; TESTING
 
 (require metapict)
   
