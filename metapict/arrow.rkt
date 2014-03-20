@@ -9,7 +9,10 @@
  draw-arrow          ; draw curve then draw arrow head at the end
  draw-double-arrow   ; draw curve then draw arrow heads at the start and end
  ; parameters
- ahlength ahangle ahflankangle ahtailcurvature)
+ ahlength            ; arrow head length
+ ahangle             ; arrow head angle
+ ahflankangle        ; arrow flank angle
+ ahtailcurvature)    ; arrow tail curvature
 
 (require "def.rkt" "device.rkt" "curve.rkt" "trans.rkt" "shapes.rkt" "draw.rkt"
          "path.rkt" "trig.rkt" "pt-vec.rkt" "structs.rkt" "angles.rkt")
