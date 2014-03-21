@@ -1,5 +1,7 @@
 #lang racket/base
-(require "structs.rkt" racket/match)
+(require "angles.rkt" "arrow.rkt" "curve.rkt" "def.rkt" "draw.rkt" "path.rkt" 
+         "pt-vec.rkt" "shapes.rkt" "structs.rkt" "trans.rkt"
+         racket/match)
 
 (provide circle-node          ; create node shaped as a circle
          square-node          ; create node shaped as a square
@@ -82,14 +84,15 @@
 (define (draw-edge n1 n2 . args)
   (def p1 (node-pos n1))
   (def p2 (node-pos n2))
-  (def v  (pt- p2 p1))
+  (def v  (pt- p2 p1))  
   (match args
     [(list)       (draw-edge n1 n2 v  (vec* -1 v))]
     [(list a1)    (draw-edge n1 n2 a1 (vec* -1 a1))]
     [(list a1 a2)
      ; (def v (pt- (anchor n2 a2) (anchor n1 a1)))
      (draw-edge n1 n2 a1 a2 (normal n1 a1) (vec* -1 (normal n2 a2)))]
-    [(list a1 a2 v1 v2)     
+    [(list a1 a2 v1 v2)
+     (displayln (list 'draw-edge a1 v1 a2 v2))
      (draw-arrow
       (cond 
         #;[#t (curve (anchor n1 a1) v1 .. v2 (anchor n2 a2))]
@@ -102,7 +105,13 @@
 
 ;;; TESTING
 
+#;(let ()
 (require metapict)
+
+(ahangle         45)       ; default head angle 45 degrees
+(ahflankangle    0)        ; default "curvature" of flank (in degrees)
+(ahtailcurvature 0)        ; default "curvature" of the back  todo!
+(ahratio         1)
   
 (define n1 (circle-node (pt 0 0) .1))
 (define n2 (circle-node (pt 1 0) .1))
@@ -117,4 +126,4 @@
                        (draw-edge n1 n2)
                        (draw-edge n1 n3 west west)
                        (draw-edge n1 n4))
-                 4))
+                 4)))
