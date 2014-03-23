@@ -105,8 +105,8 @@
   (check-equal? (len (vec 1 1)) (sqrt 2))
   (check-equal? (rot90 east) north)
   (check-equal? (rot90 north) west)
-  (check-equal? (det (vec 1 0) (vec 2 0)) 0)
-  (check-equal? (det (vec 1 0) (vec 0 2)) 2)
+  (check-equal? (vec-det (vec 1 0) (vec 2 0)) 0)
+  (check-equal? (vec-det (vec 1 0) (vec 0 2)) 2)
   
   )
 (module+ test
