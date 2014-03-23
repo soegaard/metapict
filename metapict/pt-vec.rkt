@@ -80,7 +80,7 @@
   (defm (or (vec x y) (pt x y)) v) 
   (def v^^^ (vec  y (- x)))
   (if (vec? v) v^^^ (pt+ (pt 0 0) v^^^)))
-(define (det v w)
+(define (vec-det v w)
   (defm (vec a b) v)
   (defm (vec c d) w)
   (- (* a d) (* b c)))
@@ -88,7 +88,7 @@
   (define (col? r)
     (def pq (pt- q p))
     (def pr (pt- r p))
-    (< (abs (det pq pr)) ε))
+    (< (abs (vec-det pq pr)) ε))
   (for/and ([r (in-list (cons r rs))])
     (col? r)))
 
