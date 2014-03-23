@@ -84,10 +84,13 @@
   (defm (vec a b) v)
   (defm (vec c d) w)
   (- (* a d) (* b c)))
-(define (collinear? p q r)
-  (def pq (pt- q p))
-  (def pr (pt- r p))
-  (< (abs (det pq pr)) 0.000001))
+(define (collinear? #:epsilon [ε 0.000001] p q r . rs)
+  (define (col? r)
+    (def pq (pt- q p))
+    (def pr (pt- r p))
+    (< (abs (det pq pr)) ε))
+  (for/and ([r (in-list (cons r rs))])
+    (col? r)))
 
 (module+ test
   (check-equal? (vec+ (vec 1 2) (vec 3 4)) (vec 4 6))
