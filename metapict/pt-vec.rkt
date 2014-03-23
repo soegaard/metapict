@@ -80,6 +80,14 @@
   (defm (or (vec x y) (pt x y)) v) 
   (def v^^^ (vec  y (- x)))
   (if (vec? v) v^^^ (pt+ (pt 0 0) v^^^)))
+(define (det v w)
+  (defm (vec a b) v)
+  (defm (vec c d) w)
+  (- (* a d) (* b c)))
+(define (collinear? p q r)
+  (def pq (pt- q p))
+  (def pr (pt- r p))
+  (< (abs (det pq pr)) 0.000001))
 
 (module+ test
   (check-equal? (vec+ (vec 1 2) (vec 3 4)) (vec 4 6))
@@ -93,7 +101,11 @@
   (check-equal? (len2 (vec 1 1)) 2)
   (check-equal? (len (vec 1 1)) (sqrt 2))
   (check-equal? (rot90 east) north)
-  (check-equal? (rot90 north) west))
+  (check-equal? (rot90 north) west)
+  (check-equal? (det (vec 1 0) (vec 2 0)) 0)
+  (check-equal? (det (vec 1 0) (vec 0 2)) 2)
+  
+  )
 (module+ test
   (check-true (vec~ (dir   0) east))
   (check-true (vec~ (dir  90) north))
