@@ -1,13 +1,18 @@
 #lang racket
+(require racket/draw)
 ;;; 
 ;;; This draws simple graphs. 
 ;;; Use the plot library for more advanced graphs.
 ;;;
 
+
+
 (provide graph ; draw the graph of a function 
          )
 
-(require metapict) 
+(require metapict "examples/pdf-experiment.rkt") 
+
+(define graph-join ..)
 
 (define (graph f [xmin #f] [xmax #f] #:samples [n 50] #:diff [df/dx #f])
   (defm (window Xmin Xmax Ymin Ymax) (curve-pict-window))
@@ -26,9 +31,39 @@
   (def x0 xmin)
   (def (xi i) (+ x0 (* i Δx)))
   (curve*
-   (append (list (φ x0) (τ x0))
+   (append (if (equal? graph-join --)
+               (list (φ x0))
+               (list (φ x0) (τ x0)))
            (for/list ([x (in-range (xi 1) (xi (+ n 1)) Δx)])
-             (list .. (φ x) (τ x))))))
+             (if (equal? graph-join --)
+                 (list -- (φ x))
+                 (list .. (φ x) (τ x)))))))
+
+; this version builds Bezier curves directly
+#;(define (graph f [xmin #f] [xmax #f] #:samples [n 50] #:diff [df/dx #f])
+  (defm (window Xmin Xmax Ymin Ymax) (curve-pict-window))
+  (unless xmin  (set! xmin Xmin))
+  (unless xmax  (set! xmax Xmax))
+  (def ε 1.0e-10)
+  (define (ndiff f x)
+    (def x-ε (max xmin (- x ε)))
+    (def x+ε (max xmin (+ x ε)))
+    (/ (- (f x+ε) (f x-ε))
+       (- x+ε x-ε)))
+  (unless df/dx (set! df/dx (λ (x) (ndiff f x))))
+  (def (φ x) (pt x (f x)))      ; x -> (x,f(x))
+  (def (τ x) (vec 1 (df/dx x))) ; vector along tangent
+  (def Δx (/ (- xmax xmin) n))
+  (def x0 xmin)
+  (def (xi i) (+ x0 (* i Δx)))
+  (curve: #f
+          (for/list ([i (in-range 0 (+ n 1))])
+            (def x0 (xi i))
+            (def x3 (xi (+ i 1)))
+            (bez (φ x0) 
+                 (pt+ (φ x0) (vec* (/ Δx  3) (τ x0)))
+                 (pt+ (φ x3) (vec* (/ Δx -3) (τ x3)))
+                 (φ x3)))))
 
 (require metapict/grid)
 (set-curve-pict-size 300 300)
@@ -49,6 +84,7 @@
   (defv (xmin xmax ymin ymax) (values -0.5 6 -1.5 5))
   (def win (window xmin xmax ymin ymax))
   (with-window win
+    (ahlength  (px 8))
     (def (f x) x)
     (def (g x) (* 1/20 (exp x)))
     (def (h x) (sin x))
@@ -64,6 +100,7 @@
   (defv (xmin xmax ymin ymax) (values -1.2 1.7 -1.2 1.7))
   (def win (window xmin xmax ymin ymax))
   (with-window win
+    (ahlength  (px 8))
     (def (f x) (* x x))
     (def (g x) (sin x))
     (def F (graph f -1 1))
@@ -80,7 +117,23 @@
           (color "red"    (draw F (label-rt "f(x) = x^2"    (pt 1.1 (f 1)))))
           (color "orange" (draw G (label-rt "g(x) = sin(x)" (pt 1.1 (g 1))))))))
 
-
-
-
-
+(let ()
+  (def l 3) (def -l (- l))
+  (def l+ (+  l 0.1)) (def l++ (+  l 0.2))
+  (def l- (- -l 0.1)) (def l-- (- -l 0.2))
+  (defv (xmin xmax ymin ymax) (values l-- l++ l-- l++))
+  ; (defv (xmin xmax ymin ymax) (values 0 0.05 0 0.05))
+  (def win (window xmin xmax ymin ymax))
+  (with-window win
+    (ahlength  (px 8))
+    (def x-axis (draw (draw-arrow (curve (pt l-- 0) -- (pt l++ 0))) (label-rt  "x" (pt l++ 0))))
+    (def y-axis (draw (draw-arrow (curve (pt 0 l--) -- (pt 0 l++))) (label-top "y" (pt 0 l++))))
+    (def the-grid (color "gray" (grid (pt l- l-) (pt l+ l+) #:step 1)))
+    (def (f x) (* x x))
+    (def F (graph f -l l ; #:diff (λ(x) (* 2 x))
+                  ))
+    (def p (draw the-grid x-axis y-axis 
+                 (color "red" (draw F (label-rt "f(x) = x^2" (pt l+ (f l)))))))
+    (save-pict-as-pdf p "parabola.pdf")
+    (displayln "Saved pict as parabola.pdf")
+    p))
