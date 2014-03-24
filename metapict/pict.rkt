@@ -22,6 +22,8 @@
  save-pict     ; save pict to file, default is png, other formats include jpeg
  margin        ; inset with arguments swapped 
  pict-size     ; returns width and height
+ 
+ smoothed      ; use smoothing-mode 'smoothed
  )
 
 (require (for-syntax racket/base syntax/parse)
@@ -182,6 +184,29 @@
        [style          (send b get-style)]
        [stipple        (send b get-stipple)]
        [transformation (send b get-transformation)]))
+
+;; smoothed : pict -> pict
+;;  Produces a pict like `p`, but that always draws in 'smoothed mode
+(define (smoothed p)
+  ; (define draw-p (make-pict-drawer p))
+  (define p2
+    (dc (lambda (dc x y)
+          (define s (send dc get-smoothing))
+          (send dc set-smoothing 'smoothed)
+          ; (draw-p dc x y)
+          (draw-pict p dc x y)
+          (send dc set-smoothing s))
+        (pict-width p)
+        (pict-height p)))
+  (make-pict (pict-draw p2)
+             (pict-width p)
+             (pict-height p)
+             (pict-ascent p)
+             (pict-descent p)
+             (list (make-child p 0 0 1 1 0 0))
+             #f
+             (pict-last p)))
+
 
 (define (save-pict filename pict [type 'png])
   (define (save-bitmap type)
