@@ -12,18 +12,19 @@
   (send dc draw-path dcp)
   (def datum (send dc get-recorded-datum))
   (match (drawn-path datum)
-    [(list (list segments ...) x y fill-rule)
-     (flatten
-      (for/list ([ss segments])
-       (for/list ([s ss])
-         (recorded-segment->bezs s))))]))
+    [(list segmentss x y fill-rule)
+     (for/list ([segments segmentss])
+       (displayln "X")
+       (for/list ([s segments])
+         (display ".")
+         (recorded-segment->bezs s)))]))
 
 (define (drawn-path datum)
   (for/or ([d datum])
     (match d [(list 'draw-path p ...) p] [_ #f])))
 
 (define (recorded-segment->bezs segment)
-  (displayln segment) (newline)
+  ; (displayln segment) (newline)
   (match segment
     [(list* (cons x0 y0) more)
      (define (to-curves curves bezs x0 y0 more)
@@ -34,10 +35,9 @@
           (to-curves curves (cons (bez p0 p1 p2 p3) bezs) x3 y3 more)]
          [(list* (cons x1 y1) more)
           (to-curves (cons (curve (pt x0 y0) -- (pt x1 y1)) curves) '() x1 y1 more)]
-         [_ (reverse (if (empty? bezs)
-                         curves
-                         (cons (curve: #f (reverse bezs)) curves)))]))
-     (to-curves '() '() x0 y0 more)]
+         [_ (reverse (cond [(empty? bezs) curves]
+                           [else (cons (curve: #f (reverse bezs)) curves)]))]))
+     (vector (to-curves '() '() x0 y0 more))]
     [_ (error 'recorded-segment->bezs "huh?")]))
     
     
@@ -46,7 +46,7 @@
 (def dcp (new dc-path%))
 (def default-font (make-object font%))
 (send dcp text-outline default-font "Foo" 0 0 #f)
-(dc-path->curve dcp)
+; (dc-path->curve dcp)
 
 #;(draw-path
  (( ((1.1171875 . 11.6015625)   ;    p1
@@ -118,3 +118,10 @@
      
      ((13.0 . 11.6015625))
      )))
+
+(require metapict)
+(set-curve-pict-size 300 300)
+(with-window (window -10 30 30 -10)
+  (dc-path->curve dcp)
+  #;(draw (draw* (map fill (map (rotatedd 10) (dc-path->curve dcp))))
+          (color "red" (draw* (map (rotatedd 10) (dc-path->curve dcp))))))

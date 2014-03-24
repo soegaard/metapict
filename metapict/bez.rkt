@@ -164,15 +164,23 @@
 ;   Convert the list of "consecutive" Bezier curves into a dc-path.
 ;   If the transform is present, then use it on the curve first.
 (define (bezs->dc-path bs [t #f]) ; assumes the bez ends and start points match
+  (define (line? b)
+    (defm (bez p q r s) b)
+    (collinear? p q r s))
   (def (T b) (if t (t b) b)) ; transform points if t is present
   (def p (new dc-path%))
   (defm (list b0 b. ...) bs) 
+  (defm (bez a b c d) b0)
   (defm (bez (pt x0 y0) (pt x1 y1) (pt x2 y2) (pt x3 y3)) (T b0))
   (send p move-to x0 y0)
-  (send p curve-to x1 y1 x2 y2 x3 y3)
+  (if #f #;(line? b0)
+      (send p line-to x3 y3)
+      (send p curve-to x1 y1 x2 y2 x3 y3))
   (for ([b b.])
     (defm (bez (pt x0 y0) (pt x1 y1) (pt x2 y2) (pt x3 y3)) (T b))
-    (send p curve-to x1 y1 x2 y2 x3 y3))
+    (if #f #;(line? b)
+        (send p line-to x3 y3)
+        (send p curve-to x1 y1 x2 y2 x3 y3)))
   p)
 
 ; draw-bezs : dc% list-of-bez [#:transformation trans] [#:pen-transformation trans] -> 

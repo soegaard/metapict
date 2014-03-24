@@ -53,7 +53,7 @@
     [(list (and (pt x y) C) (? pt? P))           (def r (dist C P))
                                                  (shifted x y (scaled r unitcircle))]
     [_ (error 'circle (~a "got: " args))]))
-    
+
 
 (define (ellipse-curve center-x center-y radius-x radius-y)
   (shifted center-x center-y 

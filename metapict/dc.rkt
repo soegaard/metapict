@@ -20,7 +20,7 @@
 (define (make-bitmap-dc width height)
   (def bm (make-object bitmap% width height))
   (def dc (new bitmap-dc% [bitmap bm]))
-  (send dc set-smoothing 'smoothed)
+  (send dc set-smoothing 'smoothed)  ; <- important otherwise bezier curves are off
   (send dc set-background "white")
   (send dc set-brush "white" 'transparent)
   (send dc clear)

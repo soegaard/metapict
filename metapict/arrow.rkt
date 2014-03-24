@@ -8,19 +8,21 @@
  arrow-head          ; curve in the shape of an arrow head
  draw-arrow          ; draw curve then draw arrow head at the end
  draw-double-arrow   ; draw curve then draw arrow heads at the start and end
- ; parameters
+ ;; parameters
  ahlength            ; arrow head length
  ahangle             ; arrow head angle
  ahflankangle        ; arrow flank angle
- ahtailcurvature)    ; arrow tail curvature
+ ahtailcurvature     ; arrow tail curvature
+ ahratio)            ; arrow ratio
 
-(require "def.rkt" "device.rkt" "curve.rkt" "trans.rkt" "shapes.rkt" "draw.rkt"
+(require "angles.rkt" "def.rkt" "device.rkt" "curve.rkt" "trans.rkt" "shapes.rkt" "draw.rkt"
          "path.rkt" "trig.rkt" "pt-vec.rkt" "structs.rkt" "angles.rkt")
 
 (def ahlength        (make-parameter (px 4)))   ; default arrowhead length 4bp
 (def ahangle         (make-parameter 45))       ; default head angle 45 degrees
 (def ahflankangle    (make-parameter 10))       ; default "curvature" of flank (in degrees)
 (def ahtailcurvature (make-parameter 2))        ; default "curvature" of the back  todo!
+(def ahratio         (make-parameter 0.9))      ; default "curvature" of the back  todo!
 
 
 (define (arrow-head #:length            [l #f] 
@@ -31,10 +33,11 @@
   ; The attachment point of this arrow is (pt 0 0).
   ; The arrow points in the direction (vec 1 0).
   (unless l (set! l (ahlength)))
-  (unless r (set! r 0.9))
+  (unless r (set! r (ahratio)))
   (unless α (set! α (ahangle)))
   (unless β (set! β (ahflankangle)))
   (unless γ (set! γ (ahtailcurvature)))
+  ; (set! l (norm (pt- (devpt (values l l)) origo))) ; xxx
   ; See http://www.ntg.nl/maps/36/19.pdf
   (def xmax (* r l))
   (def xmin (- xmax l))
@@ -60,9 +63,11 @@
                  #:tail-indentation  [γ #f])
   (def n (curve-length c))
   (defm (and tip (pt tipx tipy)) (point-of c n))
-  (def d   (direction-of c n))
+  (def d (direction-of c n))
   (draw c (filldraw ((shifted tipx tipy) 
-                     (rotated (angle d)) 
+                     (rotated (if (equal? d (vec 0 0))
+                                  0 
+                                  (angle d)))
                      (shifted (- (ahlength)) 0) 
                      (arrow-head #:length            l
                                  #:length-ration     r
