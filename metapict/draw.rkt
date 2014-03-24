@@ -20,26 +20,28 @@
          "structs.rkt" "parameters.rkt" "pict.rkt" "pt-vec.rkt" "color.rkt")
 
 (define (draw . cs)
-  (match cs
-    ['() (blank (curve-pict-width) (curve-pict-height))]
-    [_   (apply cc-superimpose
-                (for/list ([c (in-list cs)])
-                  (match c
-                    [(? curve:?) (curve->pict c)]
-                    [(? pict?)   c]
-                    [(? pt?)     (draw-dot c)]
-                    [(? bez?)    (curve->pict (curve: #f (list c)))]
-                    [(? label?)  (label->pict c)]
-                    [else        (error 'combine (~a "curve or pict expected, got " c))])))]))
+  (smoothed
+   (match cs
+     ['() (blank (curve-pict-width) (curve-pict-height))]
+     [_   (apply cc-superimpose
+                 (for/list ([c (in-list cs)])
+                   (match c
+                     [(? curve:?) (curve->pict c)]
+                     [(? pict?)   c]
+                     [(? pt?)     (draw-dot c)]
+                     [(? bez?)    (curve->pict (curve: #f (list c)))]
+                     [(? label?)  (label->pict c)]
+                     [#f          (blank (curve-pict-width) (curve-pict-height))]
+                     [else        (error 'combine (~a "curve or pict expected, got " c))])))])))
 
 (define (draw* cs) 
   (apply draw (filter values cs)))
 
 (define (fill . cs)
-  (curves->filled-pict cs #:rule 'winding))
+  (smoothed (curves->filled-pict cs #:rule 'winding)))
 
 (define (eofill . cs)
-  (curves->filled-pict cs  #:rule 'odd-even))
+  (smoothed (curves->filled-pict cs  #:rule 'odd-even)))
 
 (define (filldraw c [fill-color #f] [draw-color #f])
   (cond
@@ -135,7 +137,7 @@
             ; todo: use draw-bezs (takes care of t and pt)
             ; see PostScript reference for fill-styles 'winding and 'odd-even
             ; 'winding is the default
-             ; todo add fill-style 'odd-even or 'winding
+            ; todo add fill-style 'odd-even or 'winding
             )
           (send dc draw-path paths dx dy rule)
           (send dc set-brush b)
@@ -167,26 +169,26 @@
       width height))
 
 #;(define (label-bbox l)
-  (defm (label p? pos placement) l)
-  (def p (if (pict? p?) p? (text p? null (current-font-size))))
-  (defv (w h) (values (xpx (pict-width p)) (ypx (pict-height p))))  
-  (defv (-w -h) (values (- w) (- h)))
-  (defv (-w/2 -h/2) (values (/ -w 2) (/ -h 2)))
-  (def ε (label-offset))
-  (def -ε (- ε))
-  (defm (vec Δx Δy)
-    (match placement
-      [(rt)   (vec+ (vec 0    -h/2) (vec  ε  0))]
-      [(lft)  (vec+ (vec -w   -h/2) (vec -ε  0))]
-      [(bot)  (vec+ (vec -w/2  0)   (vec  0  ε))]
-      [(top)  (vec+ (vec -w/2 -h)   (vec  0 -ε))]
-      [(cnt)  (vec+ (vec -w/2 -h/2) (vec  0  0))]            
-      [(lrt)  (vec+ (vec  0    0)   (vec  ε  ε))]   ; lft is +
-      [(ulft) (vec+ (vec -w   -h)   (vec -ε -ε))]            
-      [(llft) (vec+ (vec -w    0)   (vec -ε  ε))]
-      [(urt)  (vec+ (vec  0   -h)   (vec  ε -ε))]                        
-      [else   (error 'label->pict (~a "internal error, expected a placement:" placement))]))
-  (curve (pt Δx Δy) -- (pt (+ Δx w) Δy) -- (pt (+ Δx w) (+ Δy h)) -- (pt 0 (+ Δy h)) -- cycle))
+    (defm (label p? pos placement) l)
+    (def p (if (pict? p?) p? (text p? null (current-font-size))))
+    (defv (w h) (values (xpx (pict-width p)) (ypx (pict-height p))))  
+    (defv (-w -h) (values (- w) (- h)))
+    (defv (-w/2 -h/2) (values (/ -w 2) (/ -h 2)))
+    (def ε (label-offset))
+    (def -ε (- ε))
+    (defm (vec Δx Δy)
+      (match placement
+        [(rt)   (vec+ (vec 0    -h/2) (vec  ε  0))]
+        [(lft)  (vec+ (vec -w   -h/2) (vec -ε  0))]
+        [(bot)  (vec+ (vec -w/2  0)   (vec  0  ε))]
+        [(top)  (vec+ (vec -w/2 -h)   (vec  0 -ε))]
+        [(cnt)  (vec+ (vec -w/2 -h/2) (vec  0  0))]            
+        [(lrt)  (vec+ (vec  0    0)   (vec  ε  ε))]   ; lft is +
+        [(ulft) (vec+ (vec -w   -h)   (vec -ε -ε))]            
+        [(llft) (vec+ (vec -w    0)   (vec -ε  ε))]
+        [(urt)  (vec+ (vec  0   -h)   (vec  ε -ε))]                        
+        [else   (error 'label->pict (~a "internal error, expected a placement:" placement))]))
+    (curve (pt Δx Δy) -- (pt (+ Δx w) Δy) -- (pt (+ Δx w) (+ Δy h)) -- (pt 0 (+ Δy h)) -- cycle))
 
 (define (label->pict l) ; win w h [pt #f]) ; path -> pict 
   (def pw (curve-pict-width))
@@ -222,19 +224,19 @@
     [(_ clauses . defs+exprs)
      (with-syntax ([original stx])
        #'(for/fold/derived original ([drawing (draw)]) clauses
-           (draw drawing (let () . defs+exprs))))]))
+                           (draw drawing (let () . defs+exprs))))]))
 
 (define-syntax (for*/draw stx)
   (syntax-case stx ()
     [(_ clauses . defs+exprs)
      (with-syntax ([original stx])
        #'(for*/fold/derived original ([drawing (draw)]) clauses
-           (draw drawing (let () . defs+exprs))))]))
+                            (draw drawing (let () . defs+exprs))))]))
 
 #;(define-syntax (for/draw/fold stx)
-  (syntax-case stx ()
-    [(_ (id+init-expr ...) clauses . defs+exprs)
-     (with-syntax ([original stx])
-       #'(for/fold/derived original ([drawing (draw)] id+init-expr ...) clauses
-           (draw drawing (let () . defs+exprs))))]))
+    (syntax-case stx ()
+      [(_ (id+init-expr ...) clauses . defs+exprs)
+       (with-syntax ([original stx])
+         #'(for/fold/derived original ([drawing (draw)] id+init-expr ...) clauses
+                             (draw drawing (let () . defs+exprs))))]))
 
