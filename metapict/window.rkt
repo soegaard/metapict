@@ -8,6 +8,7 @@
  with-window
  with-scaled-window
  window/aspect
+ window-opposite-corners
  (contract-out
   [window-overlap? (-> window? window?  boolean?)] ; do the windows overlap?
   [window-center   (-> window?          pt?)]      ; return pt in center
@@ -17,6 +18,11 @@
 
 (require "def.rkt" "structs.rkt" "pt-vec.rkt" "device.rkt"
          (for-syntax racket/base syntax/parse) racket/match)
+
+(define (window-opposite-corners win)
+  (defm (window x- x+ y- y+) win)
+  (values (pt x- y-) (pt x+ y+)))
+  
 
 (define (scale-window k win)
   (defm (window a b c d) win)
