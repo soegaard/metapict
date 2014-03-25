@@ -39,6 +39,13 @@
                  (list -- (φ x))
                  (list .. (φ x) (τ x)))))))
 
+(define (window-outline win)
+  (defv (p q) (window-opposite-corners win))
+  (rectangle p q))
+
+(define (clip-to-window c [win (curve-pict-window)])
+  (clipped c (window-outline win)))
+
 ; this version builds Bezier curves directly
 #;(define (graph f [xmin #f] [xmax #f] #:samples [n 50] #:diff [df/dx #f])
   (defm (window Xmin Xmax Ymin Ymax) (curve-pict-window))
@@ -117,6 +124,8 @@
           (color "red"    (draw F (label-rt "f(x) = x^2"    (pt 1.1 (f 1)))))
           (color "orange" (draw G (label-rt "g(x) = sin(x)" (pt 1.1 (g 1))))))))
 
+
+
 (let ()
   (def l 3) (def -l (- l))
   (def l+ (+  l 0.1)) (def l++ (+  l 0.2))
@@ -124,16 +133,16 @@
   (defv (xmin xmax ymin ymax) (values l-- l++ l-- l++))
   ; (defv (xmin xmax ymin ymax) (values 0 0.05 0 0.05))
   (def win (window xmin xmax ymin ymax))
+
   (with-window win
     (ahlength  (px 8))
     (def x-axis (draw (draw-arrow (curve (pt l-- 0) -- (pt l++ 0))) (label-rt  "x" (pt l++ 0))))
     (def y-axis (draw (draw-arrow (curve (pt 0 l--) -- (pt 0 l++))) (label-top "y" (pt 0 l++))))
     (def the-grid (color "gray" (grid (pt l- l-) (pt l+ l+) #:step 1)))
     (def (f x) (* x x))
-    (def F (graph f -l l ; #:diff (λ(x) (* 2 x))
-                  ))
+    (def F (clip (draw (graph f -l l))))
     (def p (draw the-grid x-axis y-axis 
-                 (color "red" (draw F (label-rt "f(x) = x^2" (pt l+ (f l)))))))
+                 (penscale 2 (color "red" (draw F (label-rt "f(x) = x^2" (pt l+ (f l))))))))
     (save-pict-as-pdf p "parabola.pdf")
     (displayln "Saved pict as parabola.pdf")
     p))
