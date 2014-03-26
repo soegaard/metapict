@@ -1,4 +1,9 @@
 #lang racket/base
+;;;
+;;; IMPORTANT NOTE
+;;;   Remember that to set the smoothing mode to 'smoothed if you implement
+;;;   new picts constructors, that use coordinates.
+
 ; General pict utilities
 (provide
  ; color       ; use color for both the pen and brush color
@@ -21,6 +26,7 @@
  
  save-pict     ; save pict to file, default is png, other formats include jpeg
  margin        ; inset with arguments swapped 
+ scale         ; pict:scale with arguments swapped
  pict-size     ; returns width and height
  
  smoothed      ; use smoothing-mode 'smoothed
@@ -189,9 +195,9 @@
 ;;  Produces a pict like `p`, but that always draws in 'smoothed mode
 (define (smoothed p)
   ; (define draw-p (make-pict-drawer p))
-  (define p2
+  (def p2
     (dc (lambda (dc x y)
-          (define s (send dc get-smoothing))
+          (def s (send dc get-smoothing))
           (send dc set-smoothing 'smoothed)
           ; (draw-p dc x y)
           (draw-pict p dc x y)
@@ -217,6 +223,7 @@
     [else (error 'save-pict (~a "expected one of: png jpeg xbm xpm bmp, got: " type))]))
 
 (define (margin n p) (inset p n))
+(define (scale  n p) (pict:scale p n))
 
 (define (pict-size p) (values (pict-width p) (pict-height p)))
 

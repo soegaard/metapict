@@ -3,11 +3,14 @@
 ;;; This module exports all identifiers from pict,
 ;;; that doesn't collide with MetaPict.
 ;;;
+(require pict)
 
 (provide (except-out (all-from-out pict)
-                     arrow circle rectangle))
+                     arrow circle rectangle scale))
 
-(require pict)
+(provide (prefix-out pict: scale))
+
+
 
 
 
