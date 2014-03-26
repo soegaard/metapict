@@ -64,7 +64,7 @@
   (check-equal? (turn-kind e c d) 'left)
   (check-equal? (turn-kind e d c) 'right))
 
-(define (collinear? p q r)
+#;(define (collinear? p q r)
   (defv (pq pr) (values (pt- q p) (pt- r p)))
   (or (zero? (norm pq))
       (zero? (norm pr))
@@ -122,10 +122,9 @@
   (with-window (window -15 15 -15 15)
     (def pts (set->list (for/set ([n 7]) (pt (random 10) (random 10)))))
     (displayln pts)
-    (scale (draw (penscale 3 (draw* pts))
-                 (color "red" (draw (curve* (append (add-between (convex-hull pts) ..)
-                                                    (list .. cycle))))))
-           2)))
+    (scale 2 (draw (penscale 3 (draw* pts))
+                   (color "red" (draw (curve* (append (add-between (convex-hull pts) ..)
+                                                      (list .. cycle)))))))))
 
 (for/list ([n 10]) (race-track))
 
