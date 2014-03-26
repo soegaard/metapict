@@ -58,14 +58,17 @@
   (def h (curve-pict-height))
   (def T (stdtrans (curve-pict-window) w h))
   (dc (λ (dc dx dy) 
-        (let ([b (send dc get-brush)])
-          ; todo: use draw-bezs (takes care of t and pt)
-          (send dc set-brush (find-white-transparent-brush))
-          (for ([c cs])
-            (defm (curve closed? bs) c)
-            (def Tp (bezs->dc-path (map T bs)))
-            (send dc draw-path Tp dx dy))
-          (send dc set-brush b)))
+        (def old-brush     (send dc get-brush))
+        (def old-smoothing (send dc get-smoothing))
+        (send dc set-smoothing 'smoothed)
+        (send dc set-brush (find-white-transparent-brush))
+        ; todo: use draw-bezs (takes care of t and pt)        
+        (for ([c cs])
+          (defm (curve closed? bs) c)
+          (def Tp (bezs->dc-path (map T bs)))
+          (send dc draw-path Tp dx dy))
+        (send dc set-brush old-brush)
+        (send dc set-smoothing old-smoothing))
       w h))
 
 (define (curve->pict c)
@@ -77,16 +80,20 @@
   (def h (curve-pict-height))
   (def T (stdtrans (curve-pict-window) w h))
   (dc (λ (dc dx dy) 
-        (let ([old-reg (send dc get-clipping-region)])
-          (def reg (new region% [dc dc]))
-          (defm (curve closed? bs) c)
-          (def Tp (bezs->dc-path (map T bs)))
-          (send reg set-path Tp dx dy)
-          (when old-reg
-            (send reg intersect old-reg))
-          (send dc set-clipping-region reg)
-          (draw-pict p dc dx dy)
-          (send dc set-clipping-region old-reg)))
+        (def old-smoothing (send dc get-smoothing))
+        (send dc set-smoothing 'smoothed)
+        (def old-region (send dc get-clipping-region))
+        (def reg (new region% [dc dc]))
+        (defm (curve closed? bs) c)
+        (def Tp (bezs->dc-path (map T bs)))
+        (send reg set-path Tp dx dy)
+        (when old-region
+          (send reg intersect old-region))
+        (send dc set-clipping-region reg)
+        (draw-pict p dc dx dy)
+        
+        (send dc set-clipping-region old-region)
+        (send dc set-smoothing old-smoothing))
       w h))
 
 (def black-solid-brush (send the-brush-list find-or-create-brush "black" 'solid))
@@ -97,21 +104,25 @@
   (def h (curve-pict-height))
   (def T (stdtrans (curve-pict-window) w h)) ; logical -> device coords
   (dc (λ (dc dx dy)
-        (let ([b (send dc get-brush)] [p (send dc get-pen)])
-          (when (use-default-brush?) 
-            ; this overrides the brush in a new dc (it is white !?!)
-            (send dc set-brush black-solid-brush))
-          (unless draw-border?
-            (set-transparent-pen dc))
-          (defm (curve closed? bs) c)
-          ; transform to device coordinates:
-          (def Tp (bezs->dc-path (map T bs)))
-          ; todo: use draw-bezs (takes care of t and pt)
-          ; see PostScript reference for fill-styles 'winding and 'odd-even
-          ; 'winding is the default
-          (send dc draw-path Tp dx dy) ; todo add fill-style 'odd-even or 'winding
-          (send dc set-brush b)
-          (send dc set-pen p)))
+        (def old-smoothing (send dc get-smoothing))
+        (send dc set-smoothing 'smoothed)
+        (def b (send dc get-brush))
+        (def p (send dc get-pen))
+        (when (use-default-brush?) 
+          ; this overrides the brush in a new dc (it is white !?!)
+          (send dc set-brush black-solid-brush))
+        (unless draw-border?
+          (set-transparent-pen dc))
+        (defm (curve closed? bs) c)
+        ; transform to device coordinates:
+        (def Tp (bezs->dc-path (map T bs)))
+        ; todo: use draw-bezs (takes care of t and pt)
+        ; see PostScript reference for fill-styles 'winding and 'odd-even
+        ; 'winding is the default
+        (send dc draw-path Tp dx dy) ; todo add fill-style 'odd-even or 'winding
+        (send dc set-brush b)
+        (send dc set-pen p)
+        (send dc set-smoothing old-smoothing))
       w h))
 
 (define (curves->filled-pict cs 
@@ -121,27 +132,31 @@
   (def h (curve-pict-height))
   (def T (stdtrans (curve-pict-window) w h)) ; logical -> device coords
   (dc (λ (dc dx dy)
-        (let ([b (send dc get-brush)] [p (send dc get-pen)])
-          (when (use-default-brush?) 
-            ; this overrides the brush in a new dc (it is white !?!)
-            (send dc set-brush black-solid-brush))
-          (unless draw-border?
-            (set-transparent-pen dc))
-          (def paths (new dc-path%))
-          (for ([c (in-list cs)])
-            (defm (curve closed? bs) c)
-            ; transform to device coordinates:
-            (def Tp (bezs->dc-path (map T bs)))
-            (send Tp close)
-            (send paths append Tp)
-            ; todo: use draw-bezs (takes care of t and pt)
-            ; see PostScript reference for fill-styles 'winding and 'odd-even
-            ; 'winding is the default
-            ; todo add fill-style 'odd-even or 'winding
-            )
-          (send dc draw-path paths dx dy rule)
-          (send dc set-brush b)
-          (send dc set-pen p)))
+        (def old-smoothing (send dc get-smoothing))
+        (send dc set-smoothing 'smoothed)
+        (def b (send dc get-brush))
+        (def p (send dc get-pen))
+        (when (use-default-brush?) 
+          ; this overrides the brush in a new dc (it is white !?!)
+          (send dc set-brush black-solid-brush))
+        (unless draw-border?
+          (set-transparent-pen dc))
+        (def paths (new dc-path%))
+        (for ([c (in-list cs)])
+          (defm (curve closed? bs) c)
+          ; transform to device coordinates:
+          (def Tp (bezs->dc-path (map T bs)))
+          (send Tp close)
+          (send paths append Tp)
+          ; todo: use draw-bezs (takes care of t and pt)
+          ; see PostScript reference for fill-styles 'winding and 'odd-even
+          ; 'winding is the default
+          ; todo add fill-style 'odd-even or 'winding
+          )
+        (send dc draw-path paths dx dy rule)
+        (send dc set-brush b)
+        (send dc set-pen p)
+        (send dc set-smoothing old-smoothing))
       w h))
 
 (define (filled-curve p #:draw-border? [draw-border? #t]) ; path -> pict
@@ -155,6 +170,8 @@
   (dc (λ (dc dx dy)
         (def b (send dc get-brush))
         (def p (send dc get-pen))
+        (def s (send dc get-smoothing))
+        (send dc set-smoothing 'smoothed)
         (send dc set-brush (send the-brush-list find-or-create-brush
                                  (send p get-color) 'solid))
         (unless draw-border?
@@ -165,7 +182,8 @@
         (send closed-dc-path close)
         (send dc draw-path closed-dc-path dx dy)
         (send dc set-brush b)
-        (send dc set-pen p))
+        (send dc set-pen p)
+        (send dc set-smoothing s))
       width height))
 
 #;(define (label-bbox l)
@@ -198,6 +216,8 @@
   (def p (if (pict? p?) p? (text p? null (current-font-size))))
   (defv (w h) (values (pict-width p) (pict-height p)))
   (dc (λ (dc dx dy)
+        (def s (send dc get-smoothing))
+        (send dc set-smoothing 'smoothed)
         (defm (pt x0 y0) (T pos))
         (defv (-w -h) (values (- w) (- h)))
         (defv (-w/2 -h/2) (values (/ -w 2) (/ -h 2)))
@@ -215,7 +235,8 @@
             [(llft) (vec+ (vec -w    0)   (vec -ε  ε))]
             [(urt)  (vec+ (vec  0   -h)   (vec  ε -ε))]                        
             [else   (error 'label->pict (~a "internal error, expected a placement:" placement))]))
-        (draw-pict p dc (+ x0 Δx dx) (+ y0 Δy dy)))
+        (draw-pict p dc (+ x0 Δx dx) (+ y0 Δy dy))
+        (send dc set-smoothing s))
       pw ph)) ; ?
 
 
