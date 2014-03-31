@@ -1,5 +1,10 @@
 #lang racket/base
 
+;;; TODO
+; Idea: Consider support for other color systems.
+;       https://github.com/mbutterick/css-tools/blob/master/colors.rkt
+
+
 (provide
  color         ; match-expander for color% objects and color names (strings)
  make-color*   ; fault tolerant make-color that also accepts color names
