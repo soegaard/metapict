@@ -56,7 +56,7 @@
 
 (def (draw-arrow c 
                  #:length            [l #f] 
-                 #:length-ration     [r #f] 
+                 #:length-ratio      [r #f] 
                  #:head-angle        [α #f]  ; angle in degrees
                  #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
                  #:tail-indentation  [γ #f])
@@ -69,7 +69,7 @@
                                   (angle d)))
                      (shifted (- (ahlength)) 0) 
                      (arrow-head #:length            l
-                                 #:length-ration     r
+                                 #:length-ratio      r
                                  #:head-angle        α
                                  #:flank-indentation β
                                  #:tail-indentation  γ)))))
@@ -77,19 +77,19 @@
 
 (def (draw-double-arrow c 
                  #:length            [l #f] 
-                 #:length-ration     [r #f] 
+                 #:length-ratio      [r #f] 
                  #:head-angle        [α #f]  ; angle in degrees
                  #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
                  #:tail-indentation  [γ #f])
   (draw (draw-arrow c 
                     #:length            l
-                    #:length-ration     r
+                    #:length-ratio      r
                     #:head-angle        α
                     #:flank-indentation β
                     #:tail-indentation  γ)
         (draw-arrow (curve-reverse c) 
                     #:length            l
-                    #:length-ration     r
+                    #:length-ratio      r
                     #:head-angle        α
                     #:flank-indentation β
                     #:tail-indentation  γ)))
