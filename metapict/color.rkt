@@ -1,10 +1,4 @@
 #lang racket/base
-
-;;; TODO
-; Idea: Consider support for other color systems.
-;       https://github.com/mbutterick/css-tools/blob/master/colors.rkt
-
-
 (provide
  color         ; match-expander for color% objects and color names (strings)
  make-color*   ; fault tolerant make-color that also accepts color names
@@ -18,6 +12,9 @@
  change-blue   ; change blue component 
  change-alpha  ; change transparency
  )
+
+; TODO  Idea: Consider support for other color systems.
+;             https://github.com/mbutterick/css-tools/blob/master/colors.rkt
 
 (require "def.rkt" "parameters.rkt"
          racket/draw racket/match racket/class racket/format racket/math racket/list
