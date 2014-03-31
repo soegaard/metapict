@@ -1,9 +1,5 @@
 #lang racket/base
 ;;; Arrows
-
-; The shape is inspired by:
-;     http://www.ntg.nl/maps/36/19.pdf
-
 (provide 
  arrow-head          ; curve in the shape of an arrow head
  draw-arrow          ; draw curve then draw arrow head at the end
@@ -18,6 +14,9 @@
 (require "angles.rkt" "def.rkt" "device.rkt" "curve.rkt" "trans.rkt" "shapes.rkt" "draw.rkt"
          "path.rkt" "trig.rkt" "pt-vec.rkt" "structs.rkt" "angles.rkt")
 
+; The shape is inspired by:
+;     http://www.ntg.nl/maps/36/19.pdf
+
 (def ahlength        (make-parameter (px 4)))   ; default arrowhead length 4bp
 (def ahangle         (make-parameter 45))       ; default head angle 45 degrees
 (def ahflankangle    (make-parameter 10))       ; default "curvature" of flank (in degrees)
@@ -26,7 +25,7 @@
 
 
 (define (arrow-head #:length            [l #f] 
-                    #:length-ration     [r #f] 
+                    #:length-ratio      [r #f] 
                     #:head-angle        [α #f]  ; angle in degrees
                     #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
                     #:tail-indentation  [γ #f]) ; angle in degrees 
