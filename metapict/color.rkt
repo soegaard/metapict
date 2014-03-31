@@ -15,6 +15,9 @@
 
 ; TODO  Idea: Consider support for other color systems.
 ;             https://github.com/mbutterick/css-tools/blob/master/colors.rkt
+;       Idea: Add a user supplied string to color resolver.
+;             This could be used to make a pallette where "red", "green" etc
+;             aren't the pure colors.
 
 (require "def.rkt" "parameters.rkt"
          racket/draw racket/match racket/class racket/format racket/math racket/list
