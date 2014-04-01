@@ -2,6 +2,8 @@
 ;;; Arrows
 (provide 
  arrow-head          ; curve in the shape of an arrow head
+ harpoon-up          ; curve in the shape of an up harpoon
+ harpoon-down        ; curve in the shape of an up harpoon 
  draw-arrow          ; draw curve then draw arrow head at the end
  draw-double-arrow   ; draw curve then draw arrow heads at the start and end
  ;; parameters
@@ -54,12 +56,55 @@
   (def DAB (curve D .. A .. B))
   (curve-append (curve-append DAB BC) CD))
 
+(define (harpoon-up #:length            [l #f] 
+                    #:length-ratio      [r #f] 
+                    #:head-angle        [α #f]  ; angle in degrees
+                    #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
+                    #:tail-indentation  [γ #f]) ; angle in degrees 
+  ; The "attachment point" of this arrow is (pt 0 0).
+  ; The arrow points in the direction (vec 1 0).
+  (unless l (set! l (ahlength)))
+  (unless r (set! r (ahratio)))
+  (unless α (set! α (ahangle)))
+  (unless β (set! β (ahflankangle)))
+  (unless γ (set! γ (ahtailcurvature)))
+  ; (set! l (norm (pt- (devpt (values l l)) origo))) ; xxx
+  ; See http://www.ntg.nl/maps/36/19.pdf
+  (def xmax (* r l))
+  (def xmin (- xmax l))
+  (def α/2 (/ α 2))
+  (def -α/2 (- α/2))
+  (def ymax (* l (tan (rad α/2))))
+  (def ymin (- ymax))
+  (def tip (pt xmax 0))
+  (def A (pt 0 0))       ; tail middle
+  (def B (pt xmin ymax)) ; tail top
+  (def C (pt xmax 0))    ; tip
+  (def D (pt xmin ymin)) ; tail bottom
+  (def BC  (curve B (dir (- -α/2 β))     .. (dir (+ -α/2 β)) C))
+  (def CD  (curve C (dir (-  α/2 β 180)) .. (dir (+ -180 α/2  β)) D))
+  (def AB (subcurve (curve D .. A .. B) 1 2))
+  (def CA  (curve C -- A))
+  (curve-append (curve-append AB BC) CA))
+
+(define (harpoon-down #:length            [l #f] 
+                      #:length-ratio      [r #f] 
+                      #:head-angle        [α #f]  ; angle in degrees
+                      #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
+                      #:tail-indentation  [γ #f]) ; angle in degrees 
+  (flipy (harpoon-up #:length            l
+                     #:length-ratio      r 
+                     #:head-angle        α
+                     #:flank-indentation β
+                     #:tail-indentation  γ)))
+
 (def (draw-arrow c 
                  #:length            [l #f] 
                  #:length-ratio      [r #f] 
                  #:head-angle        [α #f]  ; angle in degrees
                  #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
-                 #:tail-indentation  [γ #f])
+                 #:tail-indentation  [γ #f]
+                 #:head              [head arrow-head])
   (def n (curve-length c))
   (defm (and tip (pt tipx tipy)) (point-of c n))
   (def d (direction-of c n))
@@ -68,12 +113,11 @@
                                   0 
                                   (angle d)))
                      (shifted (- (ahlength)) 0) 
-                     (arrow-head #:length            l
-                                 #:length-ratio      r
-                                 #:head-angle        α
-                                 #:flank-indentation β
-                                 #:tail-indentation  γ)))))
-
+                     (head #:length            l
+                           #:length-ratio      r
+                           #:head-angle        α
+                           #:flank-indentation β
+                           #:tail-indentation  γ)))))
 
 (def (draw-double-arrow c 
                  #:length            [l #f] 
@@ -94,7 +138,7 @@
                     #:flank-indentation β
                     #:tail-indentation  γ)))
 
-(def (arrow-head-mp c) 
+(def (arrow-head-mp c) ; plain
   ; Old MetaPost Style - not too pretty
   (def tip (point-of c (curve-length c)))
   (def stem (cut-before c ((scaled (ahlength)) unitcircle)))
