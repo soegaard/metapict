@@ -109,10 +109,8 @@
   (def n (curve-length c))
   (defm (and tip (pt tipx tipy)) (point-of c n))
   (def d (direction-of c n))
-  ((shifted tipx tipy) 
-   (rotated (if (equal? d (vec 0 0))
-                0 
-                (angle d)))
+  ((shifted tipx tipy)
+   (rotated (if (equal? d (vec 0 0)) 0 (angle d)))
    (shifted (- (ahlength)) 0) 
    (head #:length            l
          #:length-ratio      r
@@ -125,6 +123,7 @@
                             #:head-angle        [α #f]  ; angle in degrees
                             #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
                             #:tail-indentation  [γ #f])
+  (unless l (set! l (ahlength)))
   (shifted l 0 (flipx (arrow-head #:length            l
                                   #:length-ratio      r
                                   #:head-angle        α
@@ -138,19 +137,31 @@
                  #:head-angle        [α #f]  ; angle in degrees
                  #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
                  #:tail-indentation  [γ #f]
-                 #:fill              [fill-head? #t]
-                 #:head              [head arrow-head])
+                 #:fill-head         [fill-head? #t]
+                 #:fill-tail         [fill-tail? #t]
+                 #:head              [head arrow-head]
+                 #:tail              [tail #f])
+  
+  (def the-head (place-arrow-head c 
+                                  #:length            l
+                                  #:length-ratio      r
+                                  #:head-angle        α
+                                  #:flank-indentation β
+                                  #:tail-indentation  γ
+                                  #:head              head))
+  (def the-tail (if tail
+                    (place-arrow-head (curve-reverse c)
+                                      #:length            l
+                                      #:length-ratio      r
+                                      #:head-angle        α
+                                      #:flank-indentation β
+                                      #:tail-indentation  γ
+                                      #:head              tail)
+                    empty-curve))
+  (draw c 
+        (if fill-head? (filldraw the-head) (draw the-head))
+        (if fill-tail? (filldraw the-tail) (draw the-tail))))
 
-  (def h (place-arrow-head c 
-                           #:length            l
-                           #:length-ratio      r
-                           #:head-angle        α
-                           #:flank-indentation β
-                           #:tail-indentation  γ
-                           #:head              head))
-  (if fill-head?
-      (draw c (filldraw h))
-      (draw c (draw h))))
 
 (def (draw-double-arrow c 
                         #:length            [l #f] 

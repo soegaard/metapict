@@ -26,6 +26,7 @@
      [_   (apply cc-superimpose
                  (for/list ([c (in-list cs)])
                    (match c
+                     [(curve: #f '()) (blank (curve-pict-width) (curve-pict-height))]
                      [(? curve:?) (curve->pict c)]
                      [(? pict?)   c]
                      [(? pt?)     (draw-dot c)]
@@ -114,12 +115,13 @@
         (unless draw-border?
           (set-transparent-pen dc))
         (defm (curve closed? bs) c)
-        ; transform to device coordinates:
-        (def Tp (bezs->dc-path (map T bs)))
-        ; todo: use draw-bezs (takes care of t and pt)
-        ; see PostScript reference for fill-styles 'winding and 'odd-even
-        ; 'winding is the default
-        (send dc draw-path Tp dx dy) ; todo add fill-style 'odd-even or 'winding
+        (unless (empty? bs)
+          ; transform to device coordinates:
+          (def Tp (bezs->dc-path (map T bs)))
+          ; todo: use draw-bezs (takes care of t and pt)
+          ; see PostScript reference for fill-styles 'winding and 'odd-even
+          ; 'winding is the default
+          (send dc draw-path Tp dx dy)) ; todo add fill-style 'odd-even or 'winding
         (send dc set-brush b)
         (send dc set-pen p)
         (send dc set-smoothing old-smoothing))
@@ -144,10 +146,11 @@
         (def paths (new dc-path%))
         (for ([c (in-list cs)])
           (defm (curve closed? bs) c)
-          ; transform to device coordinates:
-          (def Tp (bezs->dc-path (map T bs)))
-          (send Tp close)
-          (send paths append Tp)
+          (unless (empty? bs)
+            ; transform to device coordinates:
+            (def Tp (bezs->dc-path (map T bs)))
+            (send Tp close)
+            (send paths append Tp))
           ; todo: use draw-bezs (takes care of t and pt)
           ; see PostScript reference for fill-styles 'winding and 'odd-even
           ; 'winding is the default
