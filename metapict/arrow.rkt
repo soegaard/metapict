@@ -4,6 +4,7 @@
  arrow-head          ; curve in the shape of an arrow head
  harpoon-up          ; curve in the shape of an up harpoon
  harpoon-down        ; curve in the shape of an up harpoon 
+ reverse-head        ; given head maker, return new head maker that reverses given head
  draw-arrow          ; draw curve then draw arrow head at the end
  draw-double-arrow   ; draw curve then draw arrow heads at the start and end
  ;; parameters
@@ -118,18 +119,24 @@
          #:flank-indentation β
          #:tail-indentation  γ)))
 
-(define (reverse-arrow-head #:length            [l #f] 
-                            #:length-ratio      [r #f] 
-                            #:head-angle        [α #f]  ; angle in degrees
-                            #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
-                            #:tail-indentation  [γ #f])
-  (unless l (set! l (ahlength)))
-  (shifted l 0 (flipx (arrow-head #:length            l
+(define (reverse-head head-maker
+                      #:length            [l #f] 
+                      #:length-ratio      [r #f] 
+                      #:head-angle        [α #f]  ; angle in degrees
+                      #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
+                      #:tail-indentation  [γ #f])
+  (define (rev #:length            [l #f] 
+               #:length-ratio      [r #f] 
+               #:head-angle        [α #f]  ; angle in degrees
+               #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
+               #:tail-indentation  [γ #f])
+    (unless l (set! l (ahlength)))
+    (shifted l 0 (flipx (head-maker #:length            l
                                   #:length-ratio      r
                                   #:head-angle        α
                                   #:flank-indentation β
                                   #:tail-indentation  γ))))
-
+  rev)
 
 (def (draw-arrow c 
                  #:length            [l #f] 
