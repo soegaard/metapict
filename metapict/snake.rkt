@@ -15,10 +15,11 @@
   (def wavy-part (for/fold ([c w]) ([i (in-range 1 n)])
                    (curve-append c (shifted (* i len) 0 w))))
   (def end (end-point wavy-part))
-  (def s (if (< (dist end (pt l 0)) 1e-10)
-             wavy-part
-             (curve-append wavy-part (curve end -- (pt l 0)))))
-  (shifted p (rotated (angle2 east pq) s)))
+  (cond [(< l len) (curve p -- q)]
+        [else
+         (def s (cond [(< (dist end (pt l 0)) 1e-10) wavy-part]
+                      [else (curve-append wavy-part (curve end -- (pt l 0)))]))
+         (shifted p (rotated (angle2 east pq) s))]))
 
 (set-curve-pict-size 200 200)
 (with-window (window -5 5 -5 5)
