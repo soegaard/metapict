@@ -3,7 +3,8 @@
 (provide 
  arrow-head          ; curve in the shape of an arrow head
  harpoon-up          ; curve in the shape of an up harpoon
- harpoon-down        ; curve in the shape of an up harpoon 
+ harpoon-down        ; curve in the shape of an down harpoon
+ line-head           ; curve in the shape of a line
  reverse-head        ; given head maker, return new head maker that reverses given head
  draw-arrow          ; draw curve then draw arrow head at the end
  draw-double-arrow   ; draw curve then draw arrow heads at the start and end
@@ -15,7 +16,7 @@
  ahratio)            ; arrow ratio
 
 (require "angles.rkt" "def.rkt" "device.rkt" "curve.rkt" "trans.rkt" "shapes.rkt" "draw.rkt"
-         "path.rkt" "trig.rkt" "pt-vec.rkt" "structs.rkt" "angles.rkt")
+         "path.rkt" "trig.rkt" "pt-vec.rkt" "structs.rkt" "angles.rkt" "color.rkt")
 
 ; The shape is inspired by:
 ;     http://www.ntg.nl/maps/36/19.pdf
@@ -25,7 +26,6 @@
 (def ahflankangle    (make-parameter 10))       ; default "curvature" of flank (in degrees)
 (def ahtailcurvature (make-parameter 2))        ; default "curvature" of the back  todo!
 (def ahratio         (make-parameter 0.9))      ; default "curvature" of the back  todo!
-
 
 (define (arrow-head #:length            [l #f] 
                     #:length-ratio      [r #f] 
@@ -107,12 +107,11 @@
                           #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
                           #:tail-indentation  [γ #f]
                           #:head              [head arrow-head])
-  (def n (curve-length c))
-  (defm (and tip (pt tipx tipy)) (point-of c n))
-  (def d (direction-of c n))
+  (defm (and tip (pt tipx tipy)) (end-point c))
+  (def d (direction-of c (curve-length c)))
   ((shifted tipx tipy)
    (rotated (if (equal? d (vec 0 0)) 0 (angle d)))
-   (shifted (- (ahlength)) 0) 
+   ; (shifted (- (ahlength)) 0) 
    (head #:length            l
          #:length-ratio      r
          #:head-angle        α
@@ -138,6 +137,26 @@
                                   #:tail-indentation  γ))))
   rev)
 
+(define (line-head  #:length            [l #f]
+                    #:length-ratio      [r #f] 
+                    #:head-angle        [α #f]  ; angle in degrees
+                    #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
+                    #:tail-indentation  [γ #f]) ; angle in degrees 
+  ; The "attachment point" of this "arrow" is (pt 0 0).
+  ; The arrow points in the direction (vec 1 0).
+  (unless l (set! l (ahlength)))
+  (unless r (set! r (ahratio)))
+  (unless α (set! α (ahangle)))
+  ; See http://www.ntg.nl/maps/36/19.pdf
+  (def xmax (* r l))
+  (def  α/2 (/ α 2))
+  (def -α/2 (- α/2))
+  (def ymax (* l (tan (rad α/2))))
+  (def ymin (- ymax))
+  (def B (pt 0 ymax)) ; top
+  (def D (pt 0 ymin)) ; bottom
+  (curve B -- D))
+
 (def (draw-arrow c 
                  #:length            [l #f] 
                  #:length-ratio      [r #f] 
@@ -148,7 +167,6 @@
                  #:fill-tail         [fill-tail? #t]
                  #:head              [head arrow-head]
                  #:tail              [tail #f])
-  
   (def the-head (place-arrow-head c 
                                   #:length            l
                                   #:length-ratio      r
@@ -166,9 +184,8 @@
                                       #:head              tail)
                     empty-curve))
   (draw c 
-        (if fill-head? (filldraw the-head) (draw the-head))
-        (if fill-tail? (filldraw the-tail) (draw the-tail))))
-
+        (color "red" (if fill-head? (filldraw the-head) (draw the-head)))
+        (color "red" (if fill-tail? (filldraw the-tail) (draw the-tail)))))
 
 (def (draw-double-arrow c 
                         #:length            [l #f] 
