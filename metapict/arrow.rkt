@@ -107,11 +107,15 @@
                           #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
                           #:tail-indentation  [γ #f]
                           #:head              [head arrow-head])
-  (defm (and tip (pt tipx tipy)) (end-point c))
+  (unless l (set! l (ahlength)))
+  (unless r (set! r (ahratio)))
+  (defm (and end (pt endx endy)) (end-point c))
   (def d (direction-of c (curve-length c)))
-  ((shifted tipx tipy)
+  (def xmax (* r l))
+  (def tipx xmax) ; todo : problem tipx is equal to xmax, for arrows and harpoons but not for lines
+  ((shifted endx endy)
    (rotated (if (equal? d (vec 0 0)) 0 (angle d)))
-   ; (shifted (- (ahlength)) 0) 
+   (shifted (- tipx) 0) 
    (head #:length            l
          #:length-ratio      r
          #:head-angle        α
