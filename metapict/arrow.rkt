@@ -27,6 +27,8 @@
 (def ahtailcurvature (make-parameter 2))        ; default "curvature" of the back  todo!
 (def ahratio         (make-parameter 0.9))      ; default "curvature" of the back  todo!
 
+(struct head/info (head tipx length  length-ratio))
+
 (define (arrow-head #:length            [l #f] 
                     #:length-ratio      [r #f] 
                     #:head-angle        [α #f]  ; angle in degrees
@@ -47,7 +49,8 @@
   (def -α/2 (- α/2))
   (def ymax (* l (tan (rad α/2))))
   (def ymin (- ymax))
-  (def tip (pt xmax 0))
+  (def tipx xmax)
+  (def tip (pt tipx 0))
   (def A (pt 0 0))       ; tail middle
   (def B (pt xmin ymax)) ; tail top
   (def C (pt xmax 0))    ; tip
@@ -55,7 +58,8 @@
   (def BC  (curve B (dir (- -α/2 β))     .. (dir (+ -α/2 β)) C))
   (def CD  (curve C (dir (-  α/2 β 180)) .. (dir (+ -180 α/2  β)) D))
   (def DAB (curve D .. A .. B))
-  (curve-append (curve-append DAB BC) CD))
+  (def head (curve-append (curve-append DAB BC) CD))
+  (head/info head tipx l r))
 
 (define (harpoon-up #:length            [l #f] 
                     #:length-ratio      [r #f] 
@@ -86,41 +90,33 @@
   (def CD  (curve C (dir (-  α/2 β 180)) .. (dir (+ -180 α/2  β)) D))
   (def AB (subcurve (curve D .. A .. B) 1 2))
   (def CA  (curve C -- A))
-  (curve-append (curve-append AB BC) CA))
+  (def head (curve-append (curve-append AB BC) CA))
+  (head/info head xmax l r))
 
 (define (harpoon-down #:length            [l #f] 
                       #:length-ratio      [r #f] 
                       #:head-angle        [α #f]  ; angle in degrees
                       #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
                       #:tail-indentation  [γ #f]) ; angle in degrees 
-  (flipy (harpoon-up #:length            l
+  (defm (head/info head tipx l r)
+    (harpoon-up #:length            l
                      #:length-ratio      r 
                      #:head-angle        α
                      #:flank-indentation β
-                     #:tail-indentation  γ)))
+                     #:tail-indentation  γ))
+  (head/info (flipy head) tipx l r))
 
 ; return the curve for the arrow head placed at the end of the curve c
-(define (place-arrow-head c 
-                          #:length            [l #f] 
-                          #:length-ratio      [r #f] 
-                          #:head-angle        [α #f]  ; angle in degrees
-                          #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
-                          #:tail-indentation  [γ #f]
-                          #:head              [head arrow-head])
+(define (place-arrow-head c ah)
+  (defm (head/info head tipx l r) ah)
   (unless l (set! l (ahlength)))
   (unless r (set! r (ahratio)))
   (defm (and end (pt endx endy)) (end-point c))
   (def d (direction-of c (curve-length c)))
-  (def xmax (* r l))
-  (def tipx xmax) ; todo : problem tipx is equal to xmax, for arrows and harpoons but not for lines
   ((shifted endx endy)
    (rotated (if (equal? d (vec 0 0)) 0 (angle d)))
-   (shifted (- tipx) 0) 
-   (head #:length            l
-         #:length-ratio      r
-         #:head-angle        α
-         #:flank-indentation β
-         #:tail-indentation  γ)))
+   (shifted (- tipx) 0)
+   head))
 
 (define (reverse-head head-maker
                       #:length            [l #f] 
@@ -135,17 +131,17 @@
                #:tail-indentation  [γ #f])
     (unless l (set! l (ahlength)))
     (shifted l 0 (flipx (head-maker #:length            l
-                                  #:length-ratio      r
-                                  #:head-angle        α
-                                  #:flank-indentation β
-                                  #:tail-indentation  γ))))
+                                    #:length-ratio      r
+                                    #:head-angle        α
+                                    #:flank-indentation β
+                                    #:tail-indentation  γ))))
   rev)
 
 (define (line-head  #:length            [l #f]
                     #:length-ratio      [r #f] 
                     #:head-angle        [α #f]  ; angle in degrees
-                    #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
-                    #:tail-indentation  [γ #f]) ; angle in degrees 
+                    #:flank-indentation [β #f]  ; angle in degrees (todo: better word?)
+                    #:tail-indentation  [γ #f]) ; angle in degrees
   ; The "attachment point" of this "arrow" is (pt 0 0).
   ; The arrow points in the direction (vec 1 0).
   (unless l (set! l (ahlength)))
@@ -159,7 +155,8 @@
   (def ymin (- ymax))
   (def B (pt 0 ymax)) ; top
   (def D (pt 0 ymin)) ; bottom
-  (curve B -- D))
+  (def head (curve B -- D))
+  (head/info head 0 l r))
 
 (def (draw-arrow c 
                  #:length            [l #f] 
@@ -171,25 +168,26 @@
                  #:fill-tail         [fill-tail? #t]
                  #:head              [head arrow-head]
                  #:tail              [tail #f])
-  (def the-head (place-arrow-head c 
-                                  #:length            l
-                                  #:length-ratio      r
-                                  #:head-angle        α
-                                  #:flank-indentation β
-                                  #:tail-indentation  γ
-                                  #:head              head))
+  (def the-head (place-arrow-head 
+                 c (head
+                    #:length            l
+                    #:length-ratio      r
+                    #:head-angle        α
+                    #:flank-indentation β
+                    #:tail-indentation  γ)))
   (def the-tail (if tail
-                    (place-arrow-head (curve-reverse c)
-                                      #:length            l
-                                      #:length-ratio      r
-                                      #:head-angle        α
-                                      #:flank-indentation β
-                                      #:tail-indentation  γ
-                                      #:head              tail)
+                    (place-arrow-head 
+                     (curve-reverse c)
+                     (tail
+                     #:length            l
+                     #:length-ratio      r
+                     #:head-angle        α
+                     #:flank-indentation β
+                     #:tail-indentation  γ))
                     empty-curve))
   (draw c 
-        (color "red" (if fill-head? (filldraw the-head) (draw the-head)))
-        (color "red" (if fill-tail? (filldraw the-tail) (draw the-tail)))))
+        (if fill-head? (filldraw the-head) (draw the-head))
+        (if fill-tail? (filldraw the-tail) (draw the-tail))))
 
 (def (draw-double-arrow c 
                         #:length            [l #f] 
