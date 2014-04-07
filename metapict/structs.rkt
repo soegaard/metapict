@@ -1,5 +1,5 @@
 #lang racket/base
-(require (for-syntax racket/base))
+(require (for-syntax racket/base) pict/convert)
 
 (define-syntax (provide-structs stx)
   (syntax-case stx ()
@@ -115,6 +115,10 @@
 ;  - a curve          the curve determines the outline of the node
 ;  - anchor           vec -> pt function, returns a point on the outline in the given direction
 ;  - normal           vector normal to the outline pointing outwards
-(struct node (pos curve anchor normal) #:transparent)
+(struct node (convert pos curve anchor normal) 
+  ; convert : node -> pict   ; is called by pict-convert
+  #:transparent
+  #:property prop:pict-convertible (λ (v) (node-convert v)))
 (provide-structs node)
+
 
