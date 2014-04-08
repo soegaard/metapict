@@ -15,9 +15,9 @@
          )
 
 (require (for-syntax racket/base)
-         racket/draw racket/class racket/format racket/match racket/list 
-         "bez.rkt" "curve.rkt" "def.rkt" "device.rkt" "pen-and-brush.rkt" "pict-lite.rkt"
-         "structs.rkt" "parameters.rkt" "pict.rkt" "pt-vec.rkt" "color.rkt")
+         racket/draw racket/class racket/format racket/match racket/list pict/convert
+         "bez.rkt" "curve.rkt" "def.rkt" "device.rkt" "pen-and-brush.rkt"
+         "pict-lite.rkt" "structs.rkt" "parameters.rkt" "pict.rkt" "pt-vec.rkt" "color.rkt")
 
 (define (draw . cs)
   (smoothed
@@ -26,14 +26,15 @@
      [_   (apply cc-superimpose
                  (for/list ([c (in-list cs)])
                    (match c
-                     [(curve: #f '()) (blank (curve-pict-width) (curve-pict-height))]
-                     [(? curve:?) (curve->pict c)]
-                     [(? pict?)   c]
-                     [(? pt?)     (draw-dot c)]
-                     [(? bez?)    (curve->pict (curve: #f (list c)))]
-                     [(? label?)  (label->pict c)]
-                     [#f          (blank (curve-pict-width) (curve-pict-height))]
-                     [else        (error 'combine (~a "curve or pict expected, got " c))])))])))
+                     [(curve: #f '())       (blank (curve-pict-width) (curve-pict-height))]
+                     [(? curve:?)           (curve->pict c)]
+                     [(? pict?)             c]
+                     [(? pt?)               (draw-dot c)]
+                     [(? bez?)              (curve->pict (curve: #f (list c)))]
+                     [(? label?)            (label->pict c)]
+                     [(? pict-convertible?) (pict-convert c)]
+                     [#f                    (blank (curve-pict-width) (curve-pict-height))]
+                     [else            (error 'combine (~a "curve or pict expected, got " c))])))])))
 
 (define (draw* cs) 
   (apply draw (filter values cs)))
