@@ -118,7 +118,7 @@
 (struct node (convert pos curve anchor normal) 
   ; convert : node -> pict   ; is called by pict-convert
   #:transparent
-  #:property prop:pict-convertible (λ (v) (node-convert v)))
+  #:property prop:pict-convertible (λ (v) ((node-convert v) v)))
 (provide-structs node)
 
 
