@@ -1,11 +1,9 @@
 #lang racket
+; use 512Mb memory limit for this file
 (require racket/draw)
-;;; 
+
 ;;; This draws simple graphs. 
 ;;; Use the plot library for more advanced graphs.
-;;;
-
-
 
 (provide graph ; draw the graph of a function 
          )
@@ -72,6 +70,8 @@
                    (pt+ (φ x3) (vec* (/ Δx -3) (τ x3)))
                    (φ x3)))))
 
+(module+ test 
+  (require metapict)
 (require metapict/grid)
 (set-curve-pict-size 300 300)
 
@@ -148,3 +148,4 @@
 (with-window (window -10 10 -10 10)
     (beside (clip (draw (graph    (λ(x) (tan (* x x))) -10 10 #:samples 4000)))
             (clip (draw (bezgraph (λ(x) (tan (* x x))) -10 10 #:samples 4000)))))
+)
