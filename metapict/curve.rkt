@@ -29,6 +29,7 @@
  ; high level constructors
  curve                        ; construct curve from a path description
  curve*                       ; (λ (ps) (apply curve ps))
+ empty-curve                  ; the empty curve
  ; curve operations
  curve-length                 ; return number of bez in the curve
  point-of                     ; given time t (between 0 and the curve length) compute point on curve
@@ -54,6 +55,8 @@
  segment->bezs
  segments->bezs)
 
+
+(define empty-curve (curve: #f '())) ; the empty curve
 
 (define (make-curve . xs)
   (match xs
@@ -395,7 +398,12 @@
     (match qlt ; non-cyclic
       [(given τ φn)     (def θn (- φn)) ; 297.
                         (list 0 1 0 θn)]
-      [(explicit)       (def θ (signed-angle2 p p+)) ; todo
+      [(explicit)       (def θ (signed-angle2 p p+))
+                        #;(def θ (match (signed-angle2 (pt- p+ p) (pt- q p)) ; todo
+                                   [+nan.0 0] [θ θ]))
+                        ; (displayln (list 'last-equation θ))
+                        (error)
+                        ; (def θ (signed-angle (pt- p+ p))) ; is this correct?
                         (list 0 1 0 θ)]
       [(tenscurl τ γ)
        (def τ- (get-tension prt))
