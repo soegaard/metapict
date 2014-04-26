@@ -29,11 +29,7 @@
 (struct arw    (pt vec)              #:transparent) ; arrow 
 (struct bez    (p0 p1 p2 p3)         #:transparent) ; bezier curve
 (struct mat    (a b c d)             #:transparent) ; 2x2 matrix [[a b] [c d]]
-(struct window (minx maxx miny maxy) #:transparent
-  #:guard (λ (minx maxx miny maxy name)
-            (when (= minx maxx) (error (~a "empty x-range for window, got: " minx "," maxx)))
-            (when (= miny maxy) (error (~a "empty y-range for window, got: " miny "," maxy)))
-            (values minx maxx miny maxy))) ; window (coordinate system)
+(struct window (minx maxx miny maxy) #:transparent) ; window (coordinate system)
 (struct curve: (closed? bezs)        #:transparent  ; a resolved curve is a list of bezs   
   #:reflection-name 'curve)
 
