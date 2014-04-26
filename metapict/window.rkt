@@ -1,9 +1,9 @@
 #lang racket/base
 ;;; A Window is represented as:
 ;;;   (struct window (minx maxx miny maxy) #:transparent)
-;;; Conceputally a window represents a rectangular shaped part of the coordinate plane.
+;;; Conceptually a window represents a rectangular shaped part of the coordinate plane.
 
-(require racket/contract/base)
+(require racket/contract/base racket/format)
 (provide
  with-window
  with-scaled-window
@@ -68,7 +68,17 @@
   (check-equal? (scale-window 2 w) (window 4 8 12 20)))
 
 (define-syntax (with-window stx)
-  (syntax-parse stx [(_ win e ...) #'(parameterize ([curve-pict-window win]) e ...)]))
+  (syntax-parse stx 
+    [(_ win e ...)
+     #'(let ([w win])
+         (defm (window xmin xmax ymin ymax) w)
+         (when (= xmin xmax) 
+           (raise-syntax-error 
+            'with-syntax (~a "empty x-range for window, got: " xmin "," xmax) win))
+         (when (= ymin ymax) 
+           (raise-syntax-error 
+            'with-syntax (~a "empty y-range for window, got: " ymin "," ymax) win))
+         (parameterize ([curve-pict-window w]) e ...))]))
 
 (define-syntax (with-scaled-window stx)
   (syntax-parse stx [(_ k e ...) #'(with-window (scale-window k (curve-pict-window)) e ...)]))
