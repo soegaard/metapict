@@ -5,10 +5,10 @@
 
 (require racket/contract/base racket/format)
 (provide
- with-window
- with-scaled-window
- window/aspect
- window-opposite-corners
+ with-window         ; (with-window win body ...) evaluate bodies with win as curve-pict-window
+ with-scaled-window  ; (with-scaled-window k body ...) eval bodies with curve-pict-window scaled k
+ window/aspect  ; (window/aspect xmin xmax [ymin #f] [aspect #f]) create window using optional aspect
+ window-opposite-corners   ; return two values: lower left and upper right pts of the window
  (contract-out
   [window-overlap? (-> window? window?  boolean?)] ; do the windows overlap?
   [window-center   (-> window?          pt?)]      ; return pt in center
