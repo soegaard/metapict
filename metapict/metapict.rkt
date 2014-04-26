@@ -31,4 +31,4 @@
 (define (~vec v) 
   (define (t x) (text (~a x)))
   (defm (vec x y) v)
-  (beside (t "(") (scale (above (t x) (t y)) 0.5) (t ")")))
+  (beside (t "(") (scale 0.5 (above (t x) (t y))) (t ")")))
