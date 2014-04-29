@@ -1,5 +1,5 @@
 #lang racket
-(require "../def.rkt" pict racket/draw)
+(require "def.rkt" pict racket/draw)
 
 (provide save-pict-as-pdf)
 
@@ -16,10 +16,17 @@
   (send setup set-editor-margin 0 0)
   (send setup set-scaling α α))
 
-(define (new-pdf-dc filename)
-  (use-a4-paper)
+(define (new-pdf-dc filename w h)
+  ; (use-a4-paper)
   (send (current-ps-setup) set-file filename)
-  (define dc (new pdf-dc% [interactive #f] [parent #f] [use-paper-bbox #t] [as-eps #f] [output #f]))
+  (send (current-ps-setup) set-margin 0 0) 
+  (send (current-ps-setup) set-scaling 1 1)
+  (send (current-ps-setup) set-translation 0 0)
+  (send (current-ps-setup) set-editor-margin 0 0)
+  ; (define dc (new pdf-dc% [interactive #f] [parent #f] [use-paper-bbox #t] [as-eps #f] [output #f]))
+  (def dc (new pdf-dc% [interactive #f] [parent #f] 
+               [use-paper-bbox #f] [width w] [height h]
+               [as-eps #f] [output #f]))
   (send dc set-smoothing 'smoothed) ; important!
   dc)
 
@@ -36,7 +43,7 @@
   (send dc start-page))
 
 (define (save-pict-as-pdf p filename)
-  (def dc (new-pdf-dc filename))
+  (def dc (new-pdf-dc filename (pict-width p) (pict-height p)))
   (start dc)
   (draw-pict p dc 0 0)
-  (end dc))  
+  (end dc))
