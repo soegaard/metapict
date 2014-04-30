@@ -1,4 +1,5 @@
 #lang racket/base
+(require racket/contract/base "save-pdf.rkt")
 ;;;
 ;;; IMPORTANT NOTE
 ;;;   Remember that to set the smoothing mode to 'smoothed if you implement
@@ -26,7 +27,8 @@
  
  save-pict     ; save pict to file, default is png, other formats include jpeg
  margin        ; inset with arguments swapped 
- scale         ; pict:scale with arguments swapped
+ (contract-out 
+  [scale (-> number? pict? pict?)]) ; pict:scale with arguments swapped
  pict-size     ; returns width and height
  
  smoothed      ; use smoothing-mode 'smoothed
@@ -220,6 +222,7 @@
   (case type
     [(png jpeg xbm xpm bmp) (save-bitmap type)]
     [(jpg)                  (save-bitmap 'jpeg)]
+    [(pdf)                  (save-pict-as-pdf pict filename)]
     [else (error 'save-pict (~a "expected one of: png jpeg xbm xpm bmp, got: " type))]))
 
 (define (margin n p) (inset p n))
