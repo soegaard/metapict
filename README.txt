@@ -3,7 +3,7 @@ metapict
 
 A graphics library for producing Racket picts in a MetaPost/TikZ style.
 
-This is a pre-alpha release.
+This is a beta release.
 
 The documentation is being written. See the progress here:
 
