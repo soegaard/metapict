@@ -18,6 +18,8 @@ This example was inspired by Alain Matthes's
 @hyperlink["http://www.texample.net/tikz/examples/rotated-triangle/"]{rotated triangle}
 TikZ example. 
 
+
+
 @interaction[#:eval eval 
 (require metapict)
 (def N 18)
@@ -128,7 +130,7 @@ Where is it?
 (with-window (window -1 14 -1 12)
   (define upper (list (pt 0 0) (pt 8 0) (pt 8 1) (pt 8 3)))
   (define lower (list (pt 5 2) (pt 8 0) (pt 5 0) (pt 0 0)))
-  (margin 2 (draw (color "gray" (draw (grid (pt -1 -1) (pt 14 12) (pt 0 0) 1)))
+  (margin 2 (draw (color "gray" (draw (grid (pt -1 -1) (pt 14 12) (pt 0 0) #:step 1)))
                   (draw-pieces (map (shifted (pt 0 6)) upper))
                   (draw-pieces lower))))]
 
@@ -190,6 +192,7 @@ The inspiration was Florian Lesaint's
         (penwidth 8
           (color "red" (draw a1 a2 a3 a4 a5 a6 a7 a8)))))]
 
+@void[#<<IGNORE
 @section[#:tag "example-rgb-triangle" #:style png-picts]{RGB Triangle}
 This examples shows how linear gradients can be used to fill a triangle.
 The first example use gradients from one color to another along the
@@ -243,3 +246,5 @@ The rgb-triangle was inspired by Andrew Stacey's
                (tri C A "blue"   "yellow")))
   "These should display the same"
   (list q (pict->bitmap q)))] 
+IGNORE
+]
