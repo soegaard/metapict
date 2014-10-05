@@ -1,7 +1,10 @@
 #lang racket/base
-(require "angles.rkt" "arrow.rkt" "curve.rkt" "def.rkt" "draw.rkt" "path.rkt" 
-         "pt-vec.rkt" "shapes.rkt" "structs.rkt" "trans.rkt"
+(require "angles.rkt" "arrow.rkt" "curve.rkt" "def.rkt" "draw.rkt" "label.rkt" 
+         "path.rkt" "pt-vec.rkt" "shapes.rkt" "structs.rkt" "trans.rkt"
          racket/match)
+
+;;; TODO
+; Make node from general convex curve: Compute bounding box and use its center for the node pos.
 
 (provide circle-node          ; create node shaped as a circle
          square-node          ; create node shaped as a square
@@ -26,29 +29,76 @@
 ; the half-diameter for squares when no size is given.
 (define current-node-size (make-parameter 0.2)) ; which unit?
 
-
 ; TODO: Support nodes in draw and fill in draw.rkt
 ; TODO: Improve anchors and normals for square nodes.
+
+(define (draw-node n)
+  (draw (node-curve n)))
+
+(define (filled-node n)
+  (filldraw (node-curve n)))
+
+; TODO: add convenient way of specifying the arrow type
+;  ->  |->  <-  <->  |->  <-| |-|  
+(define (draw-edge n1 n2 . args)
+  (def p1 (node-pos n1))
+  (def p2 (node-pos n2))
+  (def v  (pt- p2 p1))  
+  (match args
+    [(list)       (draw-edge n1 n2 v  (vec* -1 v))]
+    [(list a1)    (draw-edge n1 n2 a1 (vec* -1 a1))]
+    [(list a1 a2)
+     ; (def v (pt- (anchor n2 a2) (anchor n1 a1)))
+     (draw-edge n1 n2 a1 a2 (normal n1 a1) (vec* -1 (normal n2 a2)))]
+    [(list a1 a2 v1 v2)
+     (draw-arrow
+      (cond 
+        #;[#t (curve (anchor n1 a1) v1 .. v2 (anchor n2 a2))]
+        [(vec= v1 (vec* -1 v2))        ; the special case 
+         (def m (pt+ p1 (vec* 0.5 v))) ; "mid" point to achieve a prettier path
+         (curve (anchor n1 a1) (normal n1 v1) .. m .. (vec* -1 (normal n2 v2)) (anchor n2 a2))]
+        [else                          ; the general case
+         (curve (anchor n1 a1) v1 .. v2 (anchor n2 a2))]))]))
+
 
 #;(with-window (window -3 3 -3 3)
     (def n (circle-node (pt 0 0)))
     (def m (square-node (pt 1 1)))
     (margin 5
-          (scale (draw (draw-node n)
-                       (filled-node m)
-                       (draw-edge n m)
-                       (label-bot "1" (anchor n down)))
-                 4)))
+            (scale 4 (draw (draw-node n)
+                           (filled-node m)
+                           (draw-edge n m)
+                           (label-bot "1" (anchor n down))))))
+
+
+
+(define (text-node t)
+  (def l (label-cnt t origo))
+  (def outline (label-bbox l))
+  (node draw-node
+        origo outline 
+        (curve->anchor-function outline)
+        (curve->normal-function outline)))
+
+(define (curve->anchor-function c) ; assume origo is center
+  (λ (v)
+    (def ray (curve origo -- (pt+ origo (vec* 100 v)))) ; todo fix arbitray number
+    (intersection-point ray c)))
+
+(define (curve->normal-function c) ; assume origo is center
+  (λ (v) v) ; todo : for now
+  )
 
 (define (circle-node . args)
   (match args
     [(list (? number? x) (? number? y))  (circle-node x y (current-node-size))]
     [(list x y r)                        (circle-node (pt x y) r)]
     [(list (? pt? p))                    (circle-node p (current-node-size))]
-    [(list p r)   (define (anchor v) (pt+ p (vec* (/ r (norm v)) v)))
-                  (define (normal v) (vec* (/ 1 (norm v)) v))
-                  (node p (circle p r) anchor normal)]
-    [_            (error 'circle-node "expected a position and a radius")]))
+    [(list p r)                          (define (anchor v) (pt+ p (vec* (/ r (norm v)) v)))
+                                         (define (normal v) (vec* (/ 1 (norm v)) v))
+                                         (node draw-node p (circle p r) anchor normal)]
+    [(list)                              (circle-node origo 1)]
+    [_                                   (error 'circle-node "expected a position and a radius")]))
 
 (define (square p r)
   (def -r (- r))
@@ -71,59 +121,29 @@
                           [(<= 5π/4 α 7π/4) down]
                           [else             right]))
                   (define (anchor v) (pt+ p (vec* r (normal v))))
-                  (node p (square p r) anchor normal)]
+                  (node draw-node p (square p r) anchor normal)]
     [_            (error square-node "expected a position and a side length")]))
-
-
-(define (draw-node n)
-  (draw (node-curve n)))
-
-(define (filled-node n)
-  (filldraw (node-curve n)))
-
-(define (draw-edge n1 n2 . args)
-  (def p1 (node-pos n1))
-  (def p2 (node-pos n2))
-  (def v  (pt- p2 p1))  
-  (match args
-    [(list)       (draw-edge n1 n2 v  (vec* -1 v))]
-    [(list a1)    (draw-edge n1 n2 a1 (vec* -1 a1))]
-    [(list a1 a2)
-     ; (def v (pt- (anchor n2 a2) (anchor n1 a1)))
-     (draw-edge n1 n2 a1 a2 (normal n1 a1) (vec* -1 (normal n2 a2)))]
-    [(list a1 a2 v1 v2)
-     (displayln (list 'draw-edge a1 v1 a2 v2))
-     (draw-arrow
-      (cond 
-        #;[#t (curve (anchor n1 a1) v1 .. v2 (anchor n2 a2))]
-        #;[(vec= v1 (vec* -1 v2))        ; the special case 
-           (def m (pt+ p1 (vec* 0.5 v))) ; "mid" point to achieve a prettier path
-           (curve (anchor n1 a1) (normal n1 v1) .. m .. (vec* -1 (normal n2 v2)) (anchor n2 a2))]
-        [else                          ; the general case
-         (curve (anchor n1 a1) v1 .. v2 (anchor n2 a2))]))]))
-
 
 ;;; TESTING
 
 #;(let ()
-(require metapict)
-
-(ahangle         45)       ; default head angle 45 degrees
-(ahflankangle    0)        ; default "curvature" of flank (in degrees)
-(ahtailcurvature 0)        ; default "curvature" of the back  todo!
-(ahratio         1)
-  
-(define n1 (circle-node (pt 0 0) .1))
-(define n2 (circle-node (pt 1 0) .1))
-(define n3 (square-node (pt 0 1) .1))
-(define n4 (circle-node (pt 1 1) .1))
-
-(margin 5
-          (scale (draw (draw-node n1)
-                       (draw-node n2)
-                       (draw-node n3)
-                       (filled-node n4)
-                       (draw-edge n1 n2)
-                       (draw-edge n1 n3 west west)
-                       (draw-edge n1 n4))
-                 4)))
+    (require metapict)
+    
+    (ahangle         45)       ; default head angle 45 degrees
+    (ahflankangle    0)        ; default "curvature" of flank (in degrees)
+    (ahtailcurvature 0)        ; default "curvature" of the back  todo!
+    (ahratio         1)
+    
+    (define n1 (circle-node (pt 0 0) .1))
+    (define n2 (circle-node (pt 1 0) .1))
+    (define n3 (square-node (pt 0 1) .1))
+    (define n4 (circle-node (pt 1 1) .1))
+    
+    (margin 5
+            (scale 4 (draw (draw-node n1)
+                           (draw-node n2)
+                           (draw-node n3)
+                           (filled-node n4)
+                           (draw-edge n1 n2)
+                           (draw-edge n1 n3 west west)
+                           (draw-edge n1 n4)))))

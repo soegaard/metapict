@@ -57,15 +57,16 @@
   (syntax-parse stx
     [(_ name (arg ... pict) old-pen
         expr ...)
-     #'(define (name arg ... pict)
+     #`(define (name arg ... pict)
          (unless (pict? pict)
            (raise-arguments-error 'name "pict expected" "pict" pict))           
-         (dc (lambda (dc x y)
+         (dc #,(syntax/loc stx
+                 (lambda (dc x y)
                (let ([old-pen (send dc get-pen)])
                    (def new-pen (let () expr ...))
                    (send dc set-pen new-pen)
                    (draw-pict pict dc x y)
-                   (send dc set-pen old-pen)))
+                   (send dc set-pen old-pen))))
              (pict-width pict) (pict-height pict)))]))
 
 (define-penop pen (new-pen pict) b
@@ -78,12 +79,12 @@
 
 (define-penop penwidth (width pict) p
   (send the-pen-list find-or-create-pen 
-        (send p get-color) width (send p get-style)
+        (send p get-color) (min 255 width) (send p get-style)
         (send p get-cap) (send p get-join)))
 
 (define-penop penscale (factor pict) p
   (send the-pen-list find-or-create-pen 
-        (send p get-color) (* factor (send p get-width)) (send p get-style)
+        (send p get-color) (min (* factor (send p get-width)) 255) (send p get-style)
         (send p get-cap) (send p get-join)))
 
 (define-penop penstyle (style pict) p

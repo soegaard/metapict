@@ -253,9 +253,13 @@
   ; (display (list (abs (- t+ t-)) (abs (- u+ u-)) t+ u+))
   ; (display " ")
   ; (displayln (list b1 b2 t- t+ u- u+))
+  ; (newline)
   ; return either #f or (list p t u), where p = b1(t) = b2(u)
   (def again bez-intersection-point-and-times)
   (def ε 1e-15) ; precision
+  (define (area w)
+    (defm (window x- x+ y- y+) w)
+    (* (- x+ x-) (- y+ y-)))
   (define (very-small? w)
     (defm (window x- x+ y- y+) w)
     (and (<= (- x+ x-) ε) 
@@ -263,9 +267,10 @@
   (def (mid s t) (/ (+ s t) 2))
   (def bb1 (bez-large-bounding-box b1))
   (def bb2 (bez-large-bounding-box b2))
-  (and (or (= t+ t-) (= u+ u-) ; todo: why are these checks needed?
+  (and (or ; (= t+ t-) (= u+ u-) ; todo: why are these checks needed?
            (window-overlap? bb1 bb2))
-       (or (and (very-small? bb1) (very-small? bb2)
+       (or (and ; (very-small? bb1) (very-small? bb2)
+            (<= (+ (area bb1) (area bb2)) ε)
                 (list (window-center bb1) ; point
                       ; todo : instead of the center, find 
                       ; the intersection of lines

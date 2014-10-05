@@ -192,7 +192,7 @@ The inspiration was Florian Lesaint's
         (penwidth 8
           (color "red" (draw a1 a2 a3 a4 a5 a6 a7 a8)))))]
 
-@void[#<<IGNORE
+@;void[#<<IGNORE
 @section[#:tag "example-rgb-triangle" #:style png-picts]{RGB Triangle}
 This examples shows how linear gradients can be used to fill a triangle.
 The first example use gradients from one color to another along the
@@ -246,5 +246,5 @@ The rgb-triangle was inspired by Andrew Stacey's
                (tri C A "blue"   "yellow")))
   "These should display the same"
   (list q (pict->bitmap q)))] 
-IGNORE
-]
+@;IGNORE
+@;]
