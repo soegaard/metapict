@@ -7,7 +7,7 @@
 @interaction-eval[#:eval eval (require metapict racket/class racket/draw)]
 @(define math-style tt)
 
-@defmodule[metapict/pict]
+@defmodule[metapict/draw]
 
 @title[#:tag "reference-draw-and-fill"]{Drawing and Filling}
 

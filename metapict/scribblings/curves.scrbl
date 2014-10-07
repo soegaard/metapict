@@ -49,7 +49,7 @@ then MetaPict will connect the points with a "pretty", smooth curve.
                                 (defv (xmin xmax ymin ymax) (values -110 310 -55 155))
                                 (curve-pict-window (window xmin xmax ymin ymax))
                                 (def red-todo-fix
-                                  (pencolor 
+                                  (color 
                                    "red" 
                                    (draw 
                                     (fill 
