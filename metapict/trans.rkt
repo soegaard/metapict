@@ -89,12 +89,13 @@
 (define-syntax (define-trans/2 stx)
   (syntax-parse stx
     [(_ name a b trans-expr)
-     #'(begin 
+     (syntax/loc stx
+       (begin 
          (provide name) ; todo easy: use contract-out here
          (define name (match-lambda* [(or (list* (pair a b)              args) 
                                           (list* (? real? a) (? real? b) args))
                                       (define t trans-expr)
-                                      (if (empty? args) t (apply t args))])))]))
+                                      (if (empty? args) t (apply t args))]))))]))
 
 (define-trans/1 slanted a   (trans 1 0 a 1 0 0))     ; (x,y) slanted a     = (x+ay,y)
 (define-trans/1 scaled  a   (trans a 0 0 a 0 0))     ; (x,y) scaled a      = (ax,ay)

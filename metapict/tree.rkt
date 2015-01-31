@@ -154,6 +154,12 @@
                                                 (recur c d))))]))
   (recur tree (draw)))
 
+
+;(ahangle         45)      
+;(ahflankangle    0) 
+;(ahtailcurvature 0) 
+;(ahratio         1)
+
 (module+ test
   (set-curve-pict-size 400 400)
   (define (draw-example calculate-positions)
