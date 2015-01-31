@@ -19,7 +19,6 @@ This example was inspired by Alain Matthes's
 TikZ example. 
 
 
-
 @interaction[#:eval eval 
 (require metapict)
 (def N 18)
@@ -33,6 +32,7 @@ TikZ example.
      (def filled   (color shade (fill triangle)))
      (values (draw drawing filled triangle)
              (med 0.12 A B) (med 0.12 B C) (med 0.12 C A)))))]
+
 
 @; ----------------------------------------
 @section[#:tag "rooty helix" #:style svg-picts]{Rooty Helix}
@@ -94,17 +94,21 @@ Alex Hirzel @hyperlink["http://www.texample.net/tikz/examples/glider/"]{Glider}.
           (for/draw ([p (list (pt 0 0) (pt 1 0) (pt 2 0) (pt 2 1) (pt 1 2))])
             (color "black" (fill (circle (pt+ p (vec .5 .5)) 0.42)))))))]
 
-@section[#:tag "rainbow-circle" #:style svg-picts]{Rainbow Circle}
-@interaction[#:eval eval 
-(scale 3 (with-window (window -5 5 -5 5)
-           (def colors (list "yellow" "orange" "red" "purple" "blue" "green" "yellow"))
-           (penwidth 16 
-             (margin 20 
-               (for*/draw ([θ (in-range 0 2π .01)])
-                 (def f (/ θ 2π))
-                 (def c (color-med* f colors))
-                 (color (change-alpha c (- 1 f))
-                        (draw (pt@ 4 θ))))))))]
+@(void
+  ;  The Rainbow example works - but is a little slow to render,
+  ;  so for now it is left out of the docs.
+; @section[#:tag "rainbow-circle" #:style svg-picts]{Rainbow Circle}
+; @interaction[#:eval eval 
+;(scale 3 (with-window (window -5 5 -5 5)
+;           (def colors (list "yellow" "orange" "red" "purple" "blue" "green" "yellow"))
+;           (penwidth 16 
+;             (margin 20 
+;               (for*/draw ([θ (in-range 0 2π .01)])
+;                 (def f (/ θ 2π))
+;                 (def c (color-med* f colors))
+;                 (color (change-alpha c (- 1 f))
+;                        (draw (pt@ 4 θ))))))))]
+  )
 
 @section[#:tag "puzzle-missing-square" #:style svg-picts]{Puzzle: The Missing Square}
 The two figures are made from the same colored pieces. 
@@ -230,21 +234,17 @@ The rgb-triangle was inspired by Andrew Stacey's
   (def ABC (curve A -- B -- C -- cycle))
   (def (tri P Q c) (brushgradient P Q (list c (change-alpha c 0)) 
                                   (fill ABC)))
-  (def p (draw (tri A (pt@d 1/2 (+  90 180)) "red")
-               (tri B (pt@d 1/2 (+ 210 180)) "green")
-               (tri C (pt@d 1/2 (- 330 180)) "blue")))
-  "These should display the same"
-  (list p (pict->bitmap p)))
+  (draw (tri A (pt@d 1/2 (+  90 180)) "red")
+        (tri B (pt@d 1/2 (+ 210 180)) "green")
+        (tri C (pt@d 1/2 (- 330 180)) "blue")))
 ; Fill the three interior triangles using a 
 ; gradient parallel with the outer edge.
 (with-window (window -1 1 -1 1)
   (def (tri P Q . colors)
     (brushgradient P Q colors 
       (fill (curve P -- Q -- O -- cycle))))
-  (def q (draw (tri A B "yellow" "red")
-               (tri B C "red"    "blue")
-               (tri C A "blue"   "yellow")))
-  "These should display the same"
-  (list q (pict->bitmap q)))] 
+  (draw (tri A B "yellow" "red")
+        (tri B C "red"    "blue")
+        (tri C A "blue"   "yellow")))]
 @;IGNORE
 @;]
