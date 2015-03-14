@@ -7,9 +7,9 @@
 @interaction-eval[#:eval eval (require metapict racket/class racket/draw)]
 @(define math-style tt)
 
+@title[#:tag "reference-draw-and-fill"]{Drawing and Filling}
 @defmodule[metapict/draw]
 
-@title[#:tag "reference-draw-and-fill"]{Drawing and Filling}
 
 @; ----------------------------------------
 @section[#:tag "ref-draw-and-fill"]{Drawing and Filling}

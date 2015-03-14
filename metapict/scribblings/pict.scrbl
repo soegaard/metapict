@@ -6,9 +6,10 @@
 @interaction-eval[#:eval eval (require metapict racket/class racket/draw)]
 @(define math-style tt)
 
+@title[#:tag "reference-pict"]{Pict}
+
 @defmodule[metapict/pict]
 
-@title[#:tag "reference-pict"]{Pict}
 
 @; ----------------------------------------
 @section[#:tag "ref-pict"]{Pict Adjusters}
