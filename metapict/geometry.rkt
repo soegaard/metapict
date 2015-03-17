@@ -24,16 +24,19 @@
 ; (line p q #f #t) represents a ray from p through q
 ; (line p q #f #f) represents a line segment from p to q
 
+
 (define (new-line p q [extend-p #t] [extend-q #t])
+  (when (equal? p q)
+    (error 'new-line "the points need to be different"))
   (line p q extend-p extend-q))
 
 (define (line-abc l)
   ; return a, b, and, c such that ax+by+c=0
   ; is an equation for the line through p and q
-  (match-define (line p q _ _) l)
-  (match-define (vec a b) (rot90 (pt- q p)))
-  (match-define (pt x0 y0) p)
-  (define c (- (+ (* a x0) (* b y0))))
+  (match-define (line (pt px py) (pt qx qy) _ _) l)
+  (define a (- qy py))
+  (define b (- px qx))
+  (define c (- (* py qx) (* px qy)))
   (values a b c))
 
 (define (unit v) ; unit vector with same direction as v
@@ -48,16 +51,87 @@
 
 (define (line-slope l)
   (match-define (line (pt x1 y1) (pt x2 y2) _ _) l)
-  (when (= x1 x2) (error 'line-slope "line is vertical"))
-  (/ (- y2 y1)
-     (- x2 x1)))
+  (if (= x1 x2)
+      +inf.0
+      (/ (- y2 y1)
+         (- x2 x1))))
 
 (define (line-origin l) ; y when x=0
   (match-define (line (pt x y) _ _ _) l)
   (define a (line-slope l))
   (- y (* a x)))
 
+; dist-pt-to-line : pt line -> real
+;   distance from point to line
+(define (dist-pt-to-line p l)
+  (defm (pt x y) p)
+  (defv (a b c) (line-abc l))
+  (/ (abs (+ (* a x) (* b y) c))
+     (sqrt (+ (sqr a) (sqr b)))))
+
+;;; PARABOLAS
+
+(struct parabola (f v) #:transparent)
+; f and v are points
+; f is the focus 
+; v is the vertex 
+; The parabola consists of all points whose distances to f and v are the same
+
+; The focal parameter a is the distance from the from the vertex to the focus.
+
+(define (parabola-focal p)
+  (match-define (parabola f v) p)
+  (dist f v))
+
+(define (directrix p)
+  (match-define (parabola f v) p)
+  (define fv (pt- v f))
+  (define P (pt+ v fv))
+  (define Q (pt+ P (rot90 fv)))
+  (new-line P Q))
+
+(define (excentricity x)
+  (match x
+    [(parabola f v) 1]
+    ; TODO case for hyperbola
+    ; TODO case for ellipse
+    [_ (error)]))
+
+;;; SIDE (in a triangle)
+
+(struct side (n t) #:transparent)
+; n = 0 or 1 means [AB],
+; n = -1     means [BA],
+; n =  2     means [BC]
+; n = -2     means [CB]
+; t = triangle
+
+;;; GENERAL
+
+(define (midpoint p1 p2)
+  (med 1/2 p1 p2))
+
+(define (distance o1 o2)
+  (match* {o1 o2}
+    [{(? pt?) (? pt?)}   (dist o1 o2)]
+    [{(? pt?) (? line?)} (dist-pt-to-line o1 o2)]
+    [{(? line?) (? pt?)} (dist-pt-to-line o2 o1)]
+    [{_ _} (error 'distance)]))
+
+(define (same-side? m n l)
+  ; are the points m and n on the same side of the line l?
+  (defm (line (pt x1 y1) (pt x2 y2) _ _) l)
+  (defm (pt ax ay) m)
+  (defm (pt bx by) n)
+  (positive? (* (+ (* (- y1 y2) (- ax x1))
+                   (* (- x2 x1) (- ay y1)))
+                (+ (* (- y1 y2) (- bx x1))
+                   (* (- x2 x1) (- by y1))))))
 
 
-(define (ray p q)      (line p q #f #t))
-(define (seg p q)      (line p q #f #f))
+(define (area o)
+  (match o
+    ; [(? triangle?) (triangle-area o)]
+    [_ (error 'area (~a "got: " o))]))
+
+
