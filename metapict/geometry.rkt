@@ -5,7 +5,6 @@
 ; The goal is to provide functionality similar to
 ; geometry.asy from Asymptote.
 
-
 ;;; LINES
 
 ; http://www.piprime.fr/files/asymptote/geometry/modules/geometry.asy.index.type.html#struct line
@@ -18,6 +17,23 @@
 ;    u = unit vector in the direction from p to q
 ;    v = normal vector
 ;    
+
+(define (line/line-intersection line1 line2)
+  (match-define (line (pt x1 y1) (pt x2 y2) l1 r1) line1)
+  (match-define (line (pt x3 y3) (pt x4 y4) l2 r2) line2)
+  (define denom (- (* (- x1 x2) (- y2 y4))
+                   (* (- y1 y2) (- x3 x4))))
+  (define numeratorx (- (* (- (* x1 y2) (* y1 x2)) (- x3 x4))
+                        (* (- (* x3 y4) (* y3 x4)) (- x1 x2))))
+  (define numeratory (- (* (- (* x1 y2) (* y1 x2)) (- y3 y4))
+                        (* (- (* x3 y4) (* y3 x4)) (- y1 y2))))
+  (if (zero? denom)
+      (pt +inf.0 +inf.0)
+      (pt (/ numeratorx denom) (/ numeratory denom))))
+
+#;(check-equal? (line/line-intersection (new-line (pt 0 0) (pt 2 2))
+                                        (new-line (pt 0 2) (pt 2 0)))
+                (pt 1 1))
 
 ; (line p q #t #t) represents a line through points p and q
 ; (line p q #t #f) represents a ray from q through p
