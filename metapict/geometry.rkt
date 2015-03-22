@@ -1,5 +1,5 @@
 #lang racket
-(require metapict)
+(require metapict rackunit)
 ;;; WORK IN PROGRESS
 
 ; The goal is to provide functionality similar to
@@ -110,7 +110,23 @@
    [(list _ _) (error 'new-circle)]))
 
 (define (circum-center a b c)
-  (error 'circum-center "todo"))
+  (match-define (pt ax ay) a)
+  (match-define (pt bx by) b)
+  (match-define (pt cx cy) c)
+  (define d (* 2 (+ (* ax (- by cy))
+                    (* bx (- cy ay))
+                    (* cx (- ay by)))))
+  (define ux (/ (+ (* (+ (sqr ax) (sqr ay)) (- by cy))
+                   (* (+ (sqr bx) (sqr by)) (- cy ay))
+                   (* (+ (sqr cx) (sqr cy)) (- ay by)))
+                d))
+  (define uy (/ (+ (* (+ (sqr ax) (sqr ay)) (- cx bx))
+                   (* (+ (sqr bx) (sqr by)) (- ax cx))
+                   (* (+ (sqr cx) (sqr cy)) (- bx ax)))
+                d))
+  (pt ux uy))
+                   
+(check-equal? (circum-center (pt -1 0) (pt 0 1) (pt 1 0)) (pt 0 0))
 
 (define (circum-circle a b c)
   (error 'circum-circle "todo"))
