@@ -98,12 +98,12 @@
   (match-lambda*
    [(list (? point? c) (? number? r))
     ; center and radius
-    (circle: c r)]
+    (circle: c r #f)]
    [(list (? point? c) (? point? a))
     (define d (dist c a))
     (unless (positive? d) 
       (error 'new-circle "the two points must be different"))
-    (circle: c d)]
+    (circle: c d #f)]
    [(list (? point? a) (? point? b) (? point? c))
     ; circle through points a, b, and, c
     (circum-circle a b c)]
@@ -129,10 +129,8 @@
 (check-equal? (circum-center (pt -1 0) (pt 0 1) (pt 1 0)) (pt 0 0))
 
 (define (circum-circle a b c)
-  (error 'circum-circle "todo"))
-
-   
-
+  (define u (circum-center a b c))
+  (new-circle u (dist u a)))
 
 
 ;;; PARABOLAS
