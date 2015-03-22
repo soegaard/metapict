@@ -18,23 +18,6 @@
 ;    v = normal vector
 ;    
 
-(define (line/line-intersection line1 line2)
-  (match-define (line (pt x1 y1) (pt x2 y2) l1 r1) line1)
-  (match-define (line (pt x3 y3) (pt x4 y4) l2 r2) line2)
-  (define denom (- (* (- x1 x2) (- y2 y4))
-                   (* (- y1 y2) (- x3 x4))))
-  (define numeratorx (- (* (- (* x1 y2) (* y1 x2)) (- x3 x4))
-                        (* (- (* x3 y4) (* y3 x4)) (- x1 x2))))
-  (define numeratory (- (* (- (* x1 y2) (* y1 x2)) (- y3 y4))
-                        (* (- (* x3 y4) (* y3 x4)) (- y1 y2))))
-  (if (zero? denom)
-      (pt +inf.0 +inf.0)
-      (pt (/ numeratorx denom) (/ numeratory denom))))
-
-#;(check-equal? (line/line-intersection (new-line (pt 0 0) (pt 2 2))
-                                        (new-line (pt 0 2) (pt 2 0)))
-                (pt 1 1))
-
 ; (line p q #t #t) represents a line through points p and q
 ; (line p q #t #f) represents a ray from q through p
 ; (line p q #f #t) represents a ray from p through q
@@ -84,6 +67,57 @@
   (defv (a b c) (line-abc l))
   (/ (abs (+ (* a x) (* b y) c))
      (sqrt (+ (sqr a) (sqr b)))))
+
+(define (line/line-intersection line1 line2)
+  (match-define (line (pt x1 y1) (pt x2 y2) l1 r1) line1)
+  (match-define (line (pt x3 y3) (pt x4 y4) l2 r2) line2)
+  (define denom      (- (* (- x1 x2) (- y2 y4))
+                        (* (- y1 y2) (- x3 x4))))
+  (define d12 (- (* x1 y2) (* y1 x2)))
+  (define d34 (- (* x3 y4) (* y3 x4)))
+  (define numeratorx (- (* d12 (- x3 x4)) (* d34 (- x1 x2))))
+  (define numeratory (- (* d12 (- y3 y4)) (* d34 (- y1 y2))))
+  (if (zero? denom)
+      (pt +inf.0 +inf.0)
+      (pt (/ numeratorx denom) (/ numeratory denom))))
+
+#;(check-equal? (line/line-intersection (new-line (pt 0 0) (pt 2 2))
+                                        (new-line (pt 0 2) (pt 2 0)))
+                (pt 1 1))
+
+;;; CIRCLE
+
+(struct circle: (c r l) #:transparent)
+; c = center
+; r = radiues
+; l = line used if r=+inf.0
+
+(define point? pt?)
+
+(define new-circle
+  (match-lambda*
+   [(list (? point? c) (? number? r))
+    ; center and radius
+    (circle: c r)]
+   [(list (? point? c) (? point? a))
+    (define d (dist c a))
+    (unless (positive? d) 
+      (error 'new-circle "the two points must be different"))
+    (circle: c d)]
+   [(list (? point? a) (? point? b) (? point? c))
+    ; circle through points a, b, and, c
+    (circum-circle a b c)]
+   [(list _ _) (error 'new-circle)]))
+
+(define (circum-center a b c)
+  (error 'circum-center "todo"))
+
+(define (circum-circle a b c)
+  (error 'circum-circle "todo"))
+
+   
+
+
 
 ;;; PARABOLAS
 
