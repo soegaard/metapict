@@ -127,6 +127,13 @@
 
 (define point? pt?)
 
+; new-circle : pt number -> circle
+; new-circle : pt pt     -> circle
+; new-circle : pt pt pt  -> circle
+;   create circle either from
+;     i) center and radius
+;    ii) center and point on periphery
+;   iii) three points on the circle
 (define new-circle
   (match-lambda*
    [(list (? point? c) (? number? r))
@@ -142,6 +149,9 @@
     (circum-circle a b c)]
    [(list _ _) (error 'new-circle)]))
 
+; circum-center : pt pt pt -> circle
+;   given three non collinear points, return
+;   center of the circle that passes through the points
 (define (circum-center a b c)
   (match-define (pt ax ay) a)
   (match-define (pt bx by) b)
@@ -159,6 +169,9 @@
  
 (module+ test (check-equal? (circum-center (pt -1 0) (pt 0 1) (pt 1 0)) (pt 0 0)))
 
+; circum-circle : pt pt pt -> circle
+;   given three points, return the circle
+;   that passes throught the three points
 (define (circum-circle a b c)
   (define u (circum-center a b c))
   (new-circle u (dist u a)))
