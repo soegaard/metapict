@@ -1,5 +1,7 @@
 #lang racket
-(require metapict rackunit)
+(require metapict)
+(module+ test (require rackunit))
+
 ;;; WORK IN PROGRESS
 
 ; The goal is to provide functionality similar to
@@ -24,30 +26,43 @@
 ; (line p q #f #f) represents a line segment from p to q
 
 
+; new-line : point point boolean boolean -> line
 (define (new-line p q [extend-p #t] [extend-q #t])
   (when (equal? p q)
     (error 'new-line "the points need to be different"))
   (line p q extend-p extend-q))
 
+; line-abc : line -> (values real real real)
+;   return a, b, and, c such that ax+by+c=0
+;   is an equation for the line through p and q
 (define (line-abc l)
-  ; return a, b, and, c such that ax+by+c=0
-  ; is an equation for the line through p and q
   (match-define (line (pt px py) (pt qx qy) _ _) l)
   (define a (- qy py))
   (define b (- px qx))
   (define c (- (* py qx) (* px qy)))
   (values a b c))
 
-(define (unit v) ; unit vector with same direction as v
+; unit : vec -> vec
+;   return unit vector with same direction as v
+(define (unit v) 
   (vec* (/ (len v)) v))
 
-(define (line-u l) ; unit vector parallel to l
+; line-direction-vector : line -> vec
+;   unit vector parallel to the line l
+;   [Asymptote: line-u]
+(define (line-direction-vector l) 
   (match-define (line p q _ _) l)
   (unit (pt- q p)))
 
-(define (line-v l) ; unit vector perpendicular to l
-  (rot90 (line-u l)))
+; line-normal-vector : line -> vec
+;   unit vector ortogonal to the line l 
+;   [Asymptote: line-v]
+(define (line-normal-vector l) 
+  (rot90 (line-direction-vector l)))
 
+; line-slope : line -> real
+;   compute slope for line l.
+;   if the line is vertical return +inf.0
 (define (line-slope l)
   (match-define (line (pt x1 y1) (pt x2 y2) _ _) l)
   (if (= x1 x2)
@@ -55,10 +70,18 @@
       (/ (- y2 y1)
          (- x2 x1))))
 
-(define (line-origin l) ; y when x=0
+(module+ test 
+  (check-equal? (line-slope (new-line (pt -1 2) (pt 1 4))) 1)
+  (check-equal? (line-slope (new-line (pt -1 2) (pt -1 4))) +inf.0))
+
+; line-origin : line -> real
+;   return y when x=0
+(define (line-origin l) 
   (match-define (line (pt x y) _ _ _) l)
   (define a (line-slope l))
   (- y (* a x)))
+
+(module+ test (check-equal? (line-origin (new-line (pt -1 2) (pt 1 4))) 3))
 
 ; dist-pt-to-line : pt line -> real
 ;   distance from point to line
@@ -68,6 +91,15 @@
   (/ (abs (+ (* a x) (* b y) c))
      (sqrt (+ (sqr a) (sqr b)))))
 
+(module+ test
+  (check-equal? (dist-pt-to-line (pt 1 0) (new-line (pt 0 0) (pt 0 1))) 1)
+  (check-true   (<= (abs (- (dist-pt-to-line (pt 0 0) (new-line (pt 0 1) (pt 1 0))) 
+                            (/ (sqrt 2) 2)))
+                    1e-14)))
+
+; line/line-intersection : line line -> (or pt +inf.0)
+;   return the intersection between line1 and line2
+;   if there are none, return (pt +inf.0 +inf.0)
 (define (line/line-intersection line1 line2)
   (match-define (line (pt x1 y1) (pt x2 y2) l1 r1) line1)
   (match-define (line (pt x3 y3) (pt x4 y4) l2 r2) line2)
@@ -81,9 +113,10 @@
       (pt +inf.0 +inf.0)
       (pt (/ numeratorx denom) (/ numeratory denom))))
 
-#;(check-equal? (line/line-intersection (new-line (pt 0 0) (pt 2 2))
+(module+ test
+  (check-equal? (line/line-intersection (new-line (pt 0 0) (pt 2 2))
                                         (new-line (pt 0 2) (pt 2 0)))
-                (pt 1 1))
+                (pt 1 1)))
 
 ;;; CIRCLE
 
@@ -113,9 +146,7 @@
   (match-define (pt ax ay) a)
   (match-define (pt bx by) b)
   (match-define (pt cx cy) c)
-  (define d (* 2 (+ (* ax (- by cy))
-                    (* bx (- cy ay))
-                    (* cx (- ay by)))))
+  (define d (* 2 (+ (* ax (- by cy)) (* bx (- cy ay)) (* cx (- ay by)))))
   (define ux (/ (+ (* (+ (sqr ax) (sqr ay)) (- by cy))
                    (* (+ (sqr bx) (sqr by)) (- cy ay))
                    (* (+ (sqr cx) (sqr cy)) (- ay by)))
@@ -125,8 +156,8 @@
                    (* (+ (sqr cx) (sqr cy)) (- bx ax)))
                 d))
   (pt ux uy))
-                   
-(check-equal? (circum-center (pt -1 0) (pt 0 1) (pt 1 0)) (pt 0 0))
+ 
+(module+ test (check-equal? (circum-center (pt -1 0) (pt 0 1) (pt 1 0)) (pt 0 0)))
 
 (define (circum-circle a b c)
   (define u (circum-center a b c))
