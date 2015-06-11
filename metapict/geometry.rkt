@@ -1,6 +1,13 @@
 #lang racket
-(require metapict)
+; TODO: test intersections between line and quadrics
+(require metapict math)
 (module+ test (require rackunit))
+
+(define (quadratic-solutions* a b c)
+  ; quadratic-solutions from racket/math doesn't handle the case a=0
+  (if (= a 0) 
+      (list (/ (- c) b))
+      (quadratic-solutions a b c)))
 
 ;;; WORK IN PROGRESS
 
@@ -18,7 +25,6 @@
 ;    ax+by+c=0
 ;    u = unit vector in the direction from p to q
 ;    v = normal vector
-;    
 
 ; (line p q #t #t) represents a line through points p and q
 ; (line p q #t #f) represents a ray from q through p
@@ -117,6 +123,57 @@
   (check-equal? (line/line-intersection (new-line (pt 0 0) (pt 2 2))
                                         (new-line (pt 0 2) (pt 2 0)))
                 (pt 1 1)))
+
+;;;
+
+(define eps-geo 1e-10)
+
+(define (line/quadric-intersection A B a b c d e f g)
+  ; intersection points between the line AB and the quadric
+  ;  a x^2 + b xy + c y^2 + d x + f y + g =0  
+  (match-define (pt Ax Ay) A)
+  (match-define (pt Bx By) B)
+  (define Δy  (- By Ay))
+  (define Δx  (- Ax Bx))
+  (define Δ   (- (* Ay Bx) (* Ax By)))
+  (cond
+    [(> (abs Δy) eps-geo)
+     (define aa (+ (* Δy c) (* a (/ (sqr Δx) Δy)) (- (* b Δx))))
+     (define bb (+ (* Δy f) (* -1 Δx d) (* 2 a Δx (/ Δ Δy)) (* -1 b Δ)))
+     (define cc (+ (* Δy g) (* -1 Δ  d) (* a (/ (sqr Δ) Δy))))
+     (for/list ([y (quadratic-solutions* aa bb cc)])
+       (pt (+ (* -1 Δx (/ y Δy)) (* -1 (/ Δ Δy))) y))]
+    [else
+     ; horisontal line (because Δy~0)
+     ; a x^2 + b xy + c y^2 + d x + f y + g = ?
+     ; Δx a x^2 + Δx b y x + Δx d x = Δx ? - (Δx c y^2 +  + Δx f y + Δx g)
+     ; 
+     (define aa (* a Δx))
+     (define bb (- (* d Δx) (* b Δ)))
+     (define cc (+ (* g Δx) (* -1 Δ f) (* c (/ (sqr Δ) Δx))))
+     (for/list ([x (quadratic-solutions* aa bb cc)])
+       (pt x (/ (- Δ) Δx)))]))
+
+
+(module+ test
+  (check-equal? (line/quadric-intersection (pt 0 1) (pt 1 1) 1 0 0 0 0 -1 0) 
+                (list (pt 1 1) (pt -1 1)))
+  (check-equal? (line/quadric-intersection (pt 0 1) (pt 1 1) 1 0 1 0 0 -1 0)
+                (list (pt 0 1)))
+  (check-equal? (line/quadric-intersection (pt 0 1) (pt 1 1) 1 0 1 1 0 -1 0)
+                (list (pt 0 1) (pt -1 1)))
+  (check-equal? (line/quadric-intersection (pt 0 1) (pt 1 1) 1 0 1 1 1 -1 0)
+                (list (pt 0 1) (pt -1 1)))
+  (check-equal? (line/quadric-intersection (pt 0 1) (pt 1 1) -1 0 1 1 1 -1 0)
+                (list (pt 0 1) (pt 1 1)))
+  (check-equal? (line/quadric-intersection (pt 0 1) (pt 1 1) -1 0 -1 1 1 -1 0)
+                (list))
+  (check-equal? (line/quadric-intersection (pt 0 1) (pt 1 2) 1 0 -1 1 1 -1 0)
+                (list (pt -1 0)))
+  (check-equal? (line/quadric-intersection (pt 0 1) (pt 1 2) 1 0 1 1 1 -1 0)
+                (list (pt -1 0) (pt 0 1)))
+  (check-equal? (line/quadric-intersection (pt 0 1) (pt 1 2) 1 0 1 1 1 1 0)
+                (list (pt -1 0))))
 
 ;;; CIRCLE
 
