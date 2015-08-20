@@ -4,7 +4,7 @@ MetaPict
 A graphics library for producing beautiful pictures using Racket.
 MetaPict programs mimick the MetaPost/TikZ style known in LaTeX-circles.
 
-The documentation is being written. See the progress here:
+The documentation is available here:
 
     http://soegaard.github.io/docs/metapict/metapict.html
 
