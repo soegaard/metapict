@@ -4,7 +4,7 @@
 
 (require metapict
          (only-in srfi/1 zip unzip2)
-         (only-in unstable/gui/pict tag-pict find-tag)
+         (only-in ppict/tag tag-pict find-tag)
          (for-syntax syntax/parse))
 
 (define (tag base i j) (string->symbol (~a base '- i '- j)))
