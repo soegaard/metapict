@@ -3,7 +3,7 @@
 (define version    "0.1")
 (define deps '("base" "draw-lib" "math-lib" "gui-lib"
                "parser-tools-lib" "pict-lib" "slideshow-lib"
-               "srfi-lite-lib" "unstable-lib" "htdp-lib"
+               "srfi-lite-lib" "ppict" "htdp-lib"
                "compatibility-lib"))
 
 

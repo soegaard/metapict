@@ -24,13 +24,6 @@
 (require "pict-lite.rkt" "metapict.rkt"
          racket/math)
 
-(require 
- (except-in unstable/gui/pict 
-            ; These names are overwritten:
-            fill    ; should be named inset/centered
-            color   ; just colorize with arguments swapped - our match expander handles this
-            ))
-
 (module+ test (require rackunit))
 
 
