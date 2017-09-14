@@ -50,6 +50,7 @@
 (define (vec+ v w) (match* (v w) [((vec x y) (vec s t)) (vec (+ s x) (+ t y))]))
 (define (vec- v w) (match* (v w) [((vec x y) (vec s t)) (vec (- x s) (- y t))]))
 (define (vec* s v) (match v [(vec x y) (vec (* s x) (* s y))]))
+(define (vec/ v s) (match v [(vec x y) (vec (/ x s) (/ y s))]))
 (define (vec->pt v) (match v [(vec x y) (pt x y)]))
 (define (vec= v w) (and (= (vec-x v) (vec-x w)) (= (vec-y v) (vec-y w))))
 (define (vec~ v w [ε 1e-15]) (<= (norm (vec- v w)) ε))

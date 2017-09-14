@@ -14,28 +14,46 @@
 ; The goal is to provide functionality similar to
 ; geometry.asy from Asymptote.
 
-;;; LINES
+;;; FUNCTIONS and structs
+; (struct line (p q l r) #:transparent)        ; p, q points;  l,r booleans
+; new-line              : p q [l r] -> line    ; create new line, ray, or, segment
+; line-abc : line -> (values real real real)   ; a, b, and, c such that ax+by+c=0
+;                                                is an equation for the line through p and q
+
+; unit                   : vec       -> vec     ; unit vector with same direction as v
+
+; line-direction-vector  : line      -> vec     ; unit vector parallel  to the line l
+; line-normal-vector     : line      -> vec     ; unit vector ortogonal to the line l 
+; line-slope             : line      -> real    ; slope for line l (+inf.0 when vertical)
+; line-origin            : line      -> real    ; y when x=0
+; dist-pt-to-line        : pt line   -> real    ; distance from point to line
+
+; line/line-intersection : line line -> (or pt +inf.0)  ; intersection between line1 and line2 
+;                                                         if there are none, return (pt +inf.0 +inf.0)
+; line/quadric-intersection : A B a b c d e f g -> ...  ; intersection points between the line AB and
+;                                                         a x^2 + b xy + c y^2 + d x + f y + g =0  
+
+;;; LINES, RAYS, AND SEGMENTS
 
 ; http://www.piprime.fr/files/asymptote/geometry/modules/geometry.asy.index.type.html#struct line
 
 (struct line (p q l r) #:transparent)
 ; p and q are points. l and r are booleans. 
 
-; a, b, and c are reals. u and v are vecs.
+; a, b, and, c are reals. u and v are vecs.
 ;    ax+by+c=0
 ;    u = unit vector in the direction from p to q
 ;    v = normal vector
 
 ; (line p q #t #t) represents a line through points p and q
+; (line p q #f #f) represents a line segment from p to q
 ; (line p q #t #f) represents a ray from q through p
 ; (line p q #f #t) represents a ray from p through q
-; (line p q #f #f) represents a line segment from p to q
 
 
 ; new-line : point point boolean boolean -> line
 (define (new-line p q [extend-p #t] [extend-q #t])
-  (when (equal? p q)
-    (error 'new-line "the points need to be different"))
+  (when (equal? p q) (error 'new-line "the points need to be different"))
   (line p q extend-p extend-q))
 
 ; line-abc : line -> (values real real real)
@@ -51,7 +69,7 @@
 ; unit : vec -> vec
 ;   return unit vector with same direction as v
 (define (unit v) 
-  (vec* (/ (len v)) v))
+  (vec/ v (len v)))
 
 ; line-direction-vector : line -> vec
 ;   unit vector parallel to the line l
@@ -137,7 +155,7 @@
   (define Δx  (- Ax Bx))
   (define Δ   (- (* Ay Bx) (* Ax By)))
   (cond
-    [(> (abs Δy) eps-geo)
+    [(> (abs Δy) eps-geo)     
      (define aa (+ (* Δy c) (* a (/ (sqr Δx) Δy)) (- (* b Δx))))
      (define bb (+ (* Δy f) (* -1 Δx d) (* 2 a Δx (/ Δ Δy)) (* -1 b Δ)))
      (define cc (+ (* Δy g) (* -1 Δ  d) (* a (/ (sqr Δ) Δy))))
@@ -174,6 +192,146 @@
                 (list (pt -1 0) (pt 0 1)))
   (check-equal? (line/quadric-intersection (pt 0 1) (pt 1 2) 1 0 1 1 1 1 0)
                 (list (pt -1 0))))
+
+(define (quadric/quadric-intersection bqe1 bqe2)
+  (define e (* 100 (sqrt realEpsilon)))
+  (cond
+    [(or (> (abs (- a0 b0)) e) (> (abs (- a1 b1)) e) (> (abs (- a2 b2)) e))
+     (define c (list (+ (* -2 a0 a2 b0 b2)
+                        (*    a0 a2 b1 b1)
+                        (* -1 a0 a1 b2 b1)
+                        (*    a1 a1 b0 b2)
+                        (* -1 a2 a1 b0 b1)
+                        (*    a0 a0 b2 b2)
+                        (*    a2 a2 b0 b0))
+                     (+ (* -1 a2 a1 b0 b4)
+                        (* -1 a2 a4 b0 b1)
+                        (* -1 a1 a3 b2 b1)
+                        (*  2 a0 a2 b1 b4)
+                        (* -1 a0 a1 b2 b4)
+                        (*    a1 a1 b2 b3)
+                        (*  2 a2 a3 b0 b2)
+                        (* -2 a0 a2 b2 b3)
+                        (*    a2 a3 b1 b1)
+                        (* -1 a2 a1 b1 b3)
+                        (*  2 a1 a4 b0 b2)
+                        (*  2 a2 a2 b0 b3)
+                        (* -1 a0 a4 b2 b1)
+                        (*  2 a0 a3 b2 b2))
+                     (+ (* -1 a3 a4 b2 b1)
+                        (*    a2 a5 b1 b1)
+                        (* -1 a1 a5 b2 b1)
+                        (* -1 a1 a3 b2 b4)
+                        (*    a1 a1 b2 b5)
+                        (* -2 a2 a3 b2 b3)
+                        (*  2 a2 a2 b0 b5)
+                        (*  2 a0 a5 b2 b2)
+                        (*    a3 a3 b2 b2)
+                        (* -2 a2 a5 b0 b2)
+                        (*  2 a1 a4 b2 b3)
+                        (* -1 a2 a4 b1 b3)
+                        (* -2 a0 a2 b2 b5)
+                        (*    a2 a2 b3 b3)
+                        (*  2 a2 a3 b1 b4)
+                        (* -1 a2 a4 b0 b4)
+                        (*    a4 a4 b0 b2)
+                        (* -1 a1 a1 b3 b4)
+                        (* -1 a2 a1 b1 b5)
+                        (* -1 a0 a4 b2 b4)
+                        (*    a0 a2 b4 b4))
+                     (+ (* -1 a4 a5 b2 b1)
+                        (*    a2 a3 b4 b4)
+                        (*  2 a3 a5 b2 b2)
+                        (* -1 a2 a1 b4 b5)
+                        (* -1 a2 a4 b3 b4)
+                        (*  2 a2 a2 b3 b5)
+                        (* -2 a2 a3 b2 b5)
+                        (* -1 a3 a4 b2 b4)
+                        (* -2 a2 a5 b2 b3)
+                        (* -1 a2 a4 b1 b5)
+                        (*  2 a1 a4 b2 b5)
+                        (* -1 a1 a5 b2 b4)
+                        (*    a4 a4 b2 b3)
+                        (*  2 a2 a5 b1 b4))
+                     (+ (* -2 a2 a5 b2 b5)
+                        (*    a4 a4 b2 b5)
+                        (*    a5 a5 b2 b2)
+                        (* -1 a4 a5 b2 b4)
+                        (*    a2 a5 b4 b4)
+                        (*    a2 a2 b5 b5)
+                        (* -1 a2 a4 b4 b5))))
+     (match-define (list c0 c1 c2 c3 c4) c)     
+     (define x (read-quartic-roots c0 c1 c2 c3 c4))]
+    [(> (abs (- b4 a4)) e)
+     (define D (sqr (- b4 a4)))
+     (define c (list (/ (+ (* a0 b4 b4)
+                           (* (+ (* -1 a1 b3) (* -2 a0 a4) (* a1 a3)) b4)
+                           (* a2 b3 b3)
+                           (* (+ (* a1 a4) (* -2 a2 a3)) b3)
+                           (*    a0 a4 a4)
+                           (* -1 a1 a3 a4)
+                           (*    a2 a3 a3))
+                        D)
+                     (/ (- (+ (* (+ (* a1 b4) (* -2 a2 b3) (* -1 a1 a4) (* 2 a2 a3)) b5)
+                              (* a3 b4 b4)   
+                              (* (+ (*   a4 b3) (* -1 a1 a5) (* a3 a4)) b4)
+                              (* (+ (* 2 a2 a5) (* -1 a4 a4)) b3)
+                              (* (+ (*   a1 a4) (* -2 a2 a3)) a5)))
+                        D)
+                     (+ (/ (* a2 (sqr (- a5 b5))) D)
+                        (/ (* a4 (- a5 b5)) (- b4 a4))
+                        a5)))
+     (match-define (list c0 c1 c2) c)
+     (define x (quadratic-roots c0 c1 c2))]
+    [(> (abs (- a3 b3)) e)
+     (define D (- b3 a3))
+     (define c (list a2
+                     (/ (+ (* -1 a1 b5) (* a4 b3) (* a1 a5) (* -1 a3 a4)) D)
+                     (+ (/ (* a0 (sqr (- a5 b5))) (sqr D))
+                        (/ (* a3 (- a5 b5)) D)
+                        a5)))
+     (define ys (quadratic-roots c0 c1 c2))
+     (for ([i (in-range 0 (length ys))])
+       (define yi (list-ref y i))
+       (define cs (list a0 
+                        (+ (* a1 yi) a3)
+                        (+ (* a2 (sqr yi)) (* a4 yi) a5)))
+       (define xs (quadratic-roots c0 c1 c2))
+       (for ([j (in-range 0 (length xs))])
+         (if (< (abs (+ (* b0 (sqr xj)) (* b1 xj yi) (* b2 (sqr yi)) (* b3 xj) (* b4 yi) b5))
+                1e-5)
+             (P.push (pt xj yi)))))]
+    [(< (abs (- a5 b5)) e)
+     (error 'intersectionpoints: "intersection of identical conics")]
+    
+     
+     
+     ;;; TODO
+;        for (int i = 0; i < y.length; ++i) {
+;          c = new real[] {a[0], a[1]*y[i]+a[3], a[2]*y[i]^2 + a[4]*y[i]+a[5]};
+;          x = quadraticroots(c[0], c[1], c[2]);
+;          for (int j = 0; j < x.length; ++j) {
+;            if(abs(b[0]*x[j]^2 + b[1]*x[j]*y[i]+b[2]*y[i]^2 + b[3]*x[j]+b[4]*y[i]+b[5]) < 1e-5)
+;              P.push(point(R, (x[j], y[i])));
+;          }
+;        }
+;        return P;
+;      } else {
+;        if(abs(a[5]-b[5]) < e) abort("intersectionpoints: intersection of identical conics.");
+;      }
+;    }
+;  }
+;  for (int i = 0; i < x.length; ++i) {
+;    c = new real[] {a[2], a[1]*x[i]+a[4], a[0]*x[i]^2 + a[3]*x[i]+a[5]};
+;    y = quadraticroots(c[0], c[1], c[2]);
+;    for (int j = 0; j < y.length; ++j) {
+;      if(abs(b[0]*x[i]^2 + b[1]*x[i]*y[j]+b[2]*y[j]^2 + b[3]*x[i]+b[4]*y[j]+b[5]) < 1e-5)
+;        P.push(point(R, (x[i], y[j])));
+;    }
+;  }
+;  return P;
+;}
+     (error 'TODO)]))
 
 ;;; CIRCLE
 

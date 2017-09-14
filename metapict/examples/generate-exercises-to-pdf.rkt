@@ -62,7 +62,7 @@
 (define (exercise1 dc)
   (def cards (for/list ([i 10]) (exercise-card:power-simple
                                  #;exercise-card:solve-linear-equals-linear
-                                 #;exercise-card:solve-linear-equals-constant 
+                                 #;exercise-card:solve-linear-equals-constant
                                  #;exercise-card:random)))
   (draw-faces dc (map card-front cards) values)
   (new-page dc)
@@ -229,8 +229,8 @@
   (def exercises (list exercise-card:line-to-equation
                        exercise-card:point-and-slope-to-intersection
                        exercise-card:two-points-to-slope
-                       exercise-card:solve-linear-equals-constant
-                       exercise-card:solve-linear-equals-linear
+                       ; exercise-card:solve-linear-equals-constant
+                       ; exercise-card:solve-linear-equals-linear
                        ))
   ((list-ref exercises (random (length exercises)))))
 

@@ -8,7 +8,9 @@
 
 (provide circle-node          ; create node shaped as a circle
          square-node          ; create node shaped as a square
+         text-node            ; create node containing text
          draw-node            ; draw node
+         filled-node          ; draw filled node
          draw-edge            ; draw edge from one to node to another
          anchor               ; find anchor i.e. point on the outline
          normal               ; find normal vector to the outline 
@@ -72,13 +74,15 @@
 
 
 
-(define (text-node t)
-  (def l (label-cnt t origo))
+
+(define (text-node t [p origo] [dir down] [s 0.2])
+  (def l       (label-cnt t p))
   (def outline (label-bbox l))
-  (node draw-node
-        origo outline 
-        (curve->anchor-function outline)
-        (curve->normal-function outline)))
+  (def anchor  (curve->anchor-function outline))
+  (def normal  (curve->normal-function outline))
+  (node (λ (n)
+          (draw (label-bot t (pt+ (anchor dir) (vec* s (normal dir))))))
+        p outline anchor normal))
 
 (define (curve->anchor-function c) ; assume origo is center
   (λ (v)
