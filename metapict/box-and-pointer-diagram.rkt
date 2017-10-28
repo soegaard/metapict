@@ -5,7 +5,7 @@
 
 ; This shows how to draw classical box and pointer diagrams 
 ; in SICP style. The call (draw-box-and-pointer-diagram v)
-; will draw the value v using box and pointers.
+; will draw the value v using boxes and pointers.
 ; The function works on both mutable and immutable cons cells.
 
 ; As is the code doesn't compute the extent of the drawing,
@@ -145,7 +145,7 @@
                
 (set-curve-pict-size 400 400)
 (curve-pict-window (window xmin xmax ymin ymax))
-(def gray-grid (color "gray" (grid (pt xmin ymin) (pt xmax ymax) (pt 0 0) 1)))
+(def gray-grid (color "gray" (grid (pt xmin ymin) (pt xmax ymax) (pt 0 0) #:step 1)))
 
 (draw gray-grid
       (draw-box-and-pointer-diagram
