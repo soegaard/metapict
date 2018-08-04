@@ -13,6 +13,7 @@
          pair ; match expander that matches pt, vec, list or vector
          ; TODO easy: make contracts for these:
          rotated rotatedd rotated-about rotated-aboutd trans?
+         compose-trans
          (contract-out [inverse (-> trans? trans?)]        ; inverse transformation
                        [trans->vector (-> trans? vector?)] ; convert to vector
                        ))
