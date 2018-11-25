@@ -193,7 +193,9 @@
   (check-equal? (line/quadric-intersection (pt 0 1) (pt 1 2) 1 0 1 1 1 1 0)
                 (list (pt -1 0))))
 
-(define (quadric/quadric-intersection bqe1 bqe2)
+#;(define (quadric/quadric-intersection bqe1 bqe2)
+  (error 'TODO)
+  (define realEpsilon 'todo)
   (define e (* 100 (sqrt realEpsilon)))
   (cond
     [(or (> (abs (- a0 b0)) e) (> (abs (- a1 b1)) e) (> (abs (- a2 b2)) e))
@@ -331,7 +333,7 @@
 ;  }
 ;  return P;
 ;}
-     (error 'TODO)]))
+     (error 'TODO)))
 
 ;;; CIRCLE
 
