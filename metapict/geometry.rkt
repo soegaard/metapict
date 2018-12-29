@@ -459,4 +459,14 @@
     ; [(? triangle?) (triangle-area o)]
     [_ (error 'area (~a "got: " o))]))
 
+;;; DRAWING FUNCTIONS
 
+; mark-angle : pt pt pt int number number -> pict
+; Mark the directed angle AOB with n arcs that are sep units apart.
+; The initial arc has radius r.
+(define (mark-angle A O B [n 1] [r 1] [sep 0.5])
+  ;TODO: allow mark-angle to work with oriented lines as input
+  (define α (angle (pt- A O)))
+  (define β (angle (pt- B O)))
+  (for/draw ([n (in-range 1 (add1 n))])
+    (shifted O (arc (+ r (* sep (sub1 n))) α β))))
