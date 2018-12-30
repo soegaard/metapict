@@ -162,7 +162,7 @@
      (for/list ([y (quadratic-solutions* aa bb cc)])
        (pt (+ (* -1 Δx (/ y Δy)) (* -1 (/ Δ Δy))) y))]
     [else
-     ; horisontal line (because Δy~0)
+     ; horizontal line (because Δy~0)
      ; a x^2 + b xy + c y^2 + d x + f y + g = ?
      ; Δx a x^2 + Δx b y x + Δx d x = Δx ? - (Δx c y^2 +  + Δx f y + Δx g)
      ; 
