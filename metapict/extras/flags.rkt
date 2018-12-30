@@ -38,3 +38,4 @@
           (color red      (fill (curve I -- J -- N -- M -- cycle)))
           (color red      (fill (curve C -- D -- H -- G -- cycle)))
           (color red      (fill (curve K -- L -- P -- O -- cycle)))))))
+

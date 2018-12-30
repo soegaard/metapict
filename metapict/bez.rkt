@@ -15,6 +15,8 @@
          bez-intersection-times  ; return times t1 and t2 s.t. γ1(t1)=γ2(t2)
          bez-intersection-point  ; return intersection point of two Bezier curves
          bez-intersection-point-and-times
+         bez-arc-length    ; compute the arc length along the path
+         bez-arc-time      ; compute time 
          (contract-out
           [control-points (-> pt? pt? real? real? real? real?  (values pt? pt?))]
           ; Return control points of the bez from p0 to p3 that leaves p0 in angle θ 
@@ -283,6 +285,43 @@
                  (again b11 b22 t- (mid t- t+) (mid u- u+) u+)
                  (again b12 b21 (mid t- t+) t+ u- (mid u- u+))
                  (again b12 b22 (mid t- t+) t+ (mid u- u+) u+))))))
+
+
+; bez-arc-length : bez -> number
+;   compute the path length of the bezier curve
+;   Algorithm: Jens Gravensen "Adaptive subdivision and the length and energy of Bezier curves."
+(define (bez-arc-length b)
+  (def n 2.)
+  (define (len b eps)
+    (defm (bez p0 p1 p2 p3) b) ; p1 and p2 are control points
+    ; chord length
+    (def cl (dist p0 p3))
+    ; length of control polygon
+    (def pl (+ (dist p0 p1) (dist p1 p2) (dist p2 p3)))
+    ; error estimate
+    (def err (abs (- cl pl)))
+    (cond
+      [(< err eps)  (/ (+ (* 2. cl) (* (- n 1.) pl))
+                       (+ n 1.))]
+      [else         (defv (b1 b2) (split-bez b .5)) ; split b in two halfs
+                    (+ (len b1 (* .5 eps)) (len b2 (* .5 eps)))]))
+  (len b 0.0001))
+
+(define (bez-arc-time b a)
+  ; Given a between 0 and the arc length of b, find t such that
+  ; the arc length from b(0) to b(t) is a.  
+  (def l (bez-arc-length b))
+  (cond
+    [(<= a 0)                 0.]
+    [(>= a l)                 1.]
+    [(< (abs (- l a)) 0.001)  1.]
+    [else                     (defv (b1 b2) (split-bez b 0.5))
+                              (def l1 (bez-arc-length b1))
+                              (cond
+                                [(<= a l1) (def t1 (bez-arc-time b1 a))
+                                           (/ t1 2.)]
+                                [else      (def t2 (bez-arc-time b2 (- a l1)))
+                                           (+ 0.5 (/ t2 2.))])]))
 
 (define (bezier b) ; bez -> pict
   (def dc-path (bez->dc-path b))

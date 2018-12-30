@@ -5,8 +5,11 @@
 (require "def.rkt")
 
 ;;; Label
-(def current-font-size  (make-parameter 10)) ; default in MetaPost is 10bp
-(def current-label-font (make-parameter '("Gill Sans" . swiss)))
+; (def current-font-size  (make-parameter 10)) 
+(def current-label-text-style (make-parameter 'default))
+(def current-label-text-size  (make-parameter 10))       ; default in MetaPost is 10bp (racket 12)
+(def current-label-text-angle (make-parameter 0.))       ; radians 
+  
 (def label-offset       (make-parameter 3)) ; default in MetaPost is 3bp
 
 ;;; Brush

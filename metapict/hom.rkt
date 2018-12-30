@@ -31,7 +31,7 @@
 ;      (x - X)^2 + (y - Y)^2 = R^2
 ; <=>  x^2 -2xX + X^2  +  y^2 -2yY + Y^2 = R^2
 ; <=>  x^2 + y^2 - R^2 + 0 xy - 2X x - 2Y y = 0
-; Introducing homegenous coordinates:
+; Introducing homogenous coordinates:
 ; <=>  x^2 + y^2 - R^2 z^2 + 0 xy - 2X xz - 2Y yz = 0
 
 ; So       a=1, c=1, f=-R^2, 2b=0, 2d=-2X, 2e=-2Y
@@ -103,11 +103,11 @@
 ;;; Lines and Points
 ;;; 
 
-; A lines in R^2 given by  has an equation of the form
+; A line in R^2 given by  has an equation of the form
 ;        a x + b y + c   = 0 
 ; In homogenous coordinates:
 ;        a x + b y + c z = 0
-; Homogenous representationt 
+; Homogenous representation
 ;        [a,b,c]
 
 ; As an example the line at infinity as the equation z=0.
@@ -364,6 +364,7 @@
 (define (degenerate conic)
   (zeroish? (det (form->matrix conic))))
 
+; index-of-nonzero-diagonal-entry : mat -> integer-or-false
 (define (index-of-nonzero-diagonal-entry M)
   ; pick index with entry of greatest magnitude
   (with-matrix [M (a b c d e f g h i)]
@@ -382,6 +383,7 @@
             (vector d e f)
             (vector g h i))))
 
+; indices-of-max : mat -> integer integer
 (define (indices-of-max M)
   ; find the indices of the element with the greatest absolute value
   (define rows (matrix->vector-of-vector M))
@@ -393,6 +395,8 @@
             (values m index)))))
   (values (first i+j) (second i+j)))
 
+; index&value-of-max-abs : hom -> integer real
+;    return the index and value of the largest entry of a hom h
 (define (index&value-of-max-abs h)
   (with-hom [h (a b c)]
     (define v (vector a b c))
@@ -412,10 +416,12 @@
       [(2 0) g] [(2 1) h] [(2 2) i]
       [(_ _) (error 'mat-ref "~a" (~a (list M s t)))])))
 
+; cols : mat -> hom hom hom
 (define (cols M)
   (with-matrix [M (a b c d e f g h i)]
     (values (hom a d g) (hom b e h) (hom c f i))))
 
+; mat+ : mat mat -> mat
 (define (mat+ M N)
   (with-matrices ([M (a b c d e f g h i)]
                   [N (x y z u v w r s t)])
@@ -439,7 +445,9 @@
 (define (mat** M N T)
   (mat* M (mat* N T)))
 
+; split-degenerate : mat -> 
 (define (split-degenerate A) ; matrix
+  ; page 
   (displayln (list 'split 'A A))
   (define (M_ p) (with-hom [p (λ μ τ)] (mat 0. τ (- μ) (- τ) 0. λ μ (- λ) 0.)))
   ; Note: M_p·q = p x q

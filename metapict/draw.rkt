@@ -217,7 +217,11 @@
   (def ph (curve-pict-height))
   (def T (stdtrans (curve-pict-window) pw ph))
   (defm (label p? pos placement) l)
-  (def p (if (pict? p?) p? (text p? null (current-font-size))))
+  (def p (if (pict? p?) p?
+             (text p?
+                   (current-label-text-style)
+                   (current-label-text-size)
+                   (current-label-text-angle))))
   (defv (w h) (values (pict-width p) (pict-height p)))
   (dc (λ (dc dx dy)
         (def s (send dc get-smoothing))

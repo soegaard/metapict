@@ -10,6 +10,7 @@
 ;;;
 
 ;; This solver follows the exposition in Kahan's paper "To solve a real cubic equation".
+;;    https://people.eecs.berkeley.edu/~wkahan/Math128/Cubic.pdf
 
 ;; A real, cubic equation has the form
 ;;    A x^3 + B x^2 + C x + D = 0

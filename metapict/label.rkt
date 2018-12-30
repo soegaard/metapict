@@ -58,7 +58,7 @@
 (define (label-bbox l)
   (defm (label p? pos placement) l)
   (defm (pt x0 y0) pos)
-  (def p (if (pict? p?) p? (text p? null (current-font-size))))
+  (def p (if (pict? p?) p? (text p? null (current-label-text-size))))
   (defv (w h) (values (pict-width p) (pict-height p)))
   (defv (-w -h) (values (- w) (- h)))
   (defv (-w/2 -h/2) (values (/ -w 2) (/ -h 2)))

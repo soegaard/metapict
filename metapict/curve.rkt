@@ -49,6 +49,8 @@
  direction-of                 ; velocity vector for curve at a given time
  cyclic?                      ; is the curve closed?
  intercurve                   ; see MetaFont Book p. 134 (there named interpath)
+ arc-length
+ arc-time
  ; low level constructors (for debug)
  make-choices
  resolve-path-to-bezs
@@ -576,3 +578,23 @@
 
 (define (path->bezs p)
   (flatten (segments->bezs (make-choices p))))
+
+;;;
+;;; Arc length and time
+;;;
+
+(define (arc-length c)
+  (for/sum ([b (curve:-bezs c)])
+    (bez-arc-length b)))
+
+(define (arc-time c a)
+  (def cs (curve:-bezs c))
+  (let loop ([cs cs] [a a])
+    (cond
+      [(empty? cs)  1.]
+      [else         (define l (bez-arc-length (first cs)))
+                    (cond
+                      [(<= a l) (bez-arc-time (first cs) a)]
+                      [else     (loop (rest cs) (- a l))])])))
+
+  
