@@ -595,6 +595,6 @@
       [else         (define l (bez-arc-length (first cs)))
                     (cond
                       [(<= a l) (bez-arc-time (first cs) a)]
-                      [else     (loop (rest cs) (- a l))])])))
+                      [else     (+ 1. (loop (rest cs) (- a l)))])])))
 
   
