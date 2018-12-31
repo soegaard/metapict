@@ -43,3 +43,14 @@ in @racket[p0], end point in @racket[p3] and control points in @racket[p1] and @
 @interaction[#:eval eval
   (with-window (window -1 6 -1 6)
     (draw (bez (pt 0 0) (pt 0 1) (pt 2 3) (pt 5 0))))]
+
+@defstruct[window ([minx real?] [maxx real?] [miny real?] [maxy real?])]{
+ The @racket[window] structure represents a rectangular plot window bounded horizontally by
+ @racket[minx] and @racket[maxx] and bounded vertically by @racket[miny] and @racket[maxy].
+ By default, the draw command will render a window equivalent to @racket[(window -1.1 1.1 -1.1 1.1)].}
+@interaction[#:eval eval
+             (draw unitcircle
+                   (curve (pt 0 1.4) -- (pt 0 0) -- (pt 1.4 0) -- cycle))
+             (with-window (window -2 2 -2 2)
+               (draw unitcircle
+                     (curve (pt 0 1.4) -- (pt 0 0) -- (pt 1.4 0) -- cycle)))]
