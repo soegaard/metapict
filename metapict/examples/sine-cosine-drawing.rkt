@@ -17,9 +17,9 @@
 
 (set-curve-pict-size 400 400)
 (with-window (window -1.5 1.5 -1.5 1.5)
-  (current-font-size 10)
+  (current-label-text-size 10)
   (penscale 2
-  (draw (color "gray" (grid (pt -1.4 -1.4) (pt 1.4 1.4) (pt 0 0) 0.5))
+  (draw (color "gray" (grid (pt -1.4 -1.4) (pt 1.4 1.4) (pt 0 0) #:step 0.5))
         (draw-arrow x-axis)
         (draw-arrow y-axis)
         (circle 0 0 1)
