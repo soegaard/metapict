@@ -470,3 +470,4 @@
   (define β (angle (pt- B O)))
   (for/draw ([n (in-range 1 (add1 n))])
     (shifted O (arc (+ r (* sep (sub1 n))) α β))))
+

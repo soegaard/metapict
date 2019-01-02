@@ -7,6 +7,7 @@
          quartercircle   ; right part of halfcircle
          unitsquare      ; side length 1, first quadrant
          arc             ; arc of circle of radius r from f to t (f and t is in radian)
+                         ; or: (arc c a b) arc with center c from a to b
          arc/deg         ; same, f and t in degrees
          circle          ; circle with center (x0,y0) and radius r
          ellipse-curve   ; ellipse with center (x0,y0) and width w and height h
