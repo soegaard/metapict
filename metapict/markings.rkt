@@ -1,6 +1,22 @@
-#lang racket
+#lang racket/base
 (require metapict metapict/mat)
-
+(require racket/class)
+(provide
+ ; Configuration
+ angle-radius
+ angle-spacing
+ mark-size
+ mark-spacing
+ ; marks (ticks)
+ straight-mark
+ slanted-mark
+ arc-outline
+ mark-angle
+ mark-curve-angle
+ mark-curve
+ mark-interval
+ marked-arc)
+ 
 ;;;
 ;;; CONFIGURATION
 ;;;
