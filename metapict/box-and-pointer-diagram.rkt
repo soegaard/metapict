@@ -8,6 +8,8 @@
 ; will draw the value v using boxes and pointers.
 ; The function works on both mutable and immutable cons cells.
 
+; Note: Also check out http://docs.racket-lang.org/sdraw/
+
 ; As is the code doesn't compute the extent of the drawing,
 ; so you need to modify the x- and y-range if your 
 ; data structure gets too large:
