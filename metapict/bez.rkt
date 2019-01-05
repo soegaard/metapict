@@ -269,10 +269,16 @@
   (def (mid s t) (/ (+ s t) 2))
   (def bb1 (bez-large-bounding-box b1))
   (def bb2 (bez-large-bounding-box b2))
-  (and (or ; (= t+ t-) (= u+ u-) ; todo: why are these checks needed?
+  ; Note: When a Bezier curve is a line, the bounding box
+  ;       has an area of zero. Thus to check smallness,
+  ;       an area check is not enough. Both width and height
+  ;       must be small too.
+  ; Note: When searching and the two times becomes equal
+  ;       ...  
+  (and (or (= t+ t-) (= u+ u-) ; omitting these makes
            (window-overlap? bb1 bb2))
-       (or (and ; (very-small? bb1) (very-small? bb2)
-            (<= (+ (area bb1) (area bb2)) ε)
+       (or (and (very-small? bb1) (very-small? bb2)
+                (<= (+ (area bb1) (area bb2)) ε)
                 (list (window-center bb1) ; point
                       ; todo : instead of the center, find 
                       ; the intersection of lines
