@@ -180,6 +180,23 @@
      ; draw
      (draw-angle-curve p q r #:marks m #:marker marker))))
 
+; mark-right-angle : point point point [keyword-arguments ...] -> pict
+;     The points A, B, and C make a right angle at B (or an angle that is presumed to be right).
+;     The angle ABC is marked with two line segments that form a square/rhombus against the
+;     legs of the angle.
+(define (mark-right-angle a b c
+                          #:radius [radius (angle-radius)]
+                          #:fill? [fill? #f])
+  (def p b)
+  (def q (pt+ b (vec* radius (normalize (pt- a b)))))
+  (def r (pt+ b (vec* radius (normalize (pt- c b)))))
+  (def s (pt+ q (pt- r b)))
+  (draw
+   (if fill?
+       (fill (curve p -- q -- s -- r -- cycle))
+       (blank))
+   (penjoin 'miter (draw (curve q -- s -- r)))))
+
 (define (mark-curve c n [α .5]
                     #:marker  [marker  straight-mark]
                     #:spacing [spacing (mark-spacing)])
@@ -269,4 +286,31 @@
   (draw c
         (mark-interval c 6)))
 
+; Example: marked right angles
+(def A (pt (* -1/2 (sqrt 2)) (* -1/2 (sqrt 2))))
+(def B (pt (* 1/2 (sqrt 2)) (* -1/2 (sqrt 2))))
+(def C (pt 0 1))
+(def D (med 0.5 A B))
+(def E (pt 0 -1))
+(def F (pt 0 0))
+(def G (pt 0.4 0.1))
+
+(with-window (window -1.3 1.3 -1.3 1.3)
+  (draw
+   unitcircle
+   (mark-right-angle C D A #:radius 0.1)
+   (brushcolor (color-med 0.7 "red" "white")
+                               (mark-right-angle G D B #:radius 0.1 #:fill? #t))
+   (dashed (color "red" (draw (curve G -- A))))
+   (dashed (color "red" (draw (curve G -- B))))
+   (dashed (color "red" (draw (curve G -- D))))
+   (curve A -- B)
+   (curve C -- E)
+   (label-llft "A" A)
+   (label-lrt "B" B)
+   (label-top "C" C)
+   (label-llft "D" D)
+   (label-bot "E" E)
+   (dot-label-lft "F" F)
+   (color "red" (dot-label-top "G" G))))
 )
