@@ -24,6 +24,8 @@
 
  dashed        ; use the pen style long-dash
  dotted        ; use the pen style dotted
+
+ text-color    ; use the color as the text foreground color
  
  save-pict     ; save pict to file, default is png, other formats include jpeg
  margin        ; inset with arguments swapped 
@@ -193,6 +195,20 @@
        [style          (send b get-style)]
        [stipple        (send b get-stipple)]
        [transformation (send b get-transformation)]))
+
+
+;; text-color : color pict -> pict
+;;   Produces a pict like p, but using the color c as the text foreground color.
+(define (text-color c p)
+  ; todo: check c is a color
+  (dc (lambda (dc x y)
+        (let ([old-text-color (send dc get-text-foreground)])
+            (def new-color c)
+            (send dc set-text-foreground new-color)
+            (draw-pict p dc x y)
+            (send dc set-text-foreground old-text-color)))
+      (pict-width p) (pict-height p)))
+
 
 ;; smoothed : pict -> pict
 ;;  Produces a pict like `p`, but that always draws in 'smoothed mode
