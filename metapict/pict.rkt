@@ -26,6 +26,8 @@
  dotted        ; use the pen style dotted
 
  text-color    ; use the color as the text foreground color
+ text-background-color ; use the color as background color when text mode is solid
+ text-mode     ; use the mode 'solid or 'transparent
  
  save-pict     ; save pict to file, default is png, other formats include jpeg
  margin        ; inset with arguments swapped 
@@ -202,11 +204,37 @@
 (define (text-color c p)
   ; todo: check c is a color
   (dc (lambda (dc x y)
-        (let ([old-text-color (send dc get-text-foreground)])
+        (let ([old-color (send dc get-text-foreground)])
             (def new-color c)
             (send dc set-text-foreground new-color)
             (draw-pict p dc x y)
-            (send dc set-text-foreground old-text-color)))
+            (send dc set-text-foreground old-color)))
+      (pict-width p) (pict-height p)))
+
+;; text-background-color : color pict -> pict
+;;   Produces a pict like p, but using the color c as the text background color.
+;;   The text background color is only used when text mode is 'solid.
+(define (text-background-color c p)
+  ; todo: check c is a color
+  (dc (lambda (dc x y)
+        (let ([old-color (send dc get-text-background)])
+            (def new-color c)
+            (send dc set-text-background new-color)
+            (draw-pict p dc x y)
+            (send dc set-text-background old-color)))
+      (pict-width p) (pict-height p)))
+
+;; text-mode : mode pict -> pict
+;;   Produces a pict like p, but using the mode ('solid or 'transparent) as the text mode.
+(define (text-mode m p)
+  (unless (or (eq? m 'solid) (eq? m 'transparent))
+    (raise-arguments-error 'text-mode "mode ('solid or 'transparent) expected" "mode" m))
+  (dc (lambda (dc x y)
+        (let ([old-mode (send dc get-text-mode)])
+            (def new-mode m)
+            (send dc set-text-mode new-mode)
+            (draw-pict p dc x y)
+            (send dc set-text-mode old-mode)))
       (pict-width p) (pict-height p)))
 
 
