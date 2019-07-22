@@ -56,7 +56,7 @@
   (case-lambda
     [(name) (cond [(is-a? name color%) name]
                   [else (def c (send the-color-database find-color name))
-                        (unless c (error 'make-color* (~a "expected color name, got ")))
+                        (unless c (error 'make-color* (~a "expected color name, got " name)))
                         c])]
     [(r g b)   (make-color* r g b 1.0)]
     [(r g b α) (def (f x) (min 255 (max 0 (exact-floor x))))
