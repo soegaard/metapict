@@ -3,8 +3,8 @@
 ;;; FONT
 ;;;
 
-(provde make-similar-font
-        with-similar-font)
+(provide make-similar-font
+         with-similar-font)
 
 
 ;; Note: The font information can not be stored in the drawing context only.
