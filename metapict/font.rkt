@@ -4,7 +4,8 @@
 ;;;
 
 (provide make-similar-font
-         with-similar-font)
+         with-font
+         with-font-change)
 
 
 ;; Note: The font information can not be stored in the drawing context only.
@@ -62,7 +63,7 @@
              #:size-in-pixels? (or new-size-in-pixels size-in-pixels)
              #:hinting         (or new-hinting hinting)))
 
-(define-syntax (with-similar-font stx)
+(define-syntax (with-font-change stx)
   (syntax-parse stx
     [(_with-similar-font (keywords ...) . body)
      (with-syntax ([make (format-id #'make-similar-font "make-similar-font" #:source stx)])
@@ -70,3 +71,10 @@
          (parameterize
              ([current-font (make (current-font) keywords ...)])
            . body)))]))
+
+(define-syntax (with-font stx)
+  (syntax-parse stx
+    [(_with-font font . body)
+     (syntax/loc stx
+       (parameterize ([current-font font])
+         . body))]))
