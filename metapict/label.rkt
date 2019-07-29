@@ -1,5 +1,6 @@
 #lang racket/base
 ;;; Labels
+
 ; A label consists of a picture and a position in logical coordinates.
 ;    (struct label (string-or-pict pos plc) #:transparent)
 ; Labels are affected by the following parameters:
@@ -58,7 +59,7 @@
 (define (label-bbox l)
   (defm (label p? pos placement) l)
   (defm (pt x0 y0) pos)
-  (def p (if (pict? p?) p? (text p? null (current-label-text-size))))
+  (def p (if (pict? p?) p? (with-font (current-label-font) (text p?))))
   (defv (w h) (values (pict-width p) (pict-height p)))
   (defv (-w -h) (values (- w) (- h)))
   (defv (-w/2 -h/2) (values (/ -w 2) (/ -h 2)))

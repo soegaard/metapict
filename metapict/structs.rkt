@@ -101,24 +101,49 @@
 (struct placement ())
 (struct lft  placement()) ; left
 (struct rt   placement()) ; right
-(struct top  placement()) 
-(struct bot  placement())
+(struct top  placement()) ; top
+(struct bot  placement()) ; bottom
 (struct ulft placement()) ; upper left
 (struct urt  placement()) ; upper right
 (struct llft placement()) ; lower left
 (struct lrt  placement()) ; lower right
 (struct cnt  placement()) ; center
 
-;;; Nodes
+;;; Nodes and Edges
+
+; A SHAPE represents a (closed?) curve.
+; It has
+;  - a curve
+;  - an anchor function   vec -> pt   returns a point on the shape in the given direction
+;  - a  normal function   vec -> vec  returns normal (vector orthogonal to curve) pointing outwards
+(struct shape (curve anchor normal) #:transparent)
+(provide-structs shape)
+
 ; A NODE has 
 ;  - a position pos   the node is centered over pos
-;  - a curve          the curve determines the outline of the node
-;  - anchor           vec -> pt function, returns a point on the outline in the given direction
-;  - normal           vector normal to the outline pointing outwards
-(struct node (convert pos curve anchor normal) 
+;  - an inner shape   the shape drawn around the text
+;  - an outer shape   the shape used to place anchors (normally larger than the inner shape)
+;  - label            (or #f for none)
+(struct node (convert pos inner-shape outer-shape contents)
   ; convert : node -> pict   ; is called by pict-convert
   #:transparent
   #:property prop:pict-convertible (λ (v) ((node-convert v) v)))
 (provide-structs node)
 
+; An Edge represents a connection (arrow) between two nodes.
+; An Edge has
+; - a curve
+; - an from and to node
+; - direction leaving the from node (#f is auto)
+; - direction entering the to node  (#f is auto)
+; - an from and to arrow head (or #f for none)
+; - a label (or #f for none)
+; - a label direction (or #f for auto)
+
+(struct edge (convert curve from to from-dir to-dir from-head to-head label label-direction)
+  #:transparent
+  #:constructor-name make-edge
+  #:property prop:pict-convertible (λ (v) ((edge-convert v) v)))
+
+(provide (except-out (struct-out edge) edge))
 

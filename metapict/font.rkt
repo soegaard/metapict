@@ -5,7 +5,12 @@
 
 (provide make-similar-font
          with-font
-         with-font-change)
+         with-font-change
+
+         italic font-normal slant  ; styles
+         font-weight
+         bold
+         )
 
 
 ;; Note: The font information can not be stored in the drawing context only.
@@ -27,7 +32,7 @@
 ; hinting 
 
 (require "parameters.rkt" "def.rkt"
-         racket/class racket/draw pict)
+         racket/class racket/draw pict syntax/parse/define)
 (require (for-syntax racket/base racket/syntax syntax/parse))
 
 ; make-similar-font font keyword-arguments -> font
@@ -78,3 +83,39 @@
      (syntax/loc stx
        (parameterize ([current-font font])
          . body))]))
+
+
+;;;
+;;; FONT STYLE
+;;;
+(define-syntax (italic stx)
+  (syntax-parse stx
+    [(_italic e:expr)
+     (syntax/loc stx
+       (with-font-change (#:style 'italic) e))]))
+
+; name chosen due to clash with normal form node.rkt
+(define-syntax (font-normal stx)
+  (syntax-parse stx
+    [(_font-normal e:expr)
+     (syntax/loc stx
+       (with-font-change (#:style 'normal) e))]))
+
+(define-syntax (slant stx)
+  (syntax-parse stx
+    [(_slant e:expr)
+     (syntax/loc stx
+       (with-font-change (#:style 'slant) e))]))
+
+
+;;;
+;;; FONT WEIGHT
+;;;
+
+(define-syntax (font-weight stx)
+  (syntax-parse stx
+    [(_font-weight w:expr e:expr)
+     (syntax/loc stx
+       (with-font-change (#:weight w) e))]))
+
+(define-simple-macro (bold e:expr) (font-weight 'bold e))

@@ -1,10 +1,11 @@
 #lang racket/base
-(require racket/contract/base "save-pdf.rkt")
+(require racket/contract/base "save-pdf.rkt" "font.rkt" "text.rkt")
 ;;;
 ;;; IMPORTANT NOTE
 ;;;   Remember that to set the smoothing mode to 'smoothed if you implement
 ;;;   new picts constructors, that use coordinates.
 
+(provide (all-from-out "font.rkt" "text.rkt"))
 ; General pict utilities
 (provide
  ; color       ; use color for both the pen and brush color
@@ -21,12 +22,6 @@
  brushstyle    ; use the brush style
  brushstipple  ; use the brush stipple
  brushgradient ; use the brush gradient
-
- font-size     ; use the font size
- font-face
- font-family
- font-style
- font-weight
 
  dashed        ; use the pen style long-dash
  dotted        ; use the pen style dotted
@@ -75,11 +70,11 @@
            (raise-arguments-error 'name "pict expected" "pict" pict))           
          (dc #,(syntax/loc stx
                  (lambda (dc x y)
-               (let ([old-pen (send dc get-pen)])
-                   (def new-pen (let () expr ...))
-                   (send dc set-pen new-pen)
-                   (draw-pict pict dc x y)
-                   (send dc set-pen old-pen))))
+                   (let ([old-pen (send dc get-pen)])
+                     (def new-pen (let () expr ...))
+                     (send dc set-pen new-pen)
+                     (draw-pict pict dc x y)
+                     (send dc set-pen old-pen))))
              (pict-width pict) (pict-height pict)))]))
 
 (define-penop pen (new-pen pict) b
@@ -246,128 +241,6 @@
             (send dc set-text-mode old-mode)))
       (pict-width p) (pict-height p)))
 
-;; (define-fontop name (arg ... pict) old-font expr ...)
-;; Defines a function, name, such that 
-;;   (name arg ... pict)
-;; Draws the pict with the font resulting from
-;; evaluating (let () expr ...) in an environment where
-;; old-font is bound the current font.
-
-(define-syntax (define-fontop stx)
-  (syntax-parse stx
-    [(_ name (arg ... pict x y) old-font
-        expr ...)
-     #'(define (name arg ... pict)
-         (unless (pict? pict)
-           (raise-arguments-error 'name "pict expected" "pict" pict))
-         (dc (lambda (dc x y)
-                 (let ([old-font (send dc get-font)])
-                   (def new-font (let () expr ...))
-                   (send dc set-font new-font)
-                   (draw-pict pict dc x y)
-                   (send dc set-font old-font)))
-             (pict-width pict) (pict-height pict)))]))
-
-
-(define-fontop font-size (new-size pict x y) f  
-  (def size            (send f get-size))
-  (def face            (send f get-face))
-  (def family          (send f get-family))
-  (def style           (send f get-style))
-  (def weight          (send f get-weight))
-  (def underlined      (send f get-underlined))
-  (def smoothing       (send f get-smoothing))
-  (def size-in-pixels  (send f get-size-in-pixels))
-  (def hinting         (send f get-hinting))
-  (make-font #:size            new-size
-             #:face            face
-             #:family          family
-             #:style           style
-             #:weight          weight
-             #:underlined?     underlined
-             #:smoothing       smoothing
-             #:size-in-pixels? size-in-pixels
-             #:hinting         hinting))
-
-(define-fontop font-face (new-face pict x y) f  
-  (def size            (send f get-size))
-  (def face            (send f get-face))
-  (def family          (send f get-family))
-  (def style           (send f get-style))
-  (def weight          (send f get-weight))
-  (def underlined      (send f get-underlined))
-  (def smoothing       (send f get-smoothing))
-  (def size-in-pixels  (send f get-size-in-pixels))
-  (def hinting         (send f get-hinting))
-  (make-font #:size            size
-             #:face            new-face
-             #:family          family
-             #:style           style
-             #:weight          weight
-             #:underlined?     underlined
-             #:smoothing       smoothing
-             #:size-in-pixels? size-in-pixels
-             #:hinting         hinting))
-
-(define-fontop font-family (new-family pict x y) f  
-  (def size            (send f get-size))
-  (def face            (send f get-face))
-  (def family          (send f get-family))
-  (def style           (send f get-style))
-  (def weight          (send f get-weight))
-  (def underlined      (send f get-underlined))
-  (def smoothing       (send f get-smoothing))
-  (def size-in-pixels  (send f get-size-in-pixels))
-  (def hinting         (send f get-hinting))
-  (make-font #:size            size
-             #:face            face
-             #:family          new-family
-             #:style           style
-             #:weight          weight
-             #:underlined?     underlined
-             #:smoothing       smoothing
-             #:size-in-pixels? size-in-pixels
-             #:hinting         hinting))
-
-(define-fontop font-style (new-style pict x y) f  
-  (def size            (send f get-size))
-  (def face            (send f get-face))
-  (def family          (send f get-family))
-  (def style           (send f get-style))
-  (def weight          (send f get-weight))
-  (def underlined      (send f get-underlined))
-  (def smoothing       (send f get-smoothing))
-  (def size-in-pixels  (send f get-size-in-pixels))
-  (def hinting         (send f get-hinting))
-  (make-font #:size            size
-             #:face            face
-             #:family          family
-             #:style           new-style
-             #:weight          weight
-             #:underlined?     underlined
-             #:smoothing       smoothing
-             #:size-in-pixels? size-in-pixels
-             #:hinting         hinting))
-
-(define-fontop font-weight (new-weight pict x y) f  
-  (def size            (send f get-size))
-  (def face            (send f get-face))
-  (def family          (send f get-family))
-  (def style           (send f get-style))
-  (def weight          (send f get-weight))
-  (def underlined      (send f get-underlined))
-  (def smoothing       (send f get-smoothing))
-  (def size-in-pixels  (send f get-size-in-pixels))
-  (def hinting         (send f get-hinting))
-  (make-font #:size            size
-             #:face            face
-             #:family          family
-             #:style           style
-             #:weight          new-weight
-             #:underlined?     underlined
-             #:smoothing       smoothing
-             #:size-in-pixels? size-in-pixels
-             #:hinting         hinting))
 
 
 ;; smoothed : pict -> pict

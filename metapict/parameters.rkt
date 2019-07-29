@@ -5,11 +5,9 @@
 (require "def.rkt")
 (require (only-in racket/draw make-font))
 
-;;; Label 
-(def current-label-text-style (make-parameter 'default))
-(def current-label-text-size  (make-parameter 10))       ; default in MetaPost is 10bp (racket 12)
-(def current-label-text-angle (make-parameter 0.))       ; radians 
-(def current-label-gap        (make-parameter 0.2))
+;;; Label
+(def current-label-font (make-parameter (make-font)))
+(def current-label-gap  (make-parameter 0.15))
 (def label-offset       (make-parameter 3)) ; default in MetaPost is 3bp
 
 ;;; Font
@@ -19,11 +17,22 @@
 ;;       And at that time the dc is not available. 
 (def current-font      (make-parameter (make-font)))
 
+
 ;;; Brush
 ; 
 (def use-default-brush? (make-parameter #t))
 (def colorizer (make-parameter (λ x (error 'colorizer "internal error: parameter wasn't set"))))
 
 ;;; Nodes
-(def current-inner-separation (make-parameter 0.05)) ; separation space between text and curve drawn
-(def current-outer-separation (make-parameter 0.0))  ; separation space between curve and outside
+(def current-inner-separation (make-parameter 0.025)) ; separation space between text and curve drawn
+(def current-outer-separation (make-parameter 0.025))  ; separation space between curve and outside
+; Note: In TikZ the default outer separation is half the line width
+;       When the path is drawn, this will make the anchors lie exactly on the "outside border"
+;       of the path (and not on the path itself).
+
+;; When placing a node relative to another we need some space between the nodes.
+;; I.e. these parameters are used with #:above, #:below, etc are used in (node ...).
+(def current-neighbour-distance-x (make-parameter #f)) ; #f means use current-neighbour-distance
+(def current-neighbour-distance-y (make-parameter #f))
+(def current-neighbour-distance   (make-parameter 1.))
+

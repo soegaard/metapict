@@ -19,6 +19,7 @@
          "bez.rkt" "curve.rkt" "def.rkt" "device.rkt" "pen-and-brush.rkt"
          "pict-lite.rkt" "structs.rkt" "parameters.rkt" "pict.rkt" "pt-vec.rkt" "color.rkt")
 
+; draw : list-of-drawables -> pict
 (define (draw . cs)
   (smoothed
    (match cs
@@ -32,7 +33,9 @@
                      [(? pt?)               (draw-dot c)]
                      [(? bez?)              (curve->pict (curve: #f (list c)))]
                      [(? label?)            (label->pict c)]
-                     [(? pict-convertible?) (pict-convert c)]
+                     [(? node? n)           ((node-convert n) n)]
+                     [(? edge? n)           ((edge-convert n) n)]
+                     ;[(? pict-convertible?) (pict-convert c)]
                      [#f                    (blank (curve-pict-width) (curve-pict-height))]
                      [else            (error 'combine (~a "curve or pict expected, got " c))])))])))
 
@@ -190,38 +193,13 @@
         (send dc set-smoothing s))
       width height))
 
-#;(define (label-bbox l)
-    (defm (label p? pos placement) l)
-    (def p (if (pict? p?) p? (text p? null (current-font-size))))
-    (defv (w h) (values (xpx (pict-width p)) (ypx (pict-height p))))  
-    (defv (-w -h) (values (- w) (- h)))
-    (defv (-w/2 -h/2) (values (/ -w 2) (/ -h 2)))
-    (def ε (label-offset))
-    (def -ε (- ε))
-    (defm (vec Δx Δy)
-      (match placement
-        [(rt)   (vec+ (vec 0    -h/2) (vec  ε  0))]
-        [(lft)  (vec+ (vec -w   -h/2) (vec -ε  0))]
-        [(bot)  (vec+ (vec -w/2  0)   (vec  0  ε))]
-        [(top)  (vec+ (vec -w/2 -h)   (vec  0 -ε))]
-        [(cnt)  (vec+ (vec -w/2 -h/2) (vec  0  0))]            
-        [(lrt)  (vec+ (vec  0    0)   (vec  ε  ε))]   ; lft is +
-        [(ulft) (vec+ (vec -w   -h)   (vec -ε -ε))]            
-        [(llft) (vec+ (vec -w    0)   (vec -ε  ε))]
-        [(urt)  (vec+ (vec  0   -h)   (vec  ε -ε))]                        
-        [else   (error 'label->pict (~a "internal error, expected a placement:" placement))]))
-    (curve (pt Δx Δy) -- (pt (+ Δx w) Δy) -- (pt (+ Δx w) (+ Δy h)) -- (pt 0 (+ Δy h)) -- cycle))
-
 (define (label->pict l) ; win w h [pt #f]) ; path -> pict 
   (def pw (curve-pict-width))
   (def ph (curve-pict-height))
   (def T (stdtrans (curve-pict-window) pw ph))
   (defm (label p? pos placement) l)
   (def p (if (pict? p?) p?
-             (text p?
-                   (current-label-text-style)
-                   (current-label-text-size)
-                   (current-label-text-angle))))
+             (with-font (current-label-font) (text p?))))
   (defv (w h) (values (pict-width p) (pict-height p)))
   (dc (λ (dc dx dy)
         (def s (send dc get-smoothing))

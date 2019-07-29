@@ -1,5 +1,5 @@
 #lang racket
-(require metapict metapict/graph)
+(require "def.rkt" "parameters.rkt" "graph.rkt")
 
 (define (wave len amplitude)
   (define (f x)  (* amplitude (sin (/ (* x 2pi) len))))

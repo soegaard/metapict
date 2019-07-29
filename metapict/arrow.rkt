@@ -168,13 +168,15 @@
                  #:fill-tail         [fill-tail? #t]
                  #:head              [head arrow-head]
                  #:tail              [tail #f])
-  (def the-head (place-arrow-head 
-                 c (head
-                    #:length            l
-                    #:length-ratio      r
-                    #:head-angle        α
-                    #:flank-indentation β
-                    #:tail-indentation  γ)))
+  (def the-head (if head
+                    (place-arrow-head 
+                     c (head
+                        #:length            l
+                        #:length-ratio      r
+                        #:head-angle        α
+                        #:flank-indentation β
+                        #:tail-indentation  γ))
+                    empty-curve))
   (def the-tail (if tail
                     (place-arrow-head 
                      (curve-reverse c)
