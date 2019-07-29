@@ -10,6 +10,7 @@
          font-italic font-normal font-slant  ; styles
          font-weight
          font-bold
+         font-size
          )
 
 
@@ -122,3 +123,15 @@
        (with-font-change (#:weight w) e))]))
 
 (define-simple-macro (font-bold e:expr) (font-weight 'bold e))
+
+
+;;;
+;;; FONT SIZE
+;;;
+
+(define-syntax (font-size stx)
+  (syntax-parse stx
+    [(_font-size n:expr e:expr)
+     (syntax/loc stx
+       (with-font-change (#:size n) e))]))
+

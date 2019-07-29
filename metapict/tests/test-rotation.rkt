@@ -1,6 +1,13 @@
 #lang racket
 (require metapict)
 
+
+;;;
+;;; Red and blue "flower"
+;;;
+
+; Idea from a TikZ tutorial
+
 ; bitmap size
 (set-curve-pict-size  800 800)
 
@@ -13,6 +20,12 @@
           (rotated (* 0.54 i)
                    (scaled (* 0.01 (- 100 i))
                            unitsquare)))))
+
+;;;
+;;; A commutative diagram. 
+;;;
+
+;; Todo: Use render-tex from poppler to get latex formulas working.
 
 (set-curve-pict-size  600 600)
 (curve-pict-window (window -2 2 -2 2))

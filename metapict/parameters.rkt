@@ -24,8 +24,8 @@
 (def colorizer (make-parameter (λ x (error 'colorizer "internal error: parameter wasn't set"))))
 
 ;;; Nodes
-(def current-inner-separation (make-parameter 0.025)) ; separation space between text and curve drawn
-(def current-outer-separation (make-parameter 0.025))  ; separation space between curve and outside
+(def current-inner-separation (make-parameter 0.05)) ; separation space between text and curve drawn
+(def current-outer-separation (make-parameter 0.05))  ; separation space between curve and outside
 ; Note: In TikZ the default outer separation is half the line width
 ;       When the path is drawn, this will make the anchors lie exactly on the "outside border"
 ;       of the path (and not on the path itself).
