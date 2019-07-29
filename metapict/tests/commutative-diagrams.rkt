@@ -10,24 +10,26 @@
 (ahlength 0.1)
 
 
-(def A (text-node "A"))
-(def B (text-node "B" #:right-of A))
-(def C (text-node "C" #:below B))
-(def D (text-node "D" #:right-of C))
-
-
-(font-italic
+(let ()
+  ; A simple commutative diagram
+  (def A (text-node "A"))
+  (def B (text-node "B" #:right-of A))
+  (def C (text-node "C" #:below B))
+  (def D (text-node "D" #:right-of C))
+  
+  (font-italic
    (margin 5
            (draw ; (color "gray" (grid (pt -3 -3) (pt 3 3)))
-                 A B C D
-                 (edge A B #:label "f")
-                 (edge A C #:label "g○f")
-                 (edge B C #:label "g"   #:arrow '-)
-                 (edge B D #:label "h○g" #:arrow '<-) 
-                 (edge C D #:label "h"   #:arrow '<->))))
+            A B C D
+            (edge A B #:label "f")
+            (edge A C #:label "g○f")
+            (edge B C #:label "g"   #:arrow '-)
+            (edge B D #:label "h○g" #:arrow '<-) 
+            (edge C D #:label "h"   #:arrow '<->)))))
 
 ;;; Example: A simple cycle
 
+; This example show how to draw points and edges that are in a list.
 (curve-pict-window (window -2 2 -2 2))
 
 (def n 5)  ; number of nodes in the cycle
@@ -60,37 +62,22 @@
 
 ;;; Example: A simple cycle (now edges form a circle)
 
-(curve-pict-window (window -2 2 -2 2))
+(let ()
+  (curve-pict-window (window -2 2 -2 2))
+  
+  (define (tangent-vector i)
+    (rot90 (pt- (point i) origo)))
+  
+  (def edges2 (for/list ([i 5])
+                (edge (cycle-node i)
+                      (cycle-node (next i))
+                      (tangent-vector i)
+                      (tangent-vector (next i)))))
+  
+  (draw (draw* nodes)
+        (draw* edges2)))
 
-(define (tangent-vector i)
-  (rot90 (pt- (point i) origo)))
 
-(def edges2 (for/list ([i 5])
-              (edge (cycle-node i)
-                    (cycle-node (next i))
-                    (tangent-vector i)
-                    (vec* -1 (tangent-vector (next i))))))
-                   
-
-(draw (draw* nodes)
-      (draw* edges2))
-
-
-
-;;; Zasssenhaus' Lemma
-
-(def L1 (text-node "A⃰"))
-(def L2 (text-node "A(A⃰∩B)"))
-(def L3 (text-node "A(A⃰∩B)"))
-(def L4 (text-node "A"))
-
-(def M1 (text-node "A⃰∩B⃰"))
-(def M2 (text-node "(A∩B⃰)(A⃰∩B)"))
-
-(def R1 (text-node "B⃰"))
-(def R2 (text-node "B(A⃰∩B)"))
-(def R3 (text-node "A(A⃰∩B)"))
-(def R4 (text-node "A"))
 
 ;;;
 
@@ -99,65 +86,49 @@
 ;; An example with an exact sequence.
 
 (font-italic
-(let ()
-  (set-curve-pict-size  800 400)
-  (curve-pict-window (window -1 5 -2 1))
+ (let ()
+   (set-curve-pict-size  800 400)
+   (curve-pict-window (window -1 5 -2 1))
 
-  ; chain : list-of-strings -> list-of-nodes
-  ;   return a list of text nodes placed horizontally 
-  (define (chain xs)
-    (reverse
-     (for/fold ([ns (list (text-node (first xs)))])
-               ([x  (rest xs)])
-       (cons (text-node x #:right-of (first ns))
-             ns))))
+   ; chain : list-of-strings -> list-of-nodes
+   ;   return a list of text nodes placed horizontally 
+   (define (chain xs)
+     (reverse
+      (for/fold ([ns (list (text-node (first xs)))])
+                ([x  (rest xs)])
+        (cons (text-node x #:right-of (first ns))
+              ns))))
 
-  ; chain-below : list-of-nodes list-of-strings -> list-of-nodes
-  ;  return a list of nodes places below the nodes in ns
-  ;  using labels from the strings in xs
-  (define (chain-below ns xs)
-    (for/list ([x xs] [n ns])
-      (text-node x #:below n)))
+   ; chain-below : list-of-nodes list-of-strings -> list-of-nodes
+   ;  return a list of nodes places below the nodes in ns
+   ;  using labels from the strings in xs
+   (define (chain-below ns xs)
+     (for/list ([x xs] [n ns])
+       (text-node x #:below n)))
 
-  ; edges : list-of-nodes strings -> list-of-edges
-  ;  return a list of horizontal edges between the nodes in the list chain,
-  ;  use the strings in labels as labels (an #f means no label)
-  (define (edges chain labels)
-    (for/list ([n1 chain] [n2 (rest chain)] [l labels])
-      (if l
-          (edge n1 n2 #:label l)
-          (edge n1 n2))))
+   ; edges : list-of-nodes strings -> list-of-edges
+   ;  return a list of horizontal edges between the nodes in the list chain,
+   ;  use the strings in labels as labels (an #f means no label)
+   (define (edges chain labels)
+     (for/list ([n1 chain] [n2 (rest chain)] [l labels])
+       (if l
+           (edge n1 n2 #:label l)
+           (edge n1 n2))))
 
-  ; edges-vert : list-of-nodes list-of-nodes list-of-string -> list-of-edges
-  ;   return a list of vertical edges from the nodes in ns to those in ms
-  ;   using the labels
-  (define (edges-vert ns ms labels)
-    (for/list ([n ns] [m ms] [l labels]
-                      #:when l)
-      (edge n m #:label l)))
+   ; edges-vert : list-of-nodes list-of-nodes list-of-string -> list-of-edges
+   ;   return a list of vertical edges from the nodes in ns to those in ms
+   ;   using the labels
+   (define (edges-vert ns ms labels)
+     (for/list ([n ns] [m ms] [l labels]
+                       #:when l)
+       (edge n m #:label l)))
 
-  ;; The diagram: A "ladder".
-  (def upper (chain             '("0" "A"  "B"  "C"  "0")))
-  (def lower (chain-below upper '("0" "A'" "B'" "C'" "0")))
-  (draw* (append upper lower
-                 (edges upper             '(#f "φ"  "ψ"  #f))
-                 (edges lower             '(#f "φ'" "ψ'" #f))
-                 (edges-vert upper lower  '(#f "η₁" "η₂" "η₃" #f))))))
-
-
-
-(let ()
-  (set-curve-pict-size  600 600)
-  (curve-pict-window (window -2 2 -2 2))
-
-  (def A (text-node "A" #:at (pt -1 0)))
-  (def B (text-node "B" #:at (pt  1 0)))
-
-  (draw A B
-        (edge A B #:via (pt 0 1) #:label "AB")
-        (edge A B #:via (list (pt 0 -0.5)) #:label "AB")))
-
-
-
+   ;; The diagram: A "ladder".
+   (def upper (chain             '("0" "A"  "B"   "C"   "0")))
+   (def lower (chain-below upper '("0" "A'" "B '" "C '" "0")))
+   (draw* (append upper lower
+                  (edges upper             '(#f "φ"   "ψ"    #f))
+                  (edges lower             '(#f "φ '" "ψ '"  #f))
+                  (edges-vert upper lower  '(#f "η₁"  "η₂"   "η₃" #f))))))
 
 
