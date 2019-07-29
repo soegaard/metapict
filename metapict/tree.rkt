@@ -1,6 +1,11 @@
 #lang racket/base
 (require metapict racket/format racket/match racket/list)
 
+;;; TODO
+
+;; This module was written before nodes were implemented, so
+;; it needs to be rewritten to use nodes. 
+
 ;;; Tree Drawing
 
 ;;; Goals 
@@ -184,11 +189,11 @@
   (define (recur tree drawing)
     (def p (pos->node-pos (posn tree)))
     (def n (square-node p))
-    (def d (draw drawing (draw-node n) (label-cnt (~a (element tree)) p)))
+    (def d (draw drawing n (label-cnt (~a (element tree)) p)))
     (cond [(leaf? tree) d]
           [else         (draw d (for/draw ([c (children tree)])
                                           (def nc (square-node (pos->node-pos (posn c))))
-                                          (draw (draw-edge n nc up down)
+                                          (draw (edge n nc up down)
                                                 (recur c d))))]))
   (recur tree (draw)))
 
