@@ -7,9 +7,9 @@
          with-font
          with-font-change
 
-         italic font-normal slant  ; styles
+         font-italic font-normal font-slant  ; styles
          font-weight
-         bold
+         font-bold
          )
 
 
@@ -19,6 +19,9 @@
 ;;       The drawing context is not accessible, since it pict receives the
 ;;       drawing context only when it is to be drawn.
 ;;       The current font is therefore stored in the paramter current-font.
+
+; Note: The names italic and bold are also used scribble, so it is inconvenient
+;       to use the same names.
 
 ;; The font contains:
 
@@ -88,7 +91,7 @@
 ;;;
 ;;; FONT STYLE
 ;;;
-(define-syntax (italic stx)
+(define-syntax (font-italic stx)
   (syntax-parse stx
     [(_italic e:expr)
      (syntax/loc stx
@@ -101,7 +104,7 @@
      (syntax/loc stx
        (with-font-change (#:style 'normal) e))]))
 
-(define-syntax (slant stx)
+(define-syntax (font-slant stx)
   (syntax-parse stx
     [(_slant e:expr)
      (syntax/loc stx
@@ -118,4 +121,4 @@
      (syntax/loc stx
        (with-font-change (#:weight w) e))]))
 
-(define-simple-macro (bold e:expr) (font-weight 'bold e))
+(define-simple-macro (font-bold e:expr) (font-weight 'bold e))
