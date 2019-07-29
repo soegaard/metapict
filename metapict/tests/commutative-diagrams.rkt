@@ -16,7 +16,7 @@
 (def D (text-node "D" #:right-of C))
 
 
-(italic
+(font-italic
    (margin 5
            (draw ; (color "gray" (grid (pt -3 -3) (pt 3 3)))
                  A B C D
@@ -98,7 +98,7 @@
 
 ;; An example with an exact sequence.
 
-(italic
+(font-italic
 (let ()
   (set-curve-pict-size  800 400)
   (curve-pict-window (window -1 5 -2 1))
