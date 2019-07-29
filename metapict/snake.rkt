@@ -1,5 +1,14 @@
 #lang racket
-(require "def.rkt" "parameters.rkt" "graph.rkt")
+
+;;
+;; SNAKE
+;;
+
+; An unfinished experiment. See snakes in the TikZ manual.
+; The goal is to make a wiggly curve than can be used to draw wiggly arrows.
+
+; (require "def.rkt" "parameters.rkt" "graph.rkt" "pt-vec.rkt" "curve.rkt")
+(require metapict metapict/graph)
 
 (define (wave len amplitude)
   (define (f x)  (* amplitude (sin (/ (* x 2pi) len))))
