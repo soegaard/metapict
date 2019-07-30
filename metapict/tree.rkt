@@ -29,7 +29,7 @@
 
 
 ; These functions are for testing purposes.
-; The final interface will receive accesors in order
+; The final interface will receive accessors in order
 ; to make the actual representation of the tree irrelevant.
 (define (leaf? t)    (not (pair? t)))
 (define (element t)  (car t))
@@ -52,7 +52,7 @@
              (max m (depth c))))))
 
 ; minimum-width-tree-positions : tree ->  hash from trees to pt
-;   this naive strategy illustrates computes the placements
+;   this naive strategy computes the placements
 ;   of all subtrees and returns them as a hash table from
 ;   subtrees to points (pt). The hash table is to be used
 ;   as input for draw-tree.
@@ -160,10 +160,6 @@
   (recur tree (draw)))
 
 
-;(ahangle         45)      
-;(ahflankangle    0) 
-;(ahtailcurvature 0) 
-;(ahratio         1)
 
 (module+ test
   (set-curve-pict-size 400 400)
@@ -186,23 +182,44 @@
   (define (pos->node-pos p)
     (defm (pt x y) p)
     (pt (* w x) (* (+ w 1) y)))
+  (define (tree->nodes tree)
+    (define ht (make-hash))
+    (define (add! t) (hash-set! ht t (circle-node (~a (element t)) #:at (posn t))))
+    (let loop ([t tree])
+      (cond [(leaf? t) ht]
+            [else      (add! t)
+                       (for ([c (children t)])
+                         (loop c))]))
+    ht)
+  (def nodes-ht (tree->nodes tree))
+  (def (get-node t) (hash-ref nodes-ht t))
   (define (recur tree drawing)
     (def p (pos->node-pos (posn tree)))
-    (def n (square-node p))
-    (def d (draw drawing n (label-cnt (~a (element tree)) p)))
+    (def n (get-node tree))
+    (def d (draw drawing n #;(label-cnt (~a (element tree)) p)))
     (cond [(leaf? tree) d]
-          [else         (draw d (for/draw ([c (children tree)])
-                                          (def nc (square-node (pos->node-pos (posn c))))
-                                          (draw (edge n nc up down)
-                                                (recur c d))))]))
+          [else
+           (draw d
+                 (for/draw ([c (children tree)])
+                           (def parent (get-node tree))
+                           (def child  (get-node c))
+                           (draw (draw (edge parent child))
+                                 (recur c d))))]))
   (recur tree (draw)))
 
-(set-curve-pict-size 300 300)
-(with-window (window 0 6 -1 5)
+;(ahangle         45)      
+;(ahflankangle    0) 
+;(ahtailcurvature 0) 
+;(ahratio         1)
+(ahlength 0.1)
+
+(set-curve-pict-size 800 400)
+(current-node-size 0.5)
+(with-window (window 0 12 -1 5)
   (define a-tree '(a (b (d) (e (h))) (c (f (i)) (g))))
   (draw-tree/nodes a-tree (simple-centered-tree-positions a-tree)))
 
-#;(let ()
+(let ()
     (set-curve-pict-size 300 300)
     (define (draw-example calculate-positions)
       (with-window (window -1 10 -1 10)
@@ -213,7 +230,7 @@
                          (j)))
                    (g)
                    (h)))
-        (draw (color "gray" (grid (pt 0 0) (pt 10 10) (pt 0 0) 1))
-              (draw-tree t (calculate-positions t)))))
+        (draw (color "gray" (grid (pt 0 0) (pt 10 10) (pt 0 0) #:step 1))
+              (draw-tree/nodes t (calculate-positions t)))))
     (beside (draw-example minimum-width-tree-positions)
             (draw-example simple-centered-tree-positions)))
