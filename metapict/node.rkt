@@ -280,6 +280,16 @@
                              #:outer-y-separation o-ysep)
   (make-node-helper 'rectangle t pos dir i-xsep i-ysep o-xsep o-ysep))
 
+(define-node-constructor (circle-node () make-circle-node))
+(define (make-circle-node #:contents t
+                          #:at pos
+                          #:direction dir
+                          #:inner-x-separation i-xsep  
+                          #:inner-y-separation i-ysep
+                          #:outer-x-separation o-xsep
+                          #:outer-y-separation o-ysep)
+  (make-node-helper 'circle t pos dir i-xsep i-ysep o-xsep o-ysep))
+
 
 ; type = 'text      :  node centered at point p
 ; type = 'rectangle :  text with rectangular border
@@ -290,23 +300,28 @@
     ;; 1. We need to figure out the dimensions of the contents t.
     ; - first we make a label centered at p (in order to figure out sizes)
     (def l       (label-cnt (or t " ") p)) ; create label from string
-    (define-values (w h) (contents-dimension l))    
-    ; (def outline (label-bbox l))  ; tight curve around text
+    (define-values (w h) (if t (contents-dimension l) (values 0 0)))
 
     ;; 2. Shapes
     ; - the inner shape is the shape drawn around the text
-    (define inner-shape (rectangle-shape #:center p
-                                         #:width  (+ w (* 2 i-xsep))
-                                         #:height (+ h (* 2 i-ysep))))
+    (define make-shape  (case type
+                          [(text rectangle) rectangle-shape]
+                          [(circle)         circle-shape]
+                          [else (error)]))
+    (define inner-shape (make-shape #:center p
+                                    #:width  (+ w (* 2 i-xsep))
+                                    #:height (+ h (* 2 i-ysep))))
+
     ; - the outer shape is the shape used for anchors (often there is space between)
-    (define outer-shape (rectangle-shape #:center p
-                                         #:width  (+ w (* 2 (+ i-xsep o-xsep)))
-                                         #:height (+ h (* 2 (+ i-ysep o-ysep)))))
+    (define outer-shape  (make-shape #:center p
+                                     #:width  (+ w (* 2 (+ i-xsep o-xsep)))
+                                     #:height (+ h (* 2 (+ i-ysep o-ysep)))))
+        
     ;; 3. Drawing
     (define (convert n) ; node ->pict
-      (draw (cond
-              [(eq? type 'text)      #f]
-              [(eq? type 'rectangle) (draw-shape inner-shape)]
+      (draw (case type
+              [(text)                #f]
+              [(rectangle circle)    (draw-shape inner-shape)]
               [else #f])
             l))
     ;; 4. If the direction  dir  is given the final center position is not p,
@@ -322,50 +337,14 @@
            (def q ((shape-anchor inner-shape) dir))
            (again t q down #f)])))
 
-(define (circle-shape #:center [center #f] #:radius [radius #f])
+(define (circle-shape #:center [center #f] #:width [width #f] #:height [height #f])
+  (def radius (max width height))
   (def r (or radius 1))
   (def p (or center (pt 0 0)))
   (define (anchor v) (pt+ p (vec* (/ r (norm v)) v)))
   (define (normal v) (vec* (/ 1 (norm v)) v))
   (shape (circle p r) anchor normal))
 
-(define-node-constructor (circle-node ([#:radius radius #f]) make-circle-node))
-(define (make-circle-node #:contents t
-                          #:at center
-                          #:direction dir
-                          #:inner-x-separation i-xsep
-                          #:inner-y-separation i-ysep
-                          #:outer-x-separation o-xsep
-                          #:outer-y-separation o-ysep
-                          #:radius radius)
-  (let again ([center center] [dir dir])    
-    (def l (or (and (label? t) t)
-               (label-cnt t center))) ; create label from string
-    (define-values (w h) (contents-dimension l))
-    
-    ; inner and outer separation
-    (def isep (max i-xsep i-ysep))
-    (def osep (max o-xsep o-ysep))
-    ; radius
-    (def r (max (or radius (/ (current-node-size) 2) 0)
-                (/ w 2) (/ h 2)))
-    (def inner-shape (circle-shape #:center center #:radius (+ r isep)))
-    (def outer-shape (circle-shape #:center center #:radius (+ r isep osep)))
-    (define (convert n) ; node ->pict
-      (draw (draw-shape inner-shape) l))
-    
-    ;; 4. If the direction  dir  is given the final center position is not p,
-    ;     but another position q, sutch that a text centered at q will have
-    ;     an outline through p (and qp parallel to dir).
-    ;       - if first? is #t then the final center has been calculated
-    ;       - otherwise calculate q and redo the above calculation
-    (cond [dir
-           ; find a center q such that a text node centered at q will
-           ; have an outline through p (and qp is parallel to dir)
-           (def new-center ((shape-anchor inner-shape) dir))
-           (again new-center #f)]
-          [else
-           (node convert center inner-shape outer-shape t)])))
 
 (define (square p r)
   (def -r (- r))
