@@ -338,12 +338,24 @@
            (again t q down #f)])))
 
 (define (circle-shape #:center [center #f] #:width [width #f] #:height [height #f])
-  (def radius (max width height))
+  (def radius (* 0.5 (max width height)))
   (def r (or radius 1))
   (def p (or center (pt 0 0)))
   (define (anchor v) (pt+ p (vec* (/ r (norm v)) v)))
   (define (normal v) (vec* (/ 1 (norm v)) v))
   (shape (circle p r) anchor normal))
+
+(define (ellipse-shape #:center [center #f] #:width [width #f] #:height [height #f])
+  (def w (or width  1))
+  (def h (or height 1))
+  (def r (* 0.5 (max w h)))
+  (def p (or center (pt 0 0)))
+  ; todo: fix anchor and normal
+  (define (anchor v) (pt+ p (vec* (/ r (norm v)) v)))
+  (define (normal v) (vec* (/ 1 (norm v)) v))
+  (shape (ellipse-curve (pt-x p) (pt-y p) w h)
+         anchor normal))
+
 
 
 (define (square p r)
