@@ -6,6 +6,7 @@
 (require (for-syntax syntax/parse racket/base))
 
 (provide circle-node          ; create node shaped as a circle
+         ellipse-node         ; create node shaped as a ellipse
          square-node          ; create node shaped as a square
          rectangle-node       ; create node shaped as a rectangle
          text-node            ; create node containing text
@@ -290,9 +291,22 @@
                           #:outer-y-separation o-ysep)
   (make-node-helper 'circle t pos dir i-xsep i-ysep o-xsep o-ysep))
 
+(define-node-constructor (ellipse-node () make-ellipse-node))
+(define (make-ellipse-node #:contents t
+                           #:at pos
+                           #:direction dir
+                           #:inner-x-separation i-xsep  
+                           #:inner-y-separation i-ysep
+                           #:outer-x-separation o-xsep
+                           #:outer-y-separation o-ysep)
+  (make-node-helper 'ellipse t pos dir i-xsep i-ysep o-xsep o-ysep))
+
 
 ; type = 'text      :  node centered at point p
 ; type = 'rectangle :  text with rectangular border
+; type = 'circle
+; type = 'ellipse
+
 (define (make-node-helper type t p dir i-xsep i-ysep o-xsep o-ysep)
   ; dir=#f    means node is centered at p
   ; dir=down  means the bottom of the bounding box touches p
@@ -307,6 +321,7 @@
     (define make-shape  (case type
                           [(text rectangle) rectangle-shape]
                           [(circle)         circle-shape]
+                          [(ellipse)        ellipse-shape]
                           [else (error)]))
     (define inner-shape (make-shape #:center p
                                     #:width  (+ w (* 2 i-xsep))
@@ -320,8 +335,8 @@
     ;; 3. Drawing
     (define (convert n) ; node ->pict
       (draw (case type
-              [(text)                #f]
-              [(rectangle circle)    (draw-shape inner-shape)]
+              [(text)                      #f]
+              [(rectangle circle ellipse) (draw-shape inner-shape)]
               [else #f])
             l))
     ;; 4. If the direction  dir  is given the final center position is not p,
@@ -348,12 +363,18 @@
 (define (ellipse-shape #:center [center #f] #:width [width #f] #:height [height #f])
   (def w (or width  1))
   (def h (or height 1))
-  (def r (* 0.5 (max w h)))
   (def p (or center (pt 0 0)))
   ; todo: fix anchor and normal
-  (define (anchor v) (pt+ p (vec* (/ r (norm v)) v)))
-  (define (normal v) (vec* (/ 1 (norm v)) v))
-  (shape (ellipse-curve (pt-x p) (pt-y p) w h)
+  (define (anchor v)
+    (def u  (vec* (/ (norm v)) v))
+    (def u1 (match u [(vec x y) (vec (* 0.5 width x) (* 0.5 height y))]))
+    (def a (pt+ p u1)) ; anchor on circle
+    a)
+  (define (normal v)
+    (def u (vec* (/ (norm v)) v))
+    (def u1 (match u [(vec x y) (vec (* 0.5 width x) (* 0.5 height y))]))
+    u1)
+  (shape (ellipse-curve (pt-x p) (pt-y p) (* 0.5 w) (* 0.5 h))
          anchor normal))
 
 
