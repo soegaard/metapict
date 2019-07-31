@@ -38,6 +38,20 @@
         (edge A E #:arrow '<-)))
 
 (let ()
+  ; test different node types
+  (curve-pict-window (window -3 3 -3 3))
+  (def A (circle-node    "A"))
+  (def B (text-node      "B" #:right-of A))
+  (def C (rectangle-node "C" #:above    A))
+  (def D (circle-node    "D" #:left-of  A))
+  (def E (rectangle-node "E" #:below    A #:min-width 0.6 #:min-height 0.3))
+  (draw A B C D E
+        (edge A B #:arrow '-)
+        (edge A C #:arrow '<->)
+        (edge A D #:arrow '->)
+        (edge A E #:arrow '<-)))
+
+(let ()
   ; test automatic placement of labels
   (curve-pict-window (window -3 3 -3 3))
   (def A (circle-node "A"))
@@ -184,7 +198,7 @@
   (current-node-size 0.1)
   (current-label-gap 0.15)
 
-  (def A (rectangle-node #:at (pt  0  0) #:width 0.5))
+  (def A (rectangle-node #:at (pt  0  0) #:min-width 0.5))
   (def B (circle-node " " #:at (pt  1  0)))
   (def C (circle-node " " #:at (pt  1  1)))
   (def D (circle-node " " #:at (pt  0  1)))

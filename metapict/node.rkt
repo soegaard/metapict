@@ -11,11 +11,11 @@
          text-node            ; create node containing text
          draw-node-outline    ; draw node
          filled-node          ; draw filled node
-         #;draw-edge            ; draw edge from one to node to another
+         edge                 ; edge (curve/arrow) from one node to another
          anchor               ; find anchor i.e. point on the outline
          normal               ; find normal vector to the outline 
          current-node-size    ; default size for circles and half-diameter for squares
-         edge)   
+)   
 
 ; A NODE has 
 ;  - a position pos   the node is centered over pos
@@ -96,19 +96,22 @@
   ; direct direction beween nodes
   (def v  (pt- p2 p1))
   ; leaving and entering directions
+  (def use-mid? #t)
   (define-values (d1 d2)
     (match* (from-dir to-dir)
       [(#f #f)
        ; no directions given - use the direct direction
        (values v (vec* -1 v))]
       [(from-dir #f)
+       (set! use-mid? #f)
        ; only the leaving direction is given
-       (values from-dir (vec* -1 from-dir))]
+       (values from-dir from-dir)]
       [(#f to-dir)
+       (set! use-mid? #f)
        ; only the entering direction is given
-       (values (vec* -1 to-dir) to-dir)]
+       (values (vec* -1 to-dir) (vec* -1 to-dir))]
       [(from-dir to-dir)
-       (values from-dir to-dir)]))
+       (values from-dir (vec* -1 to-dir))]))
   ; anchors (points on the outline of the two nodes) to attach the edge
   (def a1 (anchor n1 d1))
   (def a2 (anchor n2 d2))
@@ -126,7 +129,7 @@
             (curve* (append (list a1 v1 ..)
                             (append-map (λ (v) (list v ..)) via)
                             (list v2 a2)))]
-           [(vec= v1 (vec* -1 v2))        ; the special case 
+           [(and use-mid? (vec= v1 (vec* -1 v2)))  ; the special case 
             (def m (pt+ p1 (vec* 0.5 v))) ; "mid" point to achieve a prettier path
             (curve a1 v1 .. m .. v2 a2)]
            [else                          ; the general case
@@ -180,12 +183,10 @@
 
 (define-syntax (define-node-constructor stx)
   (syntax-parse stx
-    [(_define-node-constructor
-      (constructor-name ([keyword arg-name arg-default] ...)
-            make))
+    [(_define-node-constructor  (constructor-name ([keyword arg-name arg-default] ...) make))
      (syntax/loc stx
        (define (constructor-name
-                t ; contents (string or label)
+                [t #f] ; contents (string or label) or false for no contents
                 ;; The common arguments for all node constructors
                 #:at        [center    #f]    ; position of node
                 #:direction [direction #f]    ; direction of node relative to center
@@ -198,9 +199,9 @@
                 #:outer-xsep [outer-xsep #f]  ; overrides #:outer-sep
                 #:outer-ysep [outer-ysep #f]
                 ; minimum sizes (including inner separation, excluding outer)
-                #:minimum-size   [minimum-size   #f]
-                #:minimum-width  [minimum-width  #f] ; overrides mininum-size
-                #:minimum-height [minimum-height #f] ; overrides minimum-size
+                #:min-size   [minimum-size   #f]
+                #:min-width  [minimum-width  #f] ; overrides mininum-size
+                #:min-height [minimum-height #f] ; overrides minimum-size
                 ; placement (alternativ to #:at)
                 ;  - the following has no effect unless center is #f
                 #:below     [below     #f]
@@ -267,17 +268,28 @@
                         #:inner-y-separation i-ysep
                         #:outer-x-separation o-xsep
                         #:outer-y-separation o-ysep)
-  (text-node-helper t pos dir i-xsep i-ysep o-xsep o-ysep))
-  
+  (make-node-helper 'text t pos dir i-xsep i-ysep o-xsep o-ysep))
 
-; text node centered at point p
-(define (text-node-helper t p dir i-xsep i-ysep o-xsep o-ysep)
+(define-node-constructor (rectangle-node () make-rectangle-node))
+(define (make-rectangle-node #:contents t
+                             #:at pos
+                             #:direction dir
+                             #:inner-x-separation i-xsep
+                             #:inner-y-separation i-ysep
+                             #:outer-x-separation o-xsep
+                             #:outer-y-separation o-ysep)
+  (make-node-helper 'rectangle t pos dir i-xsep i-ysep o-xsep o-ysep))
+
+
+; type = 'text      :  node centered at point p
+; type = 'rectangle :  text with rectangular border
+(define (make-node-helper type t p dir i-xsep i-ysep o-xsep o-ysep)
   ; dir=#f    means node is centered at p
   ; dir=down  means the bottom of the bounding box touches p
   (let again ([t t] [p p] [dir dir] [first? #t])
     ;; 1. We need to figure out the dimensions of the contents t.
     ; - first we make a label centered at p (in order to figure out sizes)
-    (def l       (label-cnt t p)) ; create label from string
+    (def l       (label-cnt (or t " ") p)) ; create label from string
     (define-values (w h) (contents-dimension l))    
     ; (def outline (label-bbox l))  ; tight curve around text
 
@@ -292,7 +304,11 @@
                                          #:height (+ h (* 2 (+ i-ysep o-ysep)))))
     ;; 3. Drawing
     (define (convert n) ; node ->pict
-      (draw #;(draw-shape inner-shape) l))
+      (draw (cond
+              [(eq? type 'text)      #f]
+              [(eq? type 'rectangle) (draw-shape inner-shape)]
+              [else #f])
+            l))
     ;; 4. If the direction  dir  is given the final center position is not p,
     ;     but another position q, sutch that a text centered at q will have
     ;     an outline through p (and qp parallel to dir).
@@ -403,14 +419,6 @@
     a)
   (shape (rectangle (pt+ p (vec w/2 h/2)) (pt- p (vec w/2 h/2))) anchor normal))
 
-(define (rectangle-node [contents #f]
-                        #:at [p (pt 0 0)]
-                        #:width [width #f] #:height [height #f])
-  (def w (or width  (* 2 (current-node-size))))
-  (def h (or height (* 2 (current-node-size))))
-  (def s (rectangle-shape #:center p #:width w #:height h))
-  ; todo: inner and outer shapes
-  (node draw-node-outline p s s contents))
 
 (define (flmod n d)
   (- n (* d (floor (/ n d)))))
@@ -469,3 +477,5 @@
                        (draw-edge n1 n3 west west)
                        (draw-edge n1 n4))))
 )
+
+
