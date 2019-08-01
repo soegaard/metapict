@@ -115,4 +115,26 @@
     [_ (error 'rectangle (~a "expected two points, or a point and a vec, got: " a1 " and " a2))]))
 
 
-
+; rounded-rectangle : pt pt-or-vec [number] -> curve
+;   Given two points of diagonally opposite corners in a rectangle,
+;   returns a curve with the shape of a rectangle with rounded corners.
+;   Alternatively the input can be one point and a vector to the
+;   the diagonally opposite corner.
+(define (rounded-rectangle a1 a2 [radius 0.1])  ; mp default is 8bp ?
+  (match (list a1 a2)
+    [(list (pt x y) (vec dx dy)) ; point and diagonal vector
+     (rounded-rectangle a1 (pt (+ x dx) (+ y dy)))]
+    [(list (pt x y) (pt X Y))    ; opposite points
+     (defv (xmin xmax ymin ymax) (values (min x X) (max x X) (min y Y) (max y Y)))
+     (def r (min radius (* 0.5 (- xmax xmin)) (* 0.5 (- ymax ymin))))
+     (curve          (pt (+ xmin r)    ymin)
+            --       (pt (- xmax r)    ymin)    right 
+            .. up    (pt    xmax    (+ ymin r))
+            --       (pt    xmax    (- ymax r)) up
+            .. left  (pt (- xmax r)    ymax)
+            --       (pt (+ xmin r)    ymax)    left
+            .. down  (pt    xmin    (- ymax r))
+            --       (pt    xmin    (+ ymin r)) down
+            .. right (pt (+ xmin r)    ymin)
+            .. cycle)]
+    [_ (error 'rounded-rectangle (~a "expected two points, or a point and a vec, got: " a1 " and " a2))]))
