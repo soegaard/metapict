@@ -367,13 +367,13 @@
   ; todo: fix anchor and normal
   (define (anchor v)
     (def u  (vec* (/ (norm v)) v))
-    (def u1 (match u [(vec x y) (vec (* 0.5 width x) (* 0.5 height y))]))
+    (def u1 (match u [(vec x y) (vec (* 0.5 w x) (* 0.5 h y))]))
     (def a (pt+ p u1)) ; anchor on circle
     a)
   (define (normal v)
     (def u (vec* (/ (norm v)) v))
-    (def u1 (match u [(vec x y) (vec (* 0.5 width x) (* 0.5 height y))]))
-    u1)
+    (def u1 (match u [(vec x y) (vec (* 0.5 h x) (* 0.5 w y))]))
+    (vec* (/ (norm u1)) u1))
   (shape (ellipse-curve (pt-x p) (pt-y p) (* 0.5 w) (* 0.5 h))
          anchor normal))
 
