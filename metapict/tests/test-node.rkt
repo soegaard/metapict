@@ -38,18 +38,68 @@
         (edge A E #:arrow '<-)))
 
 (let ()
-  ; test different node types
+  ; test different arrow types
   (curve-pict-window (window -3 3 -3 3))
-  (def A (circle-node    "A"))
-  (def B (text-node      "B" #:right-of A))
-  (def C (rectangle-node "C" #:above    A))
-  (def D (circle-node    "D" #:left-of  A))
-  (def E (rectangle-node "E" #:below    A #:min-width 0.6 #:min-height 0.3))
+  (def A (circle-node "A"))
+  (def B (circle-node "B" #:right-of A))
+  (def C (circle-node "C" #:above    A))
+  (def D (circle-node "D" #:left-of  A))
+  (def E (circle-node "E" #:below    A))
   (draw A B C D E
         (edge A B #:arrow '-)
         (edge A C #:arrow '<->)
         (edge A D #:arrow '->)
         (edge A E #:arrow '<-)))
+
+
+(let ()
+  ; test different circle nodes
+  (curve-pict-window (window -3 3 -3 3))
+  (def A (circle-node    "A"))
+  (def B (circle-node        #:right-of A))  ; no label
+  (def C (circle-node    "C" #:above    A #:min-width  0.5))
+  (def D (circle-node    "D" #:left-of  A #:min-height 0.5))
+  (def E (circle-node    "E" #:below    A #:min-width  0.3 #:min-height 0.5))
+  (draw A B C D E
+        (edge A B #:arrow '-)
+        (edge A C #:arrow '-)
+        (edge A D #:arrow '-)
+        (edge A E #:arrow '-)))
+
+(let ()
+  ; test different ellipse nodes
+  (curve-pict-window (window -3 3 -3 3))
+  (def A (ellipse-node    "ELLIPSE"))
+  (def B (ellipse-node        #:right-of A))  ; no label
+  (def C (ellipse-node    "C" #:above    A #:min-width  0.6))
+  (def D (ellipse-node    "D" #:left-of  A #:min-height 0.3))
+  (def E (ellipse-node    "E" #:below    A #:min-width  0.6 #:min-height 0.3))
+  (draw A B C D E
+        (edge A B #:arrow '-)
+        (edge A C #:arrow '-)
+        (edge A D #:arrow '-)
+        (edge A E #:arrow '-)
+        (edge B C)
+        (edge C D)
+        (edge D E)
+        (edge E B)))
+
+
+(let ()
+  ; test different rectangle nodes
+  (curve-pict-window (window -3 3 -3 3))
+  (def A (rectangle-node    "A"))
+  (def B (rectangle-node        #:right-of A))  ; no label
+  (def C (rectangle-node    "C" #:above    A #:min-width  0.5))
+  (def D (rectangle-node    "D" #:left-of  A #:min-height 0.5))
+  (def E (rectangle-node    "E" #:below    A #:min-width  0.3 #:min-height 0.5))
+  (draw A B C D E
+        (edge A B #:arrow '-)
+        (edge A C #:arrow '-)
+        (edge A D #:arrow '-)
+        (edge A E #:arrow '-)))
+
+
 
 (let ()
   ; test automatic placement of labels
@@ -84,6 +134,7 @@
         (edge A E (dir -135) right)))
 
 
+
 (let ()
   ; test leaving and entering directions of an edge
   ; where only one is given
@@ -106,7 +157,7 @@
         (edge A E #f right)))
 
 (let ()
-  ; test placments with   #:at <coordinate>
+  ; test placements with   #:at <coordinate>
   ; todo: fix circle-node with "" as input text
   ;     (grid lower-left-corner upper-right-corner)
   ; helps finding the coordinates 
@@ -222,3 +273,47 @@
                     (edge A G)
                     (edge A H)
                     (edge A I)))))
+
+
+(font-normal
+ (font-size 50
+   (let ()
+     ; Test that all normals are orthogonal to the ellipse
+     (def en (ellipse-node "BANG" ; #:min-width 1 #:min-height 1
+                           #:inner-sep (px 20)
+                           #:outer-sep (px 20)))
+   (scale 1
+          (draw en
+                (for/draw ([i (in-range 0 360 15)])
+                          (def a (anchor en (dir i)))
+                          (def n (normal en (dir i)))
+                          (draw (color "red"  (draw a))
+                                (color "blue" (draw (curve a .. (pt+ a n)))))))))))
+
+(define-syntax-rule (my-font-style x)
+  (font-size 30
+    (font-italic x)))
+
+(brushcolor "blue"
+(pencolor "white"
+(penscale 2                    
+(with-window (window 0 800 -200 600)            
+  (my-font-style
+   (let ()
+     (def colors '(red blue green orange))
+     (def start (text-node))
+     (define-values (nodes picts)
+       (for/fold ([ns (list start)]          ; nodes
+                  [ps (list (draw start))]) ; picts
+                 ([col (map ~a colors)])
+         (def n (circle-node col
+                                #:color "black"
+                                #:fill col
+                                #:right-of  (first ns)
+                                #:inner-sep (px 5)
+                                #:outer-sep (px 5)))
+         (def p (text-color "white" (draw n)))
+         (values (cons n ns) (cons p ps))))
+     (draw* picts)))))))
+
+

@@ -50,10 +50,10 @@
 
 (define (filldraw c [fill-color #f] [draw-color #f])
   (cond
-    [(not fill-color) (draw c (fill c))] ; draw first, fill later
-    [(not draw-color) (draw (brush fill-color (fill c)) c)]
-    [else             (draw (brush fill-color (fill c))
-                            (color draw-color (draw c)))]))
+    [(not fill-color)    (draw c (fill c))] ; draw first, fill later
+    [(not draw-color)    (draw (brush fill-color (fill c)) c)]
+    [else                (draw (brush fill-color (fill c))
+                               (color draw-color (draw c)))]))
 
 (define (draw-dot pos)
   (filldraw (curve pos))) ; todo dot color ?

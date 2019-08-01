@@ -24,7 +24,9 @@
     [(_ name plc)     
      (syntax/loc stx
        (define (name text/pict pos)
-         (label text/pict pos (plc))))]))
+         (define t text/pict)
+         (label (if (string? t) (text t) t)
+                pos (plc))))]))
 
 (define (dot-label pict pos [plc (bot)])
   (penscale 4 (draw pos (label pict pos plc))))

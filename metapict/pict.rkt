@@ -133,15 +133,18 @@
                (parameterize ([use-default-brush? #f])
                  (let ([old-brush (send dc get-brush)])
                    (def new-brush (let () expr ...))
+                   (when (eq? new-brush #t)
+                     (set! new-brush old-brush))
                    (send dc set-brush new-brush)
                    (draw-pict pict dc x y)
                    (send dc set-brush old-brush))))
              (pict-width pict) (pict-height pict)))]))
 
 (define-brushop brush (new-brush pict x y) b
-  (cond [(is-a? new-brush brush%) new-brush]
+  (cond [(eq? new-brush #t)       #t] ; use existing
+        [(is-a? new-brush brush%) new-brush]
         [(is-a? new-brush color%) (new brush% [color new-brush] [style 'solid])]
-        [(string? new-brush)      (new brush% [color (make-color* new-brush)] [style 'solid])]
+        [(string? new-brush)      (new brush% [color (make-color* new-brush)] [style 'solid])]        
         [else (error 'brush (~a "expected a brush%, a color% or a color string, got: "
                                 new-brush))]))
 

@@ -6,7 +6,7 @@
 (define (grid lower-left upper-right [reference origo] #:step [step 1])
   ; Draw a grid with the rectangle given by the lower-left 
   ; and upper-right corner. Reference is a point in
-  ; which the horizontal and vertical lines intersection.
+  ; which the horizontal and vertical lines intersect.
   ; step is the distance between lines.
   (defm (pt x0 y0) lower-left)
   (defm (pt x1 y1) upper-right)

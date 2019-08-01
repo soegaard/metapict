@@ -1,7 +1,7 @@
 #lang racket/base
 (require "angles.rkt" "arrow.rkt" "curve.rkt" "def.rkt" "draw.rkt" "label.rkt" 
          "path.rkt" "pt-vec.rkt" "shapes.rkt" "structs.rkt" "trans.rkt" "parameters.rkt"
-         "text.rkt"
+         "text.rkt" "pict.rkt"
          racket/list racket/match racket/format)
 (require (for-syntax syntax/parse racket/base))
 
@@ -209,6 +209,9 @@
                 #:above     [above     #f]
                 #:right-of  [right-of  #f]
                 #:left-of   [left-of   #f]
+                ; style
+                #:fill      [fill #f] ; fill=#t means use current brush, a brush means use that brush
+                #:color     [color  #f] ; use color to draw shape
                 ;; The special keyword arguments
                 (~@ keyword [arg-name arg-default]) ...)
          ; distance to neighbours
@@ -258,6 +261,8 @@
                #:inner-y-separation i-ysep
                #:outer-x-separation o-xsep
                #:outer-y-separation o-ysep
+               #:fill fill
+               #:color color
                (~@ keyword arg-name) ...)))]))
          
 
@@ -268,8 +273,10 @@
                         #:inner-x-separation i-xsep
                         #:inner-y-separation i-ysep
                         #:outer-x-separation o-xsep
-                        #:outer-y-separation o-ysep)
-  (make-node-helper 'text t pos dir i-xsep i-ysep o-xsep o-ysep))
+                        #:outer-y-separation o-ysep                                                
+                        #:fill fill
+                        #:color color)
+  (make-node-helper 'text t pos dir i-xsep i-ysep o-xsep o-ysep fill color))
 
 (define-node-constructor (rectangle-node () make-rectangle-node))
 (define (make-rectangle-node #:contents t
@@ -278,8 +285,10 @@
                              #:inner-x-separation i-xsep
                              #:inner-y-separation i-ysep
                              #:outer-x-separation o-xsep
-                             #:outer-y-separation o-ysep)
-  (make-node-helper 'rectangle t pos dir i-xsep i-ysep o-xsep o-ysep))
+                             #:outer-y-separation o-ysep                             
+                             #:fill fill
+                             #:color color)
+  (make-node-helper 'rectangle t pos dir i-xsep i-ysep o-xsep o-ysep fill color))
 
 (define-node-constructor (circle-node () make-circle-node))
 (define (make-circle-node #:contents t
@@ -288,8 +297,10 @@
                           #:inner-x-separation i-xsep  
                           #:inner-y-separation i-ysep
                           #:outer-x-separation o-xsep
-                          #:outer-y-separation o-ysep)
-  (make-node-helper 'circle t pos dir i-xsep i-ysep o-xsep o-ysep))
+                          #:outer-y-separation o-ysep
+                          #:fill fill
+                          #:color color)
+  (make-node-helper 'circle t pos dir i-xsep i-ysep o-xsep o-ysep fill color))
 
 (define-node-constructor (ellipse-node () make-ellipse-node))
 (define (make-ellipse-node #:contents t
@@ -298,8 +309,10 @@
                            #:inner-x-separation i-xsep  
                            #:inner-y-separation i-ysep
                            #:outer-x-separation o-xsep
-                           #:outer-y-separation o-ysep)
-  (make-node-helper 'ellipse t pos dir i-xsep i-ysep o-xsep o-ysep))
+                           #:outer-y-separation o-ysep
+                           #:fill fill
+                           #:color color)
+  (make-node-helper 'ellipse t pos dir i-xsep i-ysep o-xsep o-ysep fill color))
 
 
 ; type = 'text      :  node centered at point p
@@ -307,7 +320,7 @@
 ; type = 'circle
 ; type = 'ellipse
 
-(define (make-node-helper type t p dir i-xsep i-ysep o-xsep o-ysep)
+(define (make-node-helper type t p dir i-xsep i-ysep o-xsep o-ysep fill color)
   ; dir=#f    means node is centered at p
   ; dir=down  means the bottom of the bounding box touches p
   (let again ([t t] [p p] [dir dir] [first? #t])
@@ -334,11 +347,15 @@
         
     ;; 3. Drawing
     (define (convert n) ; node ->pict
-      (draw (case type
-              [(text)                      #f]
-              [(rectangle circle ellipse) (draw-shape inner-shape)]
-              [else #f])
-            l))
+      (define (penwrap e) (if color (pencolor color e) e))
+      (penwrap
+       (draw  (and fill
+                   (filldraw (shape-curve inner-shape) fill))             
+              (case type
+                [(text)                      #f]
+                [(rectangle circle ellipse) (draw-shape inner-shape)]
+                [else #f])
+              l)))
     ;; 4. If the direction  dir  is given the final center position is not p,
     ;     but another position q, sutch that a text centered at q will have
     ;     an outline through p (and qp parallel to dir).
