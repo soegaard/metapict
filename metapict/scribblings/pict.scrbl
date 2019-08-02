@@ -164,6 +164,7 @@ The example below shows the available styles. The brush style
 
 @defproc[(brushstipple [s style?] [p pict?]) pict]{
 Adjust the brush to use the stipple @racket[s], then draw the pict @racket[p].}
+
 @interaction[#:eval eval 
 (set-curve-pict-size 256 256)
 (define stipple (bitmap "texture.jpeg"))
