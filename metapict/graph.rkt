@@ -42,7 +42,7 @@
   (rectangle p q))
 
 (define (clip-to-window c [win (curve-pict-window)])
-  (clipped c (window-outline win)))
+  (clipped (window-outline win) c))
 
 ; this version builds Bezier curves directly
 (define (bezgraph f [xmin #f] [xmax #f] #:samples [n 50] #:diff [df/dx #f])

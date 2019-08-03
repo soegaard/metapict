@@ -79,7 +79,7 @@
 (define (curve->pict c)
   (curves->pict (list c)))
 
-(define (clipped p c) 
+(define (clipped c p)
   ; clip the picture p using a region given by the curve c
   (def w (curve-pict-width))
   (def h (curve-pict-height))
