@@ -9,6 +9,7 @@
  with-scaled-window  ; (with-scaled-window k body ...) eval bodies with curve-pict-window scaled k
  window/aspect  ; (window/aspect xmin xmax [ymin #f] [aspect #f]) create window using optional aspect
  window-opposite-corners   ; return two values: lower left and upper right pts of the window
+ window-from-opposite-corners ; return window containing two diagonal points
  (contract-out
   [window-overlap? (-> window? window?  boolean?)] ; do the windows overlap?
   [window-center   (-> window?          pt?)]      ; return pt in center
@@ -22,6 +23,15 @@
 (define (window-opposite-corners win)
   (defm (window x- x+ y- y+) win)
   (values (pt x- y-) (pt x+ y+)))
+
+(define (window-from-opposite-corners p0 p1)
+  (defm (pt x0 y0) p0)
+  (defm (pt x1 y1) p1)
+  (def minx (min x0 x1))
+  (def maxx (max x0 x1))
+  (def miny (min y0 y1))
+  (def maxy (max y0 y1))
+  (window minx maxx miny maxy))
   
 
 (define (scale-window k win)

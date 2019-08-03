@@ -23,7 +23,7 @@
  brushstyle    ; use the brush style
  brushstipple  ; use the brush stipple
  brushgradient ; use the brush gradient
-;  brushshade
+ ;  brushshade
 
  dashed        ; use the pen style long-dash
  dotted        ; use the pen style dotted
@@ -175,7 +175,7 @@
   (unless (pict? pict)
     (raise-arguments-error 'name "pict expected" "pict" pict))
 
-  (defm (linear-gradient color-stops p0 p1) g)
+  (defm (raw-linear-gradient color-stops p0 p1) g)
   
   ; Note: It is important these are placed outside the (dc ...)
   ;       We need the values of the parameters at the pict is created.

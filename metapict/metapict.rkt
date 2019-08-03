@@ -6,7 +6,7 @@
          "angles.rkt" "arrow.rkt" "bez.rkt" "bitmap.rkt" "color.rkt" "curve.rkt" 
          "dc.rkt" "def.rkt" "device.rkt" "draw.rkt" "font.rkt" "gradient.rkt"
          "grid.rkt" "label.rkt" "node.rkt" "parameters.rkt" "path.rkt"
-         "pen-and-brush.rkt" "pict.rkt" "pt-vec.rkt"
+         "pen-and-brush.rkt" "pict.rkt" "pt-vec.rkt" "text-path.rkt"
          "shapes.rkt" "structs.rkt" "text.rkt" "trans.rkt" "trig.rkt" "window.rkt")
 
 (provide (all-from-out
@@ -15,7 +15,7 @@
           "path.rkt" "curve.rkt"
           "structs.rkt" "trig.rkt" "pt-vec.rkt"  "angles.rkt" "trans.rkt"
           "color.rkt" "pict.rkt" "device.rkt" "arrow.rkt" "shapes.rkt"
-          "pen-and-brush.rkt"
+          "pen-and-brush.rkt" "text-path.rkt"
           "draw.rkt" "label.rkt" "shapes.rkt" "node.rkt" "parameters.rkt" "arrow.rkt"
           "grid.rkt" "gradient.rkt")
          ; macros from draw.rkt

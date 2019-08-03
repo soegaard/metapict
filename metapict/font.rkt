@@ -3,7 +3,8 @@
 ;;; FONT
 ;;;
 
-(provide make-similar-font
+(provide new-font           ; instantiate default font
+         make-similar-font
          with-font
          with-font-change
 
@@ -38,6 +39,10 @@
 (require "parameters.rkt" "def.rkt"
          racket/class racket/draw pict syntax/parse/define)
 (require (for-syntax racket/base racket/syntax syntax/parse))
+
+
+(define (new-font)
+  (make-object font%))
 
 ; make-similar-font font keyword-arguments -> font
 ;   create or find a new font similar to font,

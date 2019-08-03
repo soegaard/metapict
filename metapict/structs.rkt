@@ -152,11 +152,11 @@
 ;;; Color Gradients
 ;;;
 
-(struct color-stops (colors stops) #:transparent)
+(struct raw-color-stops (colors stops) #:transparent)
 
 ; the points and radii are in logical coordinates
-(struct gradient (color-stops)                 #:transparent)
-(struct linear-gradient gradient (p0 p1)       #:transparent) 
-(struct radial-gradient gradient (p0 r0 p1 r1) #:transparent)
+(struct raw-gradient (color-stops)                     #:transparent)
+(struct raw-linear-gradient raw-gradient (p0 p1)       #:transparent) 
+(struct raw-radial-gradient raw-gradient (p0 r0 p1 r1) #:transparent)
 
-(provide-structs color-stops gradient linear-gradient radial-gradient)
+(provide-structs raw-color-stops raw-gradient raw-linear-gradient raw-radial-gradient)

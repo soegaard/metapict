@@ -360,14 +360,12 @@
          ; (def P (pt 0 0 )) (def Q (pt 400 200))
          (displayln (list P Q))
          ;(brushshade "red" "blue" P Q
-         (brushgradient (new-linear-gradient P Q colors)
-                        (let ()
-                          (draw ; (filldraw (rectangle (pt -100 -100) (pt 100 100)))
-                                (rectangle-node #:fill #t
-                                                #:min-width 400 #:min-height 400)
-                                (color "red" (draw P Q))))))))
-
-
-
-
-
+         (brushgradient
+          (linear-gradient P Q colors)
+          (let ()
+            (clipped (circle 100)
+                     (draw
+                      ; (filldraw (rectangle (pt -100 -100) (pt 100 100)))
+                      (rectangle-node #:fill #t
+                                      #:min-width 400 #:min-height 400)
+                      (color "red" (draw P Q)))))))))
