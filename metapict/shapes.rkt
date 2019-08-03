@@ -1,20 +1,21 @@
 #lang racket/base
 ;;; Curves with common shapes.
 
-(provide unitcircle      ; center (0,0) radius 1
-         fullcircle      ; center (0,0) diameter 1  (radius 1/2)
-         halfcircle      ; upper part of fullcircle
-         quartercircle   ; right part of halfcircle
-         unitsquare      ; side length 1, first quadrant
-         arc             ; arc of circle of radius r from f to t (f and t is in radian)
-                         ; or: (arc c a b) arc with center c from a to b
-         arc/deg         ; same, f and t in degrees
-         circle          ; circle with center (x0,y0) and radius r
-         ellipse-curve   ; ellipse with center (x0,y0) and width w and height h
+(provide unitcircle        ; center (0,0) radius 1
+         fullcircle        ; center (0,0) diameter 1  (radius 1/2)
+         halfcircle        ; upper part of fullcircle
+         quartercircle     ; right part of halfcircle
+         unitsquare        ; side length 1, first quadrant
+         arc               ; arc of circle of radius r from f to t (f and t is in radian)
+                           ; or: (arc c a b) arc with center c from a to b
+         arc/deg           ; same, f and t in degrees
+         circle            ; circle with center (x0,y0) and radius r
+         ellipse-curve     ; ellipse with center (x0,y0) and width w and height h
          ellipse-arc
-         sector          ; sector of radius r with angles from f to t
-         sector/deg      ; same but angles are in degrees rather than radians
-         rectangle       ; rectangle given two opposite points, or point and diagonal vector
+         sector            ; sector of radius r with angles from f to t
+         sector/deg        ; same but angles are in degrees rather than radians
+         rectangle         ; rectangle given two opposite points, or point and diagonal vector
+         rounded-rectangle ; same except for rounded corners
          )
 
 (require "angles.rkt" "def.rkt" "curve.rkt" "pt-vec.rkt" "path.rkt" 

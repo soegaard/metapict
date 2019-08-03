@@ -5,17 +5,18 @@
          racket/list racket/match racket/format)
 (require (for-syntax syntax/parse racket/base))
 
-(provide circle-node          ; create node shaped as a circle
-         ellipse-node         ; create node shaped as a ellipse
-         square-node          ; create node shaped as a square
-         rectangle-node       ; create node shaped as a rectangle
-         text-node            ; create node containing text
-         draw-node-outline    ; draw node
-         filled-node          ; draw filled node
-         edge                 ; edge (curve/arrow) from one node to another
-         anchor               ; find anchor i.e. point on the outline
-         normal               ; find normal vector to the outline 
-         current-node-size    ; default size for circles and half-diameter for squares
+(provide circle-node            ; create node shaped as a circle
+         ellipse-node           ; create node shaped as a ellipse
+         square-node            ; create node shaped as a square
+         rectangle-node         ; create node shaped as a rectangle
+         rounded-rectangle-node ; create node shaped as a rectangle
+         text-node              ; create node containing text
+         draw-node-outline      ; draw node
+         filled-node            ; draw filled node
+         edge                   ; edge (curve/arrow) from one node to another
+         anchor                 ; find anchor i.e. point on the outline
+         normal                 ; find normal vector to the outline 
+         current-node-size      ; default size for circles and half-diameter for squares
 )   
 
 ; A NODE has 
@@ -130,9 +131,9 @@
             (curve* (append (list a1 v1 ..)
                             (append-map (λ (v) (list v ..)) via)
                             (list v2 a2)))]
-           [(and use-mid? (vec= v1 (vec* -1 v2)))  ; the special case 
-            (def m (pt+ p1 (vec* 0.5 v))) ; "mid" point to achieve a prettier path
-            (curve a1 v1 .. m .. v2 a2)]
+           #;[(and use-mid? (vec= v1 (vec* -1 v2)))  ; the special case 
+              (def m (pt+ p1 (vec* 0.5 v))) ; "mid" point to achieve a prettier path
+              (curve a1 v1 .. m .. v2 a2)]
            [else                          ; the general case
             (curve a1 v1 .. v2 a2)]))
   (def gap (or label-gap (current-label-gap)))
@@ -290,6 +291,19 @@
                              #:color color)
   (make-node-helper 'rectangle t pos dir i-xsep i-ysep o-xsep o-ysep fill color))
 
+(define-node-constructor (rounded-rectangle-node () make-rounded-rectangle-node))
+(define (make-rounded-rectangle-node #:contents t
+                                     #:at pos
+                                     #:direction dir
+                                     #:inner-x-separation i-xsep
+                                     #:inner-y-separation i-ysep
+                                     #:outer-x-separation o-xsep
+                                     #:outer-y-separation o-ysep
+                                     #:fill fill
+                                     #:color color)
+  (make-node-helper 'rounded-rectangle t pos dir i-xsep i-ysep o-xsep o-ysep
+                    fill color))
+
 (define-node-constructor (circle-node () make-circle-node))
 (define (make-circle-node #:contents t
                           #:at pos
@@ -332,9 +346,10 @@
     ;; 2. Shapes
     ; - the inner shape is the shape drawn around the text
     (define make-shape  (case type
-                          [(text rectangle) rectangle-shape]
-                          [(circle)         circle-shape]
-                          [(ellipse)        ellipse-shape]
+                          [(text rectangle)    rectangle-shape]
+                          [(rounded-rectangle) rounded-rectangle-shape]
+                          [(circle)            circle-shape]
+                          [(ellipse)           ellipse-shape]
                           [else (error)]))
     (define inner-shape (make-shape #:center p
                                     #:width  (+ w (* 2 i-xsep))
@@ -352,9 +367,9 @@
        (draw  (and fill
                    (filldraw (shape-curve inner-shape) fill))             
               (case type
-                [(text)                      #f]
-                [(rectangle circle ellipse) (draw-shape inner-shape)]
-                [else #f])
+                [(text)                                       #f]
+                [(rectangle circle ellipse rounded-rectangle) (draw-shape inner-shape)]
+                [else                                         #f])
               l)))
     ;; 4. If the direction  dir  is given the final center position is not p,
     ;     but another position q, sutch that a text centered at q will have
@@ -405,6 +420,12 @@
                   (pt -r  r) -- cycle)))
 
 (define (rectangle-shape #:center [center #f] #:width [width #f] #:height [height #f])
+  (make-rectangle-shape #:center center #:width width #:height height  #:rounded #f))
+
+(define (rounded-rectangle-shape #:center [center #f] #:width [width #f] #:height [height #f])
+  (make-rectangle-shape #:center center #:width width #:height height  #:rounded #t))
+
+(define (make-rectangle-shape #:center [center #f] #:width [width #f] #:height [height #f] #:rounded [rounded #f])
   (def w (or width  (* (current-node-size) 2)))
   (def h (or height (* (current-node-size) 2)))
   (def w/2 (/ w 2))
@@ -446,7 +467,9 @@
                [else ; (<= 7π/4 α)
                 (vec w/2 (* (- w/2) (tan (- 2π α))))])))
     a)
-  (shape (rectangle (pt+ p (vec w/2 h/2)) (pt- p (vec w/2 h/2))) anchor normal))
+  (define rectangular-curve (if rounded rounded-rectangle rectangle))
+  (shape (rectangular-curve (pt+ p (vec w/2 h/2)) (pt- p (vec w/2 h/2)))
+         anchor normal))
 
 
 (define (flmod n d)

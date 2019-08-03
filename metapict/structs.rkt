@@ -147,3 +147,16 @@
 
 (provide (except-out (struct-out edge) edge))
 
+
+;;;
+;;; Color Gradients
+;;;
+
+(struct color-stops (colors stops) #:transparent)
+
+; the points and radii are in logical coordinates
+(struct gradient (color-stops)                 #:transparent)
+(struct linear-gradient gradient (p0 p1)       #:transparent) 
+(struct radial-gradient gradient (p0 r0 p1 r1) #:transparent)
+
+(provide-structs color-stops gradient linear-gradient radial-gradient)

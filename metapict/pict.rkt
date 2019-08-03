@@ -1,11 +1,12 @@
 #lang racket/base
-(require racket/contract/base "save-pdf.rkt" "font.rkt" "text.rkt")
+(require racket/contract/base racket/match
+         "save-pdf.rkt" "font.rkt" "text.rkt" "gradient.rkt")
 ;;;
 ;;; IMPORTANT NOTE
 ;;;   Remember that to set the smoothing mode to 'smoothed if you implement
 ;;;   new picts constructors, that use coordinates.
 
-(provide (all-from-out "font.rkt" "text.rkt"))
+(provide (all-from-out "font.rkt" "text.rkt" "gradient.rkt"))
 ; General pict utilities
 (provide
  ; color       ; use color for both the pen and brush color
@@ -22,6 +23,7 @@
  brushstyle    ; use the brush style
  brushstipple  ; use the brush stipple
  brushgradient ; use the brush gradient
+;  brushshade
 
  dashed        ; use the pen style long-dash
  dotted        ; use the pen style dotted
@@ -124,40 +126,41 @@
 
 (define-syntax (define-brushop stx)
   (syntax-parse stx
-    [(_ name (arg ... pict x y) old-brush
+    [(_ name (arg ... pict x y) old-brush the-dc
         expr ...)
      #'(define (name arg ... pict)
          (unless (pict? pict)
            (raise-arguments-error 'name "pict expected" "pict" pict))
-         (dc (lambda (dc x y)
+         (dc (lambda (the-dc x y)
                (parameterize ([use-default-brush? #f])
-                 (let ([old-brush (send dc get-brush)])
+                 (let ([old-brush (send the-dc get-brush)])
                    (def new-brush (let () expr ...))
                    (when (eq? new-brush #t)
                      (set! new-brush old-brush))
-                   (send dc set-brush new-brush)
-                   (draw-pict pict dc x y)
-                   (send dc set-brush old-brush))))
+                   (send the-dc set-brush new-brush)
+                   (draw-pict pict the-dc x y)
+                   (send the-dc set-brush old-brush))))
              (pict-width pict) (pict-height pict)))]))
 
-(define-brushop brush (new-brush pict x y) b
+(define-brushop brush (new-brush pict x y) b dc
   (cond [(eq? new-brush #t)       #t] ; use existing
         [(is-a? new-brush brush%) new-brush]
         [(is-a? new-brush color%) (new brush% [color new-brush] [style 'solid])]
-        [(string? new-brush)      (new brush% [color (make-color* new-brush)] [style 'solid])]        
+        [(string? new-brush)      (new brush% [color (make-color* new-brush)]
+                                       [style 'solid])]        
         [else (error 'brush (~a "expected a brush%, a color% or a color string, got: "
                                 new-brush))]))
 
 
-(define-brushop brushcolor (color pict x y) b
+(define-brushop brushcolor (color pict x y) b dc
   (send the-brush-list find-or-create-brush
         (make-color* color) (send b get-style)))
 
-(define-brushop brushstyle (style pict x y) b
+(define-brushop brushstyle (style pict x y) b dc
   (send the-brush-list find-or-create-brush
         (send b get-color) style))
 
-(define-brushop brushstipple (stipple pict x y) b
+(define-brushop brushstipple (stipple pict x y) b dc
   (new brush% 
        [color          (send b get-color)]
        [style          (send b get-style)]
@@ -165,45 +168,73 @@
        [gradient       (send b get-gradient)]
        [transformation (send b get-transformation)]))
 
-(define (gradient p0 p1 colors [stops #f])
-  (defm (pt x0 y0) p0)
-  (defm (pt x1 y1) p1)
-  (def 1/n (/ (max 1 (sub1 (length colors)))))
-  (def stop+colors (for/list ([c colors] [s (or stops (in-range 0 (+ 1 1/n) 1/n))])
-                     (list s (make-color* c))))
-  (new linear-gradient% [x0 x0] [y0 y0] [x1 x1] [y1 y1] [stops stop+colors])
-  (new linear-gradient% [x0 x0] [y0 y0] [x1 x1] [y1 y1] [stops stop+colors]))
 
-#;(define (gradient p0 p1 colors [stops #f])
-  (defm (pt x0 y0) p0)
-  (defm (pt x1 y1) p1)
-  (def 1/n (/ (max 1 (sub1 (length colors)))))
-  (def stop+colors (for/list ([c colors] [s (or stops (in-range 0 (+ 1 1/n) 1/n))])
-                     (list s (make-color* c))))
-  (new linear-gradient% [x0 x0] [y0 y0] [x1 x1] [y1 y1] [stops stop+colors]))
+(require "trans.rkt")
+(define (brushgradient g pict)
+  ; g is a gradient (with points in logical coordinates)
+  (unless (pict? pict)
+    (raise-arguments-error 'name "pict expected" "pict" pict))
 
-(define-brushop brushgradient (p0 p1 colors pict x y) b
+  (defm (linear-gradient color-stops p0 p1) g)
+  
+  ; Note: It is important these are placed outside the (dc ...)
+  ;       We need the values of the parameters at the pict is created.
+  ;       So ... don't use  define-brushop
   (def w (curve-pict-width))
   (def h (curve-pict-height))
-  (def T (stdtrans (curve-pict-window) w h))
-  (new brush% 
-       [color          (send b get-color)]
-       [style          (send b get-style)]
-       [stipple        (send b get-stipple)]
-       [gradient       (gradient (T p0) (T p1) colors)]
-       [transformation (send b get-transformation)]))
+  (def win (curve-pict-window))
+  (def T (stdtrans win w h)) ; logical -> device
+  (dc (λ (the-dc x y)
+        (parameterize ([use-default-brush? #f])
+          (let ([old-brush (send the-dc get-brush)])
+            (def new-brush
+              (let ()
+                ; find points in device coordinates
+                (define-values (x0 y0 x1 y1) ; device coords
+                  (match* ((T p0) (T p1)) ; (T p0) transform from logical to device
+                    [((pt x0 y0) (pt x1 y1))
+                     (values x0 y0 x1 y1)]))
+                  
+                ; width and height (in device coords)
+                (def width  (- x1 x0))
+                (def height (- y1 y0))
+                (when (= x0 x1)    (set! x1 (+ x1 0.001))) 
+                (when (= y0 y1)    (set! y1 (+ y1 0.001)))
+                (when (= width 0)  (set! width  0.001))
+                (when (= height 0) (set! height 0.001))
 
-(define-brushop brushshade (from to p0 p1 pict x y) b
-  (defm (pt x0 y0) p0)
-  (defm (pt x1 y1) p1)
-  (def (to-color c) (if (string? c) (make-color* c) c))
-  (new brush% 
-       [gradient       (new linear-gradient% [x0 x0] [y0 y0] [x1 x1] [y1 y1]
-                            [stops (list (list 0 (to-color from))
-                                         (list 1 (to-color to)))])]
-       [style          (send b get-style)]
-       [stipple        (send b get-stipple)]
-       [transformation (send b get-transformation)]))
+                ; This transformation corresponds to the rectangle bounded by p0 p1
+                (def S (stdtrans (window x0 x1 y0 y1) width height)) ; pattern coords -> device
+                (define transformation (trans->transformation S))
+
+                ; Color time
+                ;(def colors colors/color-stops) 
+                ;(def g (cond [(list? colors)        (gradient colors)]
+                ;             [(color-stops? colors) colors]
+                ;             [else (error 'brush-gradient
+                ;                          (~a "expected a list of colors or a color-stops struct, got: "
+                ;                              colors))]))
+                
+                ; Time to setup the gradient
+                (define P ((inverse S) T)) ; logical -> pattern
+                (define a-gradient (convert-gradient g P))
+
+                  ;(linear-gradient (P p0) ; start of gradient (coords in pattern space)
+                  ;                                  (P p1) ; end   of gradient (coords in pattern space)
+                  ;                                  g)
+                                  
+                (define b old-brush)
+                (new brush% 
+                     [color          (send b get-color)]   ; ignored
+                     [style          (send b get-style)]   ; ignored when a gradient is present
+                     [stipple        (send b get-stipple)] ; ignored
+                     [gradient       a-gradient]
+                     [transformation transformation])))
+            ; install brush, draw pict and reinstall old brush
+            (send the-dc set-brush new-brush)            
+            (draw-pict pict the-dc x y)
+            (send the-dc set-brush old-brush))))
+      (pict-width pict) (pict-height pict)))
 
 
 ;; text-color : color pict -> pict

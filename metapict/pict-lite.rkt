@@ -6,7 +6,7 @@
 (require pict)
 
 (provide (except-out (all-from-out pict)
-                     arrow circle rectangle scale text))
+                     arrow circle rectangle rounded-rectangle filled-rounded-rectangle scale text))
 
 (provide (prefix-out pict: scale))
 

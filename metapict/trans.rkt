@@ -14,6 +14,8 @@
          ; TODO easy: make contracts for these:
          rotated rotatedd rotated-about rotated-aboutd trans?
          compose-trans
+         transformation->trans
+         trans->transformation
          (contract-out [inverse (-> trans? trans?)]        ; inverse transformation
                        [trans->vector (-> trans? vector?)] ; convert to vector
                        ))
@@ -174,6 +176,17 @@
 
 (define (trans->vector t)
   (defm (trans xx yx xy yy x0 y0) t)
-  (vector xx yx xy yy x0 y0))
+       (vector xx yx xy yy x0 y0))
 
+
+(define (trans->transformation t)
+    (vector (trans->vector t)
+            0 0 1 1 0))
+
+; A dc% transformation has this format
+(define (transformation->trans t)
+  (match t
+    [(vector (vector xx yx xy yy x0 y0)
+             _ _ _ _ _)
+     (trans xx yx xy yy x0 y0)]))
 

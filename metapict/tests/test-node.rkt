@@ -100,6 +100,20 @@
         (edge A E #:arrow '-)))
 
 
+(let ()
+  ; test different rounded rectangle nodes
+  (curve-pict-window (window -3 3 -3 3))
+  (def A (rounded-rectangle-node    "A"))
+  (def B (rounded-rectangle-node        #:right-of A))  ; no label
+  (def C (rounded-rectangle-node    "C" #:above    A #:min-width  0.5))
+  (def D (rounded-rectangle-node    "D" #:left-of  A #:min-height 0.5))
+  (def E (rounded-rectangle-node    "E" #:below    A #:min-width  0.3 #:min-height 0.5))
+  (draw A B C D E
+        (edge A B #:arrow '-)
+        (edge A C #:arrow '-)
+        (edge A D #:arrow '-)
+        (edge A E #:arrow '-)))
+
 
 (let ()
   ; test automatic placement of labels
@@ -275,6 +289,8 @@
                     (edge A I)))))
 
 
+
+
 (font-normal
  (font-size 50
    (let ()
@@ -289,6 +305,8 @@
                           (def n (normal en (dir i)))
                           (draw (color "red"  (draw a))
                                 (color "blue" (draw (curve a .. (pt+ a n)))))))))))
+
+
 
 (define-syntax-rule (my-font-style x)
   (font-size 30
@@ -315,5 +333,41 @@
          (def p (text-color "white" (draw n)))
          (values (cons n ns) (cons p ps))))
      (draw* picts)))))))
+
+(require (only-in pict standard-fish))
+(with-window (window -400 400 -200 600)
+  (current-neighbour-distance (px 40))
+  (current-outer-separation (px 5))
+  (ahlength (px 10))
+  (let ()
+    (define A (text-node (standard-fish 50 50)))
+    (define B (text-node (standard-fish 50 50 #:direction 'right #:color "red")
+                         #:right-of A))
+    (draw A B
+          (edge A B)
+          (edge B A up down))))
+
+(set-curve-pict-size  400 400)
+(with-window (window  -200 200 -200 200)
+  (scale 1
+       (let ()
+         (define colors (list "red" "yellow" "blue" "green"))
+         (def A (rounded-rectangle-node "Racket" #:fill #t))
+         ; (def P (anchor A left))
+         ; (def Q (anchor A right))
+         ; (def P (pt  100 100 )) (def Q (pt  300 200))
+         (def P (pt -100 100 )) (def Q (pt 100 100))
+         ; (def P (pt 0 0 )) (def Q (pt 400 200))
+         (displayln (list P Q))
+         ;(brushshade "red" "blue" P Q
+         (brushgradient (new-linear-gradient P Q colors)
+                        (let ()
+                          (draw ; (filldraw (rectangle (pt -100 -100) (pt 100 100)))
+                                (rectangle-node #:fill #t
+                                                #:min-width 400 #:min-height 400)
+                                (color "red" (draw P Q))))))))
+
+
+
 
 
