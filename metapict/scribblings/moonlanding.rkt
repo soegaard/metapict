@@ -53,7 +53,7 @@
   (def h (pict-height bm))
   (set-curve-pict-size w h)
   (def circ (shifted (/ w 2) (/ h 2) (scaled (/ w 2) unitcircle)))
-  (draw (clipped bm circ)
+  (draw (clipped circ bm)
         (color (change-alpha "red" 0.5) 
                (grid (pt 0 0) (pt w h) (pt 0 0) 20))))
 
