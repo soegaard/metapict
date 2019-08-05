@@ -17,6 +17,11 @@
          anchor                 ; find anchor i.e. point on the outline
          normal                 ; find normal vector to the outline 
          current-node-size      ; default size for circles and half-diameter for squares
+
+         circle-shape
+         ellipse-shape
+         rectangle-shape
+         rounded-rectangle-shape
 )   
 
 ; A NODE has 
@@ -170,7 +175,7 @@
                 (def p (point-of c t))           ; label point on curve
                 (def pos (cond [label-dir (def n label-dir)
                                           (pt+ p (vec* (/ (* gap 1.1) (norm n)) n))]
-                               [else (def d (or label-dir (direction-of c t)))
+                               [else (def d (vec* -1 (direction-of c t)))
                                      (def n (rot-90 d))
                                      (pt+ p (vec* (/ (* gap 1.1) (norm n)) n))]))
                 (label label-str/pict pos (cnt)))))
@@ -249,6 +254,11 @@
                 #:shade-angle  [shade-angle  #f]
                 #:shade-colors [shade-colors #f]
                 #:color     [color  #f] ; use color to draw shape
+                ;;;
+                #:rings       [rings #f]
+                #:ring-gap    [ring-gap   #f]
+                #:ring-gap-x  [ring-gap-x #f]
+                #:ring-gap-y  [ring-gap-y #f]
                 ;; The special keyword arguments
                 (~@ keyword [arg-name arg-default]) ...)
          (when (equal? t "") (set! t #f))
@@ -292,6 +302,10 @@
          ;  - minimum height and width have been turned into separations
          ;  - placements have been turned into a position and a direction
          ;  - inner and outer separations have been split into x and y separations
+
+         ; rings
+         (set! ring-gap-x (or ring-gap-x ring-gap (current-ring-gap-x) (current-ring-gap) 1))
+         (set! ring-gap-y (or ring-gap-y ring-gap (current-ring-gap-y) (current-ring-gap) 1))
          (make #:contents t
                #:at pos
                #:direction dir
@@ -302,6 +316,7 @@
                #:fill fill
                #:color color
                #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+               #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y 
                (~@ keyword arg-name) ...)))]))
          
 
@@ -315,9 +330,11 @@
                         #:outer-y-separation o-ysep                                                
                         #:color color ; for pen
                         #:fill fill
-                        #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors)
+                        #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+                        #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y)
   (make-node-helper 'text t pos dir i-xsep i-ysep o-xsep o-ysep fill color
-                    shade shade-angle shade-colors))
+                    shade shade-angle shade-colors
+                    rings ring-gap-x ring-gap-y))
 
 (define-node-constructor (rectangle-node () make-rectangle-node))
 (define (make-rectangle-node #:contents t
@@ -329,9 +346,11 @@
                              #:outer-y-separation o-ysep                             
                              #:fill fill
                              #:color color
-                             #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors)
+                             #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+                             #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y)
   (make-node-helper 'rectangle t pos dir i-xsep i-ysep o-xsep o-ysep fill color
-                    shade shade-angle shade-colors))
+                    shade shade-angle shade-colors
+                    rings ring-gap-x ring-gap-y))
 
 (define-node-constructor (rounded-rectangle-node () make-rounded-rectangle-node))
 (define (make-rounded-rectangle-node #:contents t
@@ -343,10 +362,12 @@
                                      #:outer-y-separation o-ysep
                                      #:fill fill
                                      #:color color
-                                     #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors)
+                                     #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+                                     #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y)
   (make-node-helper 'rounded-rectangle t pos dir i-xsep i-ysep o-xsep o-ysep
                     fill color
-                    shade shade-angle shade-colors))
+                    shade shade-angle shade-colors
+                    rings ring-gap-x ring-gap-y))
 
 (define-node-constructor (circle-node () make-circle-node))
 (define (make-circle-node #:contents t
@@ -358,9 +379,11 @@
                           #:outer-y-separation o-ysep
                           #:fill fill
                           #:color color
-                          #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors)
+                          #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+                          #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y)
   (make-node-helper 'circle t pos dir i-xsep i-ysep o-xsep o-ysep fill color
-                    shade shade-angle shade-colors))
+                    shade shade-angle shade-colors
+                    rings ring-gap-x ring-gap-y))
 
 (define-node-constructor (ellipse-node () make-ellipse-node))
 (define (make-ellipse-node #:contents t
@@ -372,9 +395,11 @@
                            #:outer-y-separation o-ysep
                            #:fill fill
                            #:color color
-                           #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors)
+                           #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+                           #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y)
   (make-node-helper 'ellipse t pos dir i-xsep i-ysep o-xsep o-ysep fill color
-                    shade shade-angle shade-colors))
+                    shade shade-angle shade-colors
+                    rings ring-gap-x ring-gap-y))
 
 
 ; type = 'text      :  node centered at point p
@@ -383,7 +408,8 @@
 ; type = 'ellipse
 
 (define (make-node-helper type t p dir i-xsep i-ysep o-xsep o-ysep filler color
-                          shade shade-angle shade-colors)
+                          shade shade-angle shade-colors
+                          rings ring-gap-x ring-gap-y)
   ; filler = is #f, #t, or a brush
   ; dir=#f    means node is centered at p
   ; dir=down  means the bottom of the bounding box touches p
@@ -410,10 +436,13 @@
                                     #:width  inner-width
                                     #:height inner-height))
 
+    (define rings-size-x (* (or rings 0) ring-gap-x))
+    (define rings-size-y (* (or rings 0) ring-gap-y))
+    
     ; - the outer shape is the shape used for anchors (often there is space between)
     (define outer-shape  (make-shape #:center p
-                                     #:width  (+ w (* 2 (+ i-xsep o-xsep)))
-                                     #:height (+ h (* 2 (+ i-ysep o-ysep)))))
+                                     #:width  (+ w (* 2 (+ i-xsep o-xsep)) rings-size-x)
+                                     #:height (+ h (* 2 (+ i-ysep o-ysep)) rings-size-y)))
         
     ;; 3. Drawing
     (define (convert n) ; node ->pict
@@ -456,6 +485,17 @@
                 [(text)                                       #f]
                 [(rectangle circle ellipse rounded-rectangle) (draw-shape inner-shape)]
                 [else                                         #f])
+              (and rings (not (zero? rings))
+                   (let ()
+                     (def i rings)
+                     (def sw ring-gap-x)      ; step
+                     (def w1 inner-width)
+                     
+                     (def sh ring-gap-y)
+                     (def h1 inner-height)
+
+                     (def center (anchor n (vec 0 0)))
+                     (draw-rings make-shape center w1 sw h1 sh i)))
               l)))
     ;; 4. If the direction  dir  is given the final center position is not p,
     ;     but another position q, sutch that a text centered at q will have
@@ -499,6 +539,12 @@
     (vec* (/ (norm u1)) u1))
   (shape (ellipse-curve (pt-x p) (pt-y p) (* 0.5 w) (* 0.5 h))
          anchor normal))
+
+(define (draw-rings shape-maker center w1 sw h1 sh i)
+  (for/draw ([j i])
+            (def w (+ w1 (* (+ j 1) sw)))
+            (def h (+ h1 (* (+ j 1) sh)))
+    (shape-curve (shape-maker #:center center #:width w #:height h))))
 
 
 

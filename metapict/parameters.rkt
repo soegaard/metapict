@@ -37,6 +37,9 @@
 (def current-neighbour-distance-y (make-parameter #f))
 (def current-neighbour-distance   (make-parameter 1.))
 
+(def current-ring-gap   (make-parameter 0.15))
+(def current-ring-gap-x (make-parameter #f))
+(def current-ring-gap-y (make-parameter #f))
 
 ;;; Shadings
 ;; The available shaing types are:
