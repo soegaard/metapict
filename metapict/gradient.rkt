@@ -1,5 +1,5 @@
 #lang racket/base
-(require "def.rkt" "structs.rkt" "color.rkt"
+(require "def.rkt" "structs.rkt" "color.rkt" "pt-vec.rkt"
          racket/format racket/match racket/class racket/draw)
 ;;;
 ;;; Color Gradients
@@ -18,6 +18,8 @@
 
          convert-gradient ; convert to racket/draw class gradients
          color-stops
+
+         ball-gradient    ; transition from:  white to color to black
          )
 
 (define (color-stops colors [stops #f])
@@ -37,11 +39,11 @@
   (raw-color-stops colors the-stops))
 
 
-(define (linear-gradient p0 p1 colors #:stops [stops #f])
-  (raw-linear-gradient (color-stops colors stops) p0 p1))
+(define (linear-gradient p0 p1 colors #:stops [stops #f] #:height-factor [hf 1])
+  (raw-linear-gradient (color-stops colors stops hf) p0 p1))
 
-(define (radial-gradient p0 r0 p1 r1 colors #:stops [stops #f])
-  (raw-radial-gradient (color-stops colors stops) p0 r0 p1 r1))
+(define (radial-gradient p0 r0 p1 r1 colors #:stops [stops #f] #:height-factor [hf 1])
+  (raw-radial-gradient (color-stops colors stops) p0 r0 p1 r1 hf))
 
 
 (define (convert-gradient g P) 
@@ -53,20 +55,23 @@
        (for/list ([c colors] [s stops])
          (list s (make-color* c)))]))
   (match g
-    [(raw-linear-gradient stops p0 p1)
+    [(raw-linear-gradient stops p0 p1 hf)
      (defm (pt x0 y0) (P p0))
      (defm (pt x1 y1) (P p1))
      (def stops* (assemble-stops stops))
      (new linear-gradient% [x0 x0] [y0 y0] [x1 x1] [y1 y1]
           [stops stops*])]
 
-    [(raw-radial-gradient stops p0 r0 p1 r1)
+    [(raw-radial-gradient stops p0 r0 p1 r1 hf)
      (defm (pt x0 y0) (P p0))
      (defm (pt x1 y1) (P p1))
+     (def pr0 (dist (P (pt r0 0)) (P origo)))
+     (def pr1 (dist (P (pt r1 0)) (P origo)))
+
      (def stops* (assemble-stops stops))
      (new radial-gradient%
-       [x0 x0] [y0 y0] [r0 r0]
-       [x1 x1] [y1 y1] [r1 r1]
+       [x0 x0] [y0 y0] [r0 pr0]
+       [x1 x1] [y1 y1] [r1 pr1]
        [stops stops*])]
     
     [_ (error 'convert-gradient)]))
@@ -75,11 +80,21 @@
 (define (gradient colors [stops #f])
   (raw-gradient (color-stops colors stops)))
 
-(define (to-linear-gradient g p0 p1)
+(define (to-linear-gradient g p0 p1 [hf 1])
   (defm (raw-gradient cs) g)
-  (raw-linear-gradient cs p0 p1))
+  (raw-linear-gradient cs p0 p1 hf))
 
-(define (to-radial-gradient g p0 r0 p1 r1)
+(define (to-radial-gradient g p0 r0 p1 r1 [hf 1])
   (defm (raw-gradient cs) g)
-  (raw-radial-gradient cs p0 r0 p1 r1))
+  (raw-radial-gradient cs p0 r0 p1 r1 hf))
 
+(define (ball-gradient c)
+  ; this is the ball gradient from TikZ
+  ; fades from white to c to black
+  (def stops  (map (λ(x) (/ x 50.)) (list 0 9 18 25 50)))
+  (def colors (list (color-med 0.15 "white" c)
+                    (color-med 0.75 "white" c)
+                    (color-med 0.70 "black" c)
+                    (color-med 0.50 "black" c)
+                    "black"))
+  (gradient colors stops))

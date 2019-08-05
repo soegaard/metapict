@@ -7,6 +7,10 @@
 (def origo (pt 0 0))
 (defv (north south west east) (values (vec 0 1) (vec 0 -1) (vec -1 0) (vec 1 0)))
 (defv (up down left right) (values north south west east))
+(def north-east (vec  1  1))
+(def north-west (vec -1  1))
+(def south-east (vec  1 -1))
+(def south-west (vec -1 -1))
 
 (define pt-
   (case-lambda

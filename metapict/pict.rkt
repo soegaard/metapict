@@ -1,6 +1,6 @@
 #lang racket/base
 (require racket/contract/base racket/match
-         "save-pdf.rkt" "font.rkt" "text.rkt" "gradient.rkt")
+         "save-pdf.rkt" "font.rkt" "text.rkt" "gradient.rkt" "pt-vec.rkt")
 ;;;
 ;;; IMPORTANT NOTE
 ;;;   Remember that to set the smoothing mode to 'smoothed if you implement
@@ -23,7 +23,7 @@
  brushstyle    ; use the brush style
  brushstipple  ; use the brush stipple
  brushgradient ; use the brush gradient
- ;  brushshade
+;  brushshade
 
  dashed        ; use the pen style long-dash
  dotted        ; use the pen style dotted
@@ -170,12 +170,13 @@
 
 
 (require "trans.rkt")
-(define (brushgradient g pict)
+(define (brushgradient g pict #:height-factor [height-factor #f])
   ; g is a gradient (with points in logical coordinates)
   (unless (pict? pict)
     (raise-arguments-error 'name "pict expected" "pict" pict))
 
-  (defm (raw-linear-gradient color-stops p0 p1) g)
+  (defm (or (and (raw-linear-gradient color-stops p0 p1 hf) r0 r1)
+            (raw-radial-gradient color-stops p0 r0 p1 r1 hf)) g)
   
   ; Note: It is important these are placed outside the (dc ...)
   ;       We need the values of the parameters at the pict is created.
@@ -183,13 +184,41 @@
   (def w (curve-pict-width))
   (def h (curve-pict-height))
   (def win (curve-pict-window))
-  (def T (stdtrans win w h)) ; logical -> device
+  ; The transformation T is from logical coordinates into user coordinates.
+  ; I.e. from coordinates used in MetaPict into coordinates used by picts.
+  (def T (stdtrans win w h)) ; logical -> user coordinates
   (dc (λ (the-dc x y)
+        ; The drawing context contains the tranformation used
+        ; to go from user coordinates into device coordinates.
+        ; Transformation U   : user -> device
+        (def raw-transformation (send the-dc get-transformation))
+        (def o compose-trans)
+        (def UD (match raw-transformation
+                  [(vector (vector xx xy yx yy x0 y0) ; initial
+                           x-origin
+                           y-origin
+                           a ; x-scale
+                           b; y-scale
+                           rot)
+
+                   ; Order the transformations are applied
+                   ;   1. initial
+                   ;   2. origin
+                   ;   3. scaling
+                   ;   4. rotation
+                   (o (trans xx yx xy yy x0 y0)            ; initial
+                      (o (trans 1 0 0 1 0 0)
+                         ; not quite sure why origin must be ignored :-(
+                         ;(trans 1 0 0 1 x-origin y-origin) ; origin
+                         (o (trans a 0 0 b 0 0)            ; scaling
+                            (rotatedd rot))))]))           ; rotation
+        (set! T (compose-trans UD T))
+        ; !! now T is from  logical to device coordinates
         (parameterize ([use-default-brush? #f])
           (let ([old-brush (send the-dc get-brush)])
             (def new-brush
               (let ()
-                ; find points in device coordinates
+                ; find points in (dc) device coordinates
                 (define-values (x0 y0 x1 y1) ; device coords
                   (match* ((T p0) (T p1)) ; (T p0) transform from logical to device
                     [((pt x0 y0) (pt x1 y1))
@@ -204,25 +233,23 @@
                 (when (= height 0) (set! height 0.001))
 
                 ; This transformation corresponds to the rectangle bounded by p0 p1
-                (def S (stdtrans (window x0 x1 y0 y1) width height)) ; pattern coords -> device
-                (define transformation (trans->transformation S))
-
-                ; Color time
-                ;(def colors colors/color-stops) 
-                ;(def g (cond [(list? colors)        (gradient colors)]
-                ;             [(color-stops? colors) colors]
-                ;             [else (error 'brush-gradient
-                ;                          (~a "expected a list of colors or a color-stops struct, got: "
-                ;                              colors))]))
+                (def S (stdtrans (window x0 x1 y0 y1) width height)) ; pattern coords -> user
+                           
                 
                 ; Time to setup the gradient
                 (define P ((inverse S) T)) ; logical -> pattern
                 (define a-gradient (convert-gradient g P))
+                ; if the gradient is a radial-gradient, the radius was
+                ; calculated using the "x-radius".
+                ; in an ellipse we need to scale the y-axis
 
-                  ;(linear-gradient (P p0) ; start of gradient (coords in pattern space)
-                  ;                                  (P p1) ; end   of gradient (coords in pattern space)
-                  ;                                  g)
-                                  
+                ; The Q transformation is from pattern space to pattern space.
+                (def Q (shifted (P p0)
+                                (yscaled (or height-factor hf) ; height factor
+                                         (shifted (pt- (P p0))))))
+                
+                (def transformation (trans->transformation (S Q)))
+                
                 (define b old-brush)
                 (new brush% 
                      [color          (send b get-color)]   ; ignored

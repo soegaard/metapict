@@ -121,7 +121,7 @@
 ;   returns a curve with the shape of a rectangle with rounded corners.
 ;   Alternatively the input can be one point and a vector to the
 ;   the diagonally opposite corner.
-(define (rounded-rectangle a1 a2 [radius 0.1])  ; mp default is 8bp ?
+(define (rounded-rectangle a1 a2 [radius (* 8 803/800)])  ; mp default is 8bp = 803/800 pt
   (match (list a1 a2)
     [(list (pt x y) (vec dx dy)) ; point and diagonal vector
      (rounded-rectangle a1 (pt (+ x dx) (+ y dy)))]

@@ -1,6 +1,6 @@
 #lang racket
-(require "../main.rkt" "../parameters.rkt")
-    
+(require "../main.rkt" "../parameters.rkt" )
+
 (ahangle         45)       ; default head angle 45 degrees
 (ahflankangle    0)        ; default "curvature" of flank (in degrees)
 (ahtailcurvature 0)        ; default "curvature" of the back  todo!
@@ -149,7 +149,7 @@
 
 
 
-(let ()
+(let () ; XXX
   ; test leaving and entering directions of an edge
   ; where only one is given
   (curve-pict-window (window -3 3 -3 3))
@@ -160,15 +160,36 @@
   (def E (circle-node "E" #:below    A))
   (draw A B C D E
         ; specify which direction to leave A
-        (edge A B down  #f)
-        (edge A B up    #f)
-        (edge A C right #f)
-        (edge A C left  #f)
+        (color "red"
+               (draw (edge A B down  #f)
+                     (edge A B up    #f)
+                     (edge A C right #f)
+                     (edge A C left  #f)))
+        (edge A D up)
+        (edge A D down)
+        (edge A E left)
+        (edge A E right)))
+
+(let () ; YYY
+  ; test leaving and entering directions of an edge
+  ; where only one is given
+  (curve-pict-window (window -3 3 -3 3))
+  (def A (circle-node "A"))
+  (def B (circle-node "B" #:right-of A))
+  (def C (circle-node "C" #:above    A))
+  (def D (circle-node "D" #:left-of  A))
+  (def E (circle-node "E" #:below    A))
+  (color "blue"
+  (draw A B C D E
         ; specify direct to enter the from node
+        (edge A B #f down)
+        (edge A B #f up)
+        (edge A C #f left)
+        (edge A C #f right)
         (edge A D #f down)  
         (edge A D #f up)
         (edge A E #f left)
-        (edge A E #f right)))
+        (edge A E #f right))))
 
 (let ()
   ; test placements with   #:at <coordinate>
@@ -277,62 +298,62 @@
 
   (margin 5
           (scale 1 (draw (color "gray" (grid (pt -3 -3) (pt 3 3)))
-                    A B C D E F G H I J
-                    (edge A B)
-                    (edge A C)
+                         A B C D E F G H I J
+                         (edge A B)
+                         (edge A C)
 
-                    (edge A D)
-                    (edge A E)
-                    (edge A F)
-                    (edge A G)
-                    (edge A H)
-                    (edge A I)))))
+                         (edge A D)
+                         (edge A E)
+                         (edge A F)
+                         (edge A G)
+                         (edge A H)
+                         (edge A I)))))
 
 
 
 
 (font-normal
  (font-size 50
-   (let ()
-     ; Test that all normals are orthogonal to the ellipse
-     (def en (ellipse-node "BANG" ; #:min-width 1 #:min-height 1
-                           #:inner-sep (px 20)
-                           #:outer-sep (px 20)))
-   (scale 1
-          (draw en
-                (for/draw ([i (in-range 0 360 15)])
-                          (def a (anchor en (dir i)))
-                          (def n (normal en (dir i)))
-                          (draw (color "red"  (draw a))
-                                (color "blue" (draw (curve a .. (pt+ a n)))))))))))
+            (let ()
+              ; Test that all normals are orthogonal to the ellipse
+              (def en (ellipse-node "BANG" ; #:min-width 1 #:min-height 1
+                                    #:inner-sep (px 20)
+                                    #:outer-sep (px 20)))
+              (scale 1
+                     (draw en
+                           (for/draw ([i (in-range 0 360 15)])
+                                     (def a (anchor en (dir i)))
+                                     (def n (normal en (dir i)))
+                                     (draw (color "red"  (draw a))
+                                           (color "blue" (draw (curve a .. (pt+ a n)))))))))))
 
 
 
 (define-syntax-rule (my-font-style x)
   (font-size 30
-    (font-italic x)))
+             (font-italic x)))
 
 (brushcolor "blue"
-(pencolor "white"
-(penscale 2                    
-(with-window (window 0 800 -200 600)            
-  (my-font-style
-   (let ()
-     (def colors '(red blue green orange))
-     (def start (text-node))
-     (define-values (nodes picts)
-       (for/fold ([ns (list start)]          ; nodes
-                  [ps (list (draw start))]) ; picts
-                 ([col (map ~a colors)])
-         (def n (circle-node col
-                                #:color "black"
-                                #:fill col
-                                #:right-of  (first ns)
-                                #:inner-sep (px 5)
-                                #:outer-sep (px 5)))
-         (def p (text-color "white" (draw n)))
-         (values (cons n ns) (cons p ps))))
-     (draw* picts)))))))
+            (pencolor "white"
+                      (penscale 2                    
+                                (with-window (window 0 800 -200 600)            
+                                  (my-font-style
+                                   (let ()
+                                     (def colors '(red blue green orange))
+                                     (def start (text-node))
+                                     (define-values (nodes picts)
+                                       (for/fold ([ns (list start)]          ; nodes
+                                                  [ps (list (draw start))]) ; picts
+                                                 ([col (map ~a colors)])
+                                         (def n (circle-node col
+                                                             #:color "black"
+                                                             #:fill col
+                                                             #:right-of  (first ns)
+                                                             #:inner-sep (px 5)
+                                                             #:outer-sep (px 5)))
+                                         (def p (text-color "white" (draw n)))
+                                         (values (cons n ns) (cons p ps))))
+                                     (draw* picts)))))))
 
 (require (only-in pict standard-fish))
 (with-window (window -400 400 -200 600)
@@ -350,22 +371,90 @@
 (set-curve-pict-size  400 400)
 (with-window (window  -200 200 -200 200)
   (scale 1
-       (let ()
-         (define colors (list "red" "yellow" "blue" "green"))
-         (def A (rounded-rectangle-node "Racket" #:fill #t))
-         ; (def P (anchor A left))
-         ; (def Q (anchor A right))
-         ; (def P (pt  100 100 )) (def Q (pt  300 200))
-         (def P (pt -100 100 )) (def Q (pt 100 100))
-         ; (def P (pt 0 0 )) (def Q (pt 400 200))
-         (displayln (list P Q))
-         ;(brushshade "red" "blue" P Q
-         (brushgradient
-          (linear-gradient P Q colors)
-          (let ()
-            (clipped (circle 100)
-                     (draw
-                      ; (filldraw (rectangle (pt -100 -100) (pt 100 100)))
-                      (rectangle-node #:fill #t
-                                      #:min-width 400 #:min-height 400)
-                      (color "red" (draw P Q)))))))))
+         (let ()
+           (define colors (list "red" "yellow" "blue" "green"))
+           (def A (rounded-rectangle-node "Racket" #:fill #t))
+           ; (def P (anchor A left))
+           ; (def Q (anchor A right))
+           ; (def P (pt  100 100 )) (def Q (pt  300 200))
+           (def P (pt -100 100 )) (def Q (pt 100 100))
+           ; (def P (pt 0 0 )) (def Q (pt 400 200))
+           (displayln (list P Q))
+           ;(brushshade "red" "blue" P Q
+           (brushgradient
+            (linear-gradient P Q colors)
+            (let ()
+              (clipped (circle 100)
+                       (draw
+                        ; (filldraw (rectangle (pt -100 -100) (pt 100 100)))
+                        (rectangle-node #:fill #t
+                                        #:min-width 400 #:min-height 400)
+                        (color "red" (draw P Q)))))))))
+
+
+
+
+(set-curve-pict-size  400 400)
+(current-neighbour-distance (px 40))
+(current-outer-separation (px 5))
+(with-window (window  -20 20 -20 20)
+  (scale 1
+         (let ()
+           (define colors (list "red" "yellow" "blue" "green"))
+           (def R (rectangle-node
+                   #:at (pt 0 10)
+                   #:shade 'radial
+                   #:shade-angle pi/2
+                   #:shade-colors (list "red" "white" "red")
+                   #:min-width 10 #:min-height 5))
+           (def E (ellipse-node
+                   #:below R
+                   #:shade 'radial
+                   #:shade-angle pi/4
+                   #:shade-colors (list "red" "white" "red")
+                   #:min-width 10 #:min-height 5))
+           (def C (circle-node
+                   #:right-of E
+                   #:shade 'radial
+                   #:shade-angle pi/2
+                   #:shade-colors (ball-gradient "blue")
+                   #:min-width 10 #:min-height 5))
+           (def B (circle-node
+                   #:above C
+                   #:fill "red"
+                   #:shade 'ball
+                   #:shade-angle pi/2
+                   ; #:shade-colors (ball-gradient "blue")
+                   #:min-width 5 #:min-height 5))
+           (draw R
+            E
+            C B
+            ))))
+
+
+; working
+; (brushgradient transformation #(#(2.0 0.0 0.0 2.0 0.0 0.0)
+;                                 0.0 0.0 1.0 1.0 0.0))
+;(working #(struct:trans 2.0 0.0 0.0 2.0 0.0 0.0))
+;      (U #(struct:trans 2.0 0.0 0.0 2.0 0.0 0.0))
+
+
+#;(brushgradient transformation #(#(2.0 0.0 0.0 2.0 0.0 0.0)
+                                  0.0 0.0 1.0 1.0 0.0))
+;(working #(struct:trans 2.0 0.0 0.0 2.0 0.0 0.0))
+; (U #(struct:trans 2.0 0.0 0.0 2.0 0.0 0.0))
+
+(define (gradient->pict g w h)
+  (defm (raw-gradient (raw-color-stops colors stops)) g)
+  (def xs (map (λ (s) (* w s)) stops))
+  (draw (for/draw ([x0 xs] [x1 (rest xs)] [c colors])
+                  (filldraw (rectangle (pt x0 0) (pt x1 h)) c))))
+
+
+(with-window (window -50 200 -100 100)
+  (gradient->pict (ball-gradient "blue") 100 10))
+
+            
+(with-window (window -20 20 -20 20)
+  (draw (circle-node #:min-width 10
+                     #:shade     'ball)))

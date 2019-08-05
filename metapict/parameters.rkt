@@ -23,6 +23,7 @@
 (def use-default-brush? (make-parameter #t))
 (def colorizer (make-parameter (λ x (error 'colorizer "internal error: parameter wasn't set"))))
 
+
 ;;; Nodes
 (def current-inner-separation (make-parameter 0.05)) ; separation space between text and curve drawn
 (def current-outer-separation (make-parameter 0.05))  ; separation space between curve and outside
@@ -35,4 +36,20 @@
 (def current-neighbour-distance-x (make-parameter #f)) ; #f means use current-neighbour-distance
 (def current-neighbour-distance-y (make-parameter #f))
 (def current-neighbour-distance   (make-parameter 1.))
+
+
+;;; Shadings
+;; The available shaing types are:
+;;      #f   none
+;;   'axis   linear gradient (parallel with x-axis when angle=0)
+;; 'radial   radial gradient (gradient center is center of node)
+;    'ball   radial gradient (gradient center is ?? slightly of the center
+(def current-shading          (make-parameter #f))
+(def current-shading-angle    (make-parameter 0))    ; rotates shading (degrees)
+(def current-shading-gradient (make-parameter (list "gray" "white")))
+
+(def current-test-value (make-parameter #f))
+
+
+
 

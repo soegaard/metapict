@@ -4,7 +4,8 @@
 ;;; The point (x,y) is transformed to:
 ;;;     xnew = xx*x + xy*y + x0
 ;;;     ynew = yx*x + yy*y + y0
-;;; Think of an affine transformation as a linear transformation followed by a translation.
+;;; Think of an affine transformation as a linear transformation followed
+;;; by a translation.
 
 (require racket/contract/base)
 (provide (struct-out trans)
@@ -16,12 +17,13 @@
          compose-trans
          transformation->trans
          trans->transformation
-         (contract-out [inverse (-> trans? trans?)]        ; inverse transformation
+         (contract-out [inverse (-> trans? trans?)]     ; inverse transformation
                        [trans->vector (-> trans? vector?)] ; convert to vector
                        ))
 
 (require "def.rkt" "structs.rkt" "trig.rkt" "mat.rkt" "pt-vec.rkt"
-         (for-syntax racket/base) racket/match racket/format racket/list racket/math)
+         (for-syntax racket/base)
+         racket/match racket/format racket/list racket/math)
 
 (define (constructor o)
   (cond [(vec? o)  vec] 

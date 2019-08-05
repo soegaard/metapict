@@ -155,8 +155,11 @@
 (struct raw-color-stops (colors stops) #:transparent)
 
 ; the points and radii are in logical coordinates
-(struct raw-gradient (color-stops)                     #:transparent)
-(struct raw-linear-gradient raw-gradient (p0 p1)       #:transparent) 
-(struct raw-radial-gradient raw-gradient (p0 r0 p1 r1) #:transparent)
+(struct raw-gradient (color-stops)                                     #:transparent)
+(struct raw-linear-gradient raw-gradient (p0 p1 height-factor)         #:transparent) 
+(struct raw-radial-gradient raw-gradient (p0 r0 p1 r1 height-factor)   #:transparent)
+
+; The width of a, say, node times the height-factor gives the height of the node.
+; This is used to adapt radial gradients to ellipses (in user space).
 
 (provide-structs raw-color-stops raw-gradient raw-linear-gradient raw-radial-gradient)
