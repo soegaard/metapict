@@ -95,10 +95,23 @@
       ['->  (values #f arrow-head)]
       ['<-> (values arrow-head arrow-head)]
       ['<-  (values arrow-head #f)]
-      [_ (error 'edge (~a "expected an arrow shortcut (one of - -> <-> ->), got " arrow))])))  
-  ; the two nodes
+      [_ (error 'edge (~a "expected an arrow shortcut (one of - -> <-> ->), got " arrow))])))
+
   (def n1 from)
   (def n2 to)
+
+  ; an edge from n1 to n1 means a loop
+  (def loop? (eq? n1 n2))
+
+  ; incoming and outgoing edges are indicated by n1=#f and n2=#f respectively
+  (def incoming (and (not n1) n2))
+  (def outgoing (and (not n2) n1))
+
+  ; in general we have two nodes, so in order to simplify calculations
+  ; we make sure that both n1 and n2 are nodes (in the incoming/outgoing case)
+  (set! n1 (or n1 n2))
+  (set! n2 (or n2 n1))
+  
   ; position of node centers
   (def p1 (node-pos n1))
   (def p2 (node-pos n2))
@@ -118,31 +131,51 @@
     (def p1 (pt+ (anchor node v) (vec* size v)))
     (curve p0 v1 .. p1 .. (rotated180 v2) p3))
 
-  (define-values (d1 d2)
+  
+  ; These are the directions in which to find the anchor points.
+  (define-values (d1 d2) ; these are only needed for two different nodes
     (cond
-      [(eq? n1 n2) (values (or from-dir right) (or to-dir left))] ; loop, to-dir not used
-      [else        (match* (from-dir to-dir)
-                     [(#f #f)
-                      ; no directions given - use the direct direction
-                      (values v (vec* -1 v))]
-                     [(from-dir #f)
-                      (set! use-mid? #f)
-                      ; only the leaving direction is given
-                      (def α (signed-angle2 from-dir v))
-                      (def new-to-dir
-                        ; (cond [(eq? n1 n2)  ; loop edge                           
-                        (cond [(zero? (dot from-dir v)) (vec* 1 from-dir)] ; rot180
-                              [else                     (rotated (* -2 α) from-dir)]))
-                      (values from-dir new-to-dir)]
-                     [(#f to-dir)
-                      (set! use-mid? #f)
-                      ; only the entering direction is given
-                      (values (vec* -1 to-dir) (vec* -1 to-dir))]
-                     [(from-dir to-dir)
-                      (values from-dir (vec* -1 to-dir))])]))
+      [loop?      (values (or from-dir right) (or to-dir left))]
+      
+      [incoming
+       ; the user wrote:  (edge #f n2 from-dir)
+       ;             e.g. (edge #f n2 left)
+       ; an incoming edge going left means it is entering at the right
+       (unless from-dir (set! from-dir right))
+       (values (or (vec* -1 from-dir) left)   ; not used
+               (or (vec* -1 from-dir) left))] ; default is a left-to-right arrow
+
+      [outgoing
+       ; the user wrote:  (edge n1 #f from-dir)
+       ;             e.g. (edge n1 #f up)     outgoing edge going up
+       (values (or from-dir right)   ; not used
+               (or from-dir right))] ; default is a left-to-right arrow
+      ; general case with two nodes
+      [else
+       (match* (from-dir to-dir)
+         [(#f #f)
+          ; no directions given - use the direct direction
+          (values v (vec* -1 v))]
+         [(from-dir #f)
+          (set! use-mid? #f)
+          ; only the leaving direction is given
+          (def α (signed-angle2 from-dir v))
+          (def new-to-dir
+            ; (cond [(eq? n1 n2)  ; loop edge                           
+            (cond [(zero? (dot from-dir v)) (vec* 1 from-dir)] ; rot180
+                  [else                     (rotated (* -2 α) from-dir)]))
+          (values from-dir new-to-dir)]
+         [(#f to-dir)
+          (set! use-mid? #f)
+          ; only the entering direction is given
+          (values (vec* -1 to-dir) (vec* -1 to-dir))]
+         [(from-dir to-dir)
+          (values from-dir (vec* -1 to-dir))])]))
+  
   ; anchors (points on the outline of the two nodes) to attach the edge
   (def a1 (anchor n1 d1))
   (def a2 (anchor n2 d2))
+  
   ; If the node is circle shaped we could use the directions d1 and d2 as is.
   ; Given other shapes, we need to use a normal instead.
   ; Hmmm - for now we just use the directions directly - looks better.
@@ -152,18 +185,23 @@
   (def v1 d1)
   (def v2 (vec* -1 d2))
   ; curve connecting the two anchor points
-  (def c (cond
-           [(eq? n1 n2) ; same node! which means a loop (we ignore the work above)
-            (loop n1 d1 loop-size)]
-           [via
-            (curve* (append (list a1 v1 ..)
-                            (append-map (λ (v) (list v ..)) via)
-                            (list v2 a2)))]
-           #;[(and use-mid? (vec= v1 (vec* -1 v2)))  ; the special case 
-              (def m (pt+ p1 (vec* 0.5 v))) ; "mid" point to achieve a prettier path
-              (curve a1 v1 .. m .. v2 a2)]
-           [else                          ; the general case
-            (curve a1 v1 .. v2 a2)]))
+  (def c (cond           
+           ; n1=n2 means a loop  (we ignore the work above)
+           [loop?        (loop n1 d1 loop-size)]
+           [incoming
+            (def size (current-incoming-edge-size))
+            (curve (pt+ a1 (vec* (/ (* size) (norm d2)) d2)) -- a1)] ; XXX
+            [outgoing
+             (def size (current-outgoing-edge-size))
+               (curve-reverse
+                          (curve (pt+ a1 (vec* (/ (* size) (norm d1)) d1)) -- a1))]
+           ; via contains a points on the edge
+           [via          (curve* (append (list a1 v1 ..)
+                                         (append-map (λ (v) (list v ..)) via)
+                                         (list v2 a2)))]
+           ; the general case
+           [else         (curve a1 v1 .. v2 a2)]))
+  
   (def gap (or label-gap (current-label-gap)))
   (when (string? label-str/pict)
     (set! label-str/pict (text label-str/pict)))
@@ -283,17 +321,17 @@
          ; outer separation
          (define o-xsep (or outer-xsep outer-sep (current-outer-separation)))
          (define o-ysep (or outer-xsep outer-sep (current-outer-separation)))
-
+         
          ; text dimension
          (define-values (w h) (contents-dimension t))
          ; handle minimum width and height
-         (def min-width (or minimum-width minimum-size))
+         (def min-width (or minimum-width minimum-size (current-node-minimum-width) (current-node-minimum-size)))
          (when min-width
            (unless (>= (+ w i-xsep) min-width)
              ; increase the inner x-separation if needed
              (set! i-xsep (max 0 (/ (- min-width w) 2.)))))
          ; handle minimum height
-         (def min-height (or minimum-height minimum-size))
+         (def min-height (or minimum-height minimum-size (current-node-minimum-height) (current-node-minimum-size)))
          (when min-height
            (unless (>= (+ h i-ysep) min-height)
              ; increase the inner y-separation if needed
@@ -302,7 +340,9 @@
          ;  - minimum height and width have been turned into separations
          ;  - placements have been turned into a position and a direction
          ;  - inner and outer separations have been split into x and y separations
-
+         ; shading
+         ;  - if #:fill or #:shade is present, it overrides any parameters
+         (set! shade (or shade (and (not fill) (current-node-shade))))
          ; rings
          (set! ring-gap-x (or ring-gap-x ring-gap (current-ring-gap-x) (current-ring-gap) 1))
          (set! ring-gap-y (or ring-gap-y ring-gap (current-ring-gap-y) (current-ring-gap) 1))
@@ -472,6 +512,7 @@
                    (filldraw (shape-curve inner-shape) filler))
               (and shade
                    (case shade
+                     [(none)   #f]
                      [(ball)   (set! shade-colors (or shade-colors
                                                       (ball-gradient (or filler "blue"))))
                                (radial-shade

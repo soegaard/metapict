@@ -25,6 +25,13 @@
 
 
 ;;; Nodes
+
+(def current-node-minimum-size   (make-parameter #f))
+(def current-node-minimum-width  (make-parameter #f))
+(def current-node-minimum-height (make-parameter #f))
+
+(def current-node-shade (make-parameter #f))
+
 (def current-inner-separation (make-parameter 0.05)) ; separation space between text and curve drawn
 (def current-outer-separation (make-parameter 0.05))  ; separation space between curve and outside
 ; Note: In TikZ the default outer separation is half the line width
@@ -50,6 +57,14 @@
 (def current-shading          (make-parameter #f))
 (def current-shading-angle    (make-parameter 0))    ; rotates shading (degrees)
 (def current-shading-gradient (make-parameter (list "gray" "white")))
+
+
+;;;
+;;; Edges
+;;;
+
+(def current-incoming-edge-size (make-parameter 0.15))
+(def current-outgoing-edge-size (make-parameter 0.15))
 
 (def current-test-value (make-parameter #f))
 
