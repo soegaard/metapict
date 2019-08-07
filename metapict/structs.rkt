@@ -163,3 +163,30 @@
 ; This is used to adapt radial gradients to ellipses (in user space).
 
 (provide-structs raw-color-stops raw-gradient raw-linear-gradient raw-radial-gradient)
+
+;;;
+;;;  Domain
+;;;
+
+; A domain interval represents an interval, a subset of the real number line
+; of one of the following forms:
+;    i)   a<x<b      open-open
+;   ii)   a<=x<b   closed-open
+;  iii)   a<x<=b     open-closed
+;   iv)   a<=x<=b  closed-closed
+
+; A domain consists of a list of intervals.
+; The invariant is:
+;   I)  the intervals doesn't overlap
+;  II)  the intervals are sorted in ascending order
+
+(struct domain-interval (from-closed? from to to-closed?) #:transparent)
+(struct domain          (intervals)                       #:transparent)
+(provide-structs domain-interval domain)
+;;;
+;;;  Axis
+;;;
+
+;; An axis represent a an axis of a coordinate system.
+
+

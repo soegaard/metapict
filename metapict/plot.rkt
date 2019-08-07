@@ -20,14 +20,19 @@
 
 (defproc (make-plot/dc 
           [renderer-tree (treeof (or/c renderer2d? nonrenderer?))]
-                  [dc (is-a?/c dc<%>)]
-                  [x real?] [y real?] [width (>=/c 0)] [height (>=/c 0)]
-                  [#:x-min x-min (or/c rational? #f) #f] [#:x-max x-max (or/c rational? #f) #f]
-                  [#:y-min y-min (or/c rational? #f) #f] [#:y-max y-max (or/c rational? #f) #f]
-                  [#:title title (or/c string? #f) (plot-title)]
-                  [#:x-label x-label (or/c string? #f) (plot-x-label)]
-                  [#:y-label y-label (or/c string? #f) (plot-y-label)]
-                  [#:legend-anchor legend-anchor anchor/c (plot-legend-anchor)]) void?
+          [dc (is-a?/c dc<%>)]
+          [x real?] [y real?]
+          [width (>=/c 0)] [height (>=/c 0)]
+
+          [#:x-min         x-min   (or/c rational? #f)  #f]
+          [#:x-max         x-max   (or/c rational? #f)  #f]
+          [#:y-min         y-min   (or/c rational? #f)  #f]
+          [#:y-max         y-max   (or/c rational? #f)  #f]
+          [#:title         title   (or/c string? #f)    (plot-title)]
+          [#:x-label       x-label (or/c string? #f)    (plot-x-label)]
+          [#:y-label       y-label (or/c string? #f)    (plot-y-label)]
+          [#:legend-anchor legend-anchor anchor/c (plot-legend-anchor)])  void?
+  
   (define renderer-list (get-renderer-list renderer-tree))
   (define bounds-rect (get-bounds-rect renderer-list x-min x-max y-min y-max))
   (define-values (x-ticks x-far-ticks y-ticks y-far-ticks)
@@ -40,7 +45,7 @@
                  [plot-background     (change-alpha "white" 0.5)]
                  )
     (define area (make-object 2d-plot-area%
-                   bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks dc x y width height))
+                              bounds-rect x-ticks x-far-ticks y-ticks y-far-ticks dc x y width height))
     (define (plot->dc v) (send area plot-coords->dc v))
     (define (dc->plot v) (send area dc->plot v))
     (define (plot) 
@@ -48,7 +53,7 @@
                      [plot-x-label        x-label]
                      [plot-y-label        y-label]
                      [plot-legend-anchor  legend-anchor]
-                     [plot-background     (change-alpha "blue" 0.1)])
+                     [plot-background     "white" #;(change-alpha "blue" 0.1)])
         (plot-area area renderer-list)))
     (values plot plot->dc dc->plot)))
 
@@ -68,3 +73,8 @@
         (send dc set-brush old-brush))
       w h))
 
+
+(set-curve-pict-size 400 400)
+(draw (plotter sin (draw))
+      (curve (pt -1  0) -- (pt 1 0))
+      (curve (pt 0  -1) -- (pt 0 1)))

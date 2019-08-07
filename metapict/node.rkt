@@ -291,6 +291,7 @@
                 #:shade        [shade        #f]
                 #:shade-angle  [shade-angle  #f]
                 #:shade-colors [shade-colors #f]
+                #:shade-offset [shade-offset #f] ; shade-center = node-center + shade-offset 
                 #:color     [color  #f] ; use color to draw shape
                 ;;;
                 #:rings       [rings #f]
@@ -355,7 +356,8 @@
                #:outer-y-separation o-ysep
                #:fill fill
                #:color color
-               #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+               #:shade shade #:shade-angle shade-angle
+               #:shade-colors shade-colors #:shade-offset shade-offset
                #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y 
                (~@ keyword arg-name) ...)))]))
          
@@ -370,10 +372,11 @@
                         #:outer-y-separation o-ysep                                                
                         #:color color ; for pen
                         #:fill fill
-                        #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+                        #:shade shade #:shade-angle shade-angle
+                        #:shade-colors shade-colors #:shade-offset shade-offset
                         #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y)
   (make-node-helper 'text t pos dir i-xsep i-ysep o-xsep o-ysep fill color
-                    shade shade-angle shade-colors
+                    shade shade-angle shade-colors shade-offset
                     rings ring-gap-x ring-gap-y))
 
 (define-node-constructor (rectangle-node () make-rectangle-node))
@@ -386,10 +389,11 @@
                              #:outer-y-separation o-ysep                             
                              #:fill fill
                              #:color color
-                             #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+                             #:shade shade #:shade-angle shade-angle
+                             #:shade-colors shade-colors #:shade-offset shade-offset
                              #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y)
   (make-node-helper 'rectangle t pos dir i-xsep i-ysep o-xsep o-ysep fill color
-                    shade shade-angle shade-colors
+                    shade shade-angle shade-colors shade-offset
                     rings ring-gap-x ring-gap-y))
 
 (define-node-constructor (rounded-rectangle-node () make-rounded-rectangle-node))
@@ -402,11 +406,12 @@
                                      #:outer-y-separation o-ysep
                                      #:fill fill
                                      #:color color
-                                     #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+                                     #:shade shade #:shade-angle shade-angle
+                                     #:shade-colors shade-colors #:shade-offset shade-offset
                                      #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y)
   (make-node-helper 'rounded-rectangle t pos dir i-xsep i-ysep o-xsep o-ysep
                     fill color
-                    shade shade-angle shade-colors
+                    shade shade-angle shade-colors shade-offset
                     rings ring-gap-x ring-gap-y))
 
 (define-node-constructor (circle-node () make-circle-node))
@@ -419,10 +424,11 @@
                           #:outer-y-separation o-ysep
                           #:fill fill
                           #:color color
-                          #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+                          #:shade shade #:shade-angle shade-angle
+                          #:shade-colors shade-colors #:shade-offset shade-offset
                           #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y)
   (make-node-helper 'circle t pos dir i-xsep i-ysep o-xsep o-ysep fill color
-                    shade shade-angle shade-colors
+                    shade shade-angle shade-colors shade-offset
                     rings ring-gap-x ring-gap-y))
 
 (define-node-constructor (ellipse-node () make-ellipse-node))
@@ -435,10 +441,11 @@
                            #:outer-y-separation o-ysep
                            #:fill fill
                            #:color color
-                           #:shade shade #:shade-angle shade-angle #:shade-colors shade-colors
+                           #:shade shade #:shade-angle shade-angle
+                           #:shade-colors shade-colors #:shade-offset shade-offset
                            #:rings rings #:ring-gap-x ring-gap-x #:ring-gap-y ring-gap-y)
   (make-node-helper 'ellipse t pos dir i-xsep i-ysep o-xsep o-ysep fill color
-                    shade shade-angle shade-colors
+                    shade shade-angle shade-colors shade-offset
                     rings ring-gap-x ring-gap-y))
 
 
@@ -448,7 +455,7 @@
 ; type = 'ellipse
 
 (define (make-node-helper type t p dir i-xsep i-ysep o-xsep o-ysep filler color
-                          shade shade-angle shade-colors
+                          shade shade-angle shade-colors shade-offset
                           rings ring-gap-x ring-gap-y)
   ; filler = is #f, #t, or a brush
   ; dir=#f    means node is centered at p
@@ -494,7 +501,7 @@
                   (if (list? g) (gradient g) g)))
         (def lg (to-linear-gradient g p0 p1))
         (brushgradient lg (fill (shape-curve inner-shape))))
-      (define (radial-shade [offset (vec 0 0)])
+      (define (radial-shade [offset (or shade-offset (vec 0 0))])
         ; first circle is has center in the node center and has radius 0
         (def p0 (pt+ (anchor n (vec 0 0)) offset)) ; center (if offset is zero)
         (def r0 0)
@@ -517,7 +524,7 @@
                                                       (ball-gradient (or filler "blue"))))
                                (radial-shade
                                 ; move sligthly : TODO should depend on radius
-                                (vec (- (px 10)) (px 10)))]
+                                (or shade-offset (vec (- (px 10)) (px 10))))]
                      [(axis)   (axis-shade)] ; shades inner-shape
                      [(radial) (radial-shade)]
                      [else     (error 'node (~a "shade type expected (one of #f #t axis radial or ball), got: "
