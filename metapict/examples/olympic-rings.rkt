@@ -21,6 +21,7 @@
 
 (set-curve-pict-size 600 300)
 (with-window (window -6 6 -4 2)
-  (draw (clipped (draw-rings r5 r4 r3 r2 r1) (rectangle (pt -6  2)   (pt 6 -0.9)))
-        (clipped (draw-rings r1 r2 r3 r4 r5) (rectangle (pt -6 -0.9) (pt 6 -3.8)))))
+  (draw (clipped (rectangle (pt -6  2)   (pt 6 -0.9)) (draw-rings r5 r4 r3 r2 r1) )
+        (clipped (rectangle (pt -6 -0.9) (pt 6 -3.8)) (draw-rings r1 r2 r3 r4 r5) )))
+
 

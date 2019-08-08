@@ -44,3 +44,4 @@
   (check-equal? (line-segment-intersection (pt 0 0) (pt 2 0) (pt 1 -1) (pt 1 1)) (pt 1 0))
   (check-equal? (line-segment-intersection (pt 0 0) (pt 2 2) (pt 0 2) (pt 2 0)) (pt 1 1))
   (check-equal? (line-segment-intersection (pt 2 2) (pt 3 3) (pt 0 2) (pt 2 0)) #f))
+

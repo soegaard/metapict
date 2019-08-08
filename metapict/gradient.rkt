@@ -39,11 +39,15 @@
   (raw-color-stops colors the-stops))
 
 
-(define (linear-gradient p0 p1 colors #:stops [stops #f] #:height-factor [hf 1])
-  (raw-linear-gradient (color-stops colors stops hf) p0 p1))
+(define (linear-gradient p0 p1 colors #:stops [ss #f] #:height-factor [hf 1])
+  (def stops (cond [(raw-gradient? colors) (raw-gradient-color-stops colors)]
+                   [else                   (color-stops colors ss)]))
+  (raw-linear-gradient stops p0 p1 hf))
 
-(define (radial-gradient p0 r0 p1 r1 colors #:stops [stops #f] #:height-factor [hf 1])
-  (raw-radial-gradient (color-stops colors stops) p0 r0 p1 r1 hf))
+(define (radial-gradient p0 r0 p1 r1 colors #:stops [ss #f] #:height-factor [hf 1])
+  (def stops (cond [(raw-gradient? colors) (raw-gradient-color-stops colors)]
+                   [else                   (color-stops colors ss)]))
+  (raw-radial-gradient stops p0 r0 p1 r1 hf))
 
 
 (define (convert-gradient g P) 

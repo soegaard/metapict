@@ -50,7 +50,6 @@
 ; (line p q #t #f) represents a ray from q through p
 ; (line p q #f #t) represents a ray from p through q
 
-
 ; new-line : point point boolean boolean -> line
 (define (new-line p q [extend-p #t] [extend-q #t])
   (when (equal? p q) (error 'new-line "the points need to be different"))
