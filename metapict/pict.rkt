@@ -332,7 +332,7 @@
     (send (pict->bitmap pict) save-file filename type))
   (case type
     [(png jpeg xbm xpm bmp) (save-bitmap type)]
-    [(jpg)                  (save-bitmap 'jpeg)]
+    ;[(jpg)                  (save-bitmap 'jpeg)] ; jpeg not supported
     [(pdf)                  (save-pict-as-pdf pict filename)]
     [else (error 'save-pict (~a "expected one of: png jpeg xbm xpm bmp, got: " type))]))
 
