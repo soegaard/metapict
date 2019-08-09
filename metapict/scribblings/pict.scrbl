@@ -176,7 +176,7 @@ Adjust the brush to use the stipple @racket[s], then draw the pict @racket[p].}
 @defproc[(brushgradient [TODO:TO-BE-DETERMINED gradient?]) pict]{
 Use a gradient as brush, then draw the pict @racket[p].}
 
-@defproc[(save-pict [filename path?] [type 'png]) (void)]{
+@defproc[(save-pict [filename path?] [p pict?] [type 'png]) (void)]{
 Save the pict @racket[p] as @racket[filename].} Default is png, other formats include jpeg.
 
 @defproc[(margin [r real?] [p pict?]) pict?]{
