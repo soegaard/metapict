@@ -332,9 +332,9 @@
     (send (pict->bitmap pict) save-file filename type))
   (case type
     [(png jpeg xbm xpm bmp) (save-bitmap type)]
-    ;[(jpg)                  (save-bitmap 'jpeg)] ; jpeg not supported
+    ;[(jpg)                  (save-bitmap 'jpeg)] ; jpeg not supported as alpha appears as black in jpg.
     [(pdf)                  (save-pict-as-pdf pict filename)]
-    [else (error 'save-pict (~a "expected one of: png jpeg xbm xpm bmp, got: " type))]))
+    [else (error 'save-pict (~a "expected one of: png pdf xbm xpm bmp, got: " type))]))
 
 (define (margin n p) (inset p n))
 (define (scale  n p) (pict:scale p n))
