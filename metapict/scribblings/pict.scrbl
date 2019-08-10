@@ -167,7 +167,7 @@ Adjust the brush to use the stipple @racket[s], then draw the pict @racket[p].}
 
 @interaction[#:eval eval 
 (set-curve-pict-size 256 256)
-(define stipple (bitmap "texture.jpeg"))
+(define stipple (bitmap "texture.png"))
 (with-window (window -1 1 -1 1)
   (beside stipple (blank 64 64)
           (brushstipple (pict->bitmap stipple) 
@@ -177,7 +177,9 @@ Adjust the brush to use the stipple @racket[s], then draw the pict @racket[p].}
 Use a gradient as brush, then draw the pict @racket[p].}
 
 @defproc[(save-pict [filename path?] [p pict?] [type 'png]) (void)]{
-Save the pict @racket[p] as @racket[filename].} Default is png, other formats include pdf, xbm, xpm and bmp. JPEG is not included.
+Save the pict @racket[p] as @racket[filename].}
+Default is png, other formats include svg, pdf, xbm, xpm and bmp.
+JPEG is not included.
 
 @defproc[(margin [r real?] [p pict?]) pict?]{
 Equivalent to @racket[(inset p r)].}
