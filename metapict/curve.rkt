@@ -29,6 +29,7 @@
  ; high level constructors
  curve                        ; construct curve from a path description
  curve*                       ; (λ (ps) (apply curve ps))
+ make-curve                   
  empty-curve                  ; the empty curve
  ; curve operations
  curve-length                 ; return number of bez in the curve
