@@ -1,5 +1,8 @@
 #lang racket/base
-(require (for-syntax racket/base) pict/convert racket/format)
+(require (for-syntax racket/base)
+         pict/convert racket/format
+         "parameters.rkt")
+         
 
 (define-syntax (provide-structs stx)
   (syntax-case stx ()
@@ -22,7 +25,6 @@
 (provide-structs label lft rt top bot ulft urt llft lrt cnt placement)
 
 
-
 ; The basic data types 
 (struct pt     (x y)                 #:transparent) ; point
 (struct vec    (x y)                 #:transparent) ; vector
@@ -32,6 +34,7 @@
 (struct window (minx maxx miny maxy) #:transparent) ; window (coordinate system)
 (struct curve: (closed? bezs)        #:transparent  ; a resolved curve is a list of bezs   
   #:reflection-name 'curve)
+
 
 ;;;
 ;;; Representation of paths (274, 275)
@@ -188,5 +191,36 @@
 ;;;
 
 ;; An axis represent a an axis of a coordinate system.
+;; An axis consist of an origin (point where 0 is placed) and a unit-vector,
+;; which is a vector from the origo to the point where 1 is placed.
+;; The coordinates of origin and unit-vector are logical coordinates.
+
+(struct axis   (origin unit-vector) #:transparent)
+(provide-structs axis)
+
+;;;
+;;; Geometry
+;;;
 
 
+(define-values (prop:drawable drawable? drawable-convert)
+  (make-struct-type-property 'prop:drawable))
+
+(provide prop:drawable drawable? drawable-convert)
+
+                             
+
+(struct line (p q l r)
+  #:transparent
+  #:property prop:drawable
+  (λ (l) ((current-draw-line) l)))
+
+  
+(provide-structs line)
+;   Here p and q are points in logical coordinates
+;   and l and r are booleans.
+
+; (line p q #t #t) represents a line through points p and q
+; (line p q #f #f) represents a line segment from p to q
+; (line p q #t #f) represents a ray from q through p
+; (line p q #f #t) represents a ray from p through q

@@ -1,5 +1,5 @@
 #lang racket
-(require metapict (except-in plot inverse)
+(require metapict (except-in plot inverse line)
          racket/draw racket/contract racket/class
          racket/contract
          ; unstable/contract

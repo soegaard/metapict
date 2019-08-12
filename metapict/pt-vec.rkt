@@ -34,6 +34,9 @@
 (define (med α p q) (def pq (pt- q p)) (pt+ p (vec* α pq)))  ; mediate aka linear interpolation
 (define (pt@ r θ) (pt+ (pt 0 0) (vec@ r θ))) ; from polar: radius r, angle θ
 (define (pt@d r θ) (pt+ (pt 0 0) (vec@ r (rad θ)))) ; from polar: radius r, angle θ
+; for sorting:
+(define (pt< p q) (match* (p q) [((pt x y) (pt a b)) (or (< x a) (and (= x a) (< y b)))]))
+
 
 (module+ test
   (check-equal? (pt+ (pt 1 2) (vec 3 4)) (pt 4 6))

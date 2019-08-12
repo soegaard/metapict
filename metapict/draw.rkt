@@ -36,6 +36,7 @@
                      [(? node? n)           ((node-convert n) n)]
                      [(? edge? n)           ((edge-convert n) n)]
                      ;[(? pict-convertible?) (pict-convert c)]
+                     [(? drawable? d)       ((drawable-convert d) d)]
                      [#f                    (blank (curve-pict-width) (curve-pict-height))]
                      [else            (error 'combine (~a "curve or pict expected, got " c))])))])))
 

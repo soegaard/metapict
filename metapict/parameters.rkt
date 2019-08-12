@@ -5,6 +5,17 @@
 (require "def.rkt")
 (require (only-in racket/draw make-font))
 
+
+;;; Helpers
+
+(define (thunk? v)
+  (and (procedure? v)
+       (zero? (procedure-arity v))))
+
+(define (get parameter)
+  (def v (parameter))
+  (if (thunk? v) (v) v))
+
 ;;; Label
 (def current-label-font (make-parameter (make-font)))
 (def current-label-gap  (make-parameter 0.15))
@@ -68,6 +79,19 @@
 
 (def current-test-value (make-parameter #f))
 
+;;;
+;;; Axis and Ticks
+;;;
+
+(def current-tick-size (make-parameter (λ() 1)))
 
 
+;;;
+;;; Drawable
+;;;
+
+(def current-draw-line   (make-parameter #f)) ; set in geometry.rkt
+(def current-draw-circle (make-parameter #f)) ; set in geometry.rkt
+(def current-draw-parameterization (make-parameter #f)) 
+(def current-draw-parabola (make-parameter #f))
 

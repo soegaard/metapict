@@ -8,8 +8,12 @@
  with-window         ; (with-window win body ...) evaluate bodies with win as curve-pict-window
  with-scaled-window  ; (with-scaled-window k body ...) eval bodies with curve-pict-window scaled k
  window/aspect  ; (window/aspect xmin xmax [ymin #f] [aspect #f]) create window using optional aspect
+
+ window-corners ; return the four corners of the window
  window-opposite-corners   ; return two values: lower left and upper right pts of the window
  window-from-opposite-corners ; return window containing two diagonal points
+ inside-window?
+ outside-window? 
  (contract-out
   [window-overlap? (-> window? window?  boolean?)] ; do the windows overlap?
   [window-center   (-> window?          pt?)]      ; return pt in center
@@ -19,6 +23,22 @@
 
 (require "def.rkt" "structs.rkt" "pt-vec.rkt" "device.rkt"
          (for-syntax racket/base syntax/parse) racket/match)
+
+(define (window-corners win)
+  (defm (window x- x+ y- y+) win)
+  (values (pt x+ y-)
+          (pt x+ y+)
+          (pt x- y+)
+          (pt x- y-)))
+
+(define (inside-window? win p)
+  (defm (window x- x+ y- y+) win)
+  (defm (pt x y) p)
+  (and (<= x- x x+)
+       (<= y- y y+)))
+
+(define (outside-window? win p)
+  (not (inside-window? win p)))
 
 (define (window-opposite-corners win)
   (defm (window x- x+ y- y+) win)

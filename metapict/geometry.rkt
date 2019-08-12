@@ -1,21 +1,33 @@
-#lang racket
-; TODO: test intersections between line and quadrics
-(require metapict math)
-(module+ test (require rackunit))
+#lang racket/base
+;;;
+;;; LINES, RAYS, AND SEGMENTS
+;;;
 
-(define (quadratic-solutions* a b c)
-  ; quadratic-solutions from racket/math doesn't handle the case a=0
-  (if (= a 0) 
-      (list (/ (- c) b))
-      (quadratic-solutions a b c)))
+;; This module provides functions work with lines, rays and segments.
+;; The goal is to provide functionality similar to geometry.asy from Asymptote.
 
-;;; WORK IN PROGRESS
 
-; The goal is to provide functionality similar to
-; geometry.asy from Asymptote.
+;;; Functions and structs
 
-;;; FUNCTIONS and structs
 ; (struct line (p q l r) #:transparent)        ; p, q points;  l,r booleans
+;   Here p and q are points in logical coordinates
+;   and l and r are booleans.
+
+; (line p q #t #t) represents a line through points p and q
+; (line p q #f #f) represents a line segment from p to q
+; (line p q #t #f) represents a ray from q through p
+; (line p q #f #t) represents a ray from p through q
+
+; A line can conceptually be represented as an equation of the form
+;    ax + by + c = 0
+; where a, b and c are real numbers.
+
+; In the code the letters u and v are vectors and stand for:
+
+;    u = unit vector in the direction from p to q
+;    v = normal vector
+
+
 ; new-line              : p q [l r] -> line    ; create new line, ray, or, segment
 ; line-abc : line -> (values real real real)   ; a, b, and, c such that ax+by+c=0
 ;                                                is an equation for the line through p and q
@@ -31,13 +43,32 @@
 ; line/line-intersection : line line -> (or pt +inf.0)  ; intersection between line1 and line2 
 ;                                                         if there are none, return (pt +inf.0 +inf.0)
 ; line/quadric-intersection : A B a b c d e f g -> ...  ; intersection points between the line AB and
-;                                                         a x^2 + b xy + c y^2 + d x + f y + g =0  
+
+
+;;; WORK IN PROGRESS
+; TODO: test intersections between line and quadrics
+
+
+(require racket/list racket/match racket/format (except-in math permutations)
+         metapict metapict/structs)
+
+(require 
+         "parameters.rkt" "window.rkt" "pt-vec.rkt")
+
+(module+ test (require rackunit))
+
+(define (quadratic-solutions* a b c)
+  ; quadratic-solutions from racket/math doesn't handle the case a=0
+  (if (= a 0) 
+      (list (/ (- c) b))
+      (quadratic-solutions a b c)))
+
 
 ;;; LINES, RAYS, AND SEGMENTS
 
 ; http://www.piprime.fr/files/asymptote/geometry/modules/geometry.asy.index.type.html#struct line
 
-(struct line (p q l r) #:transparent)
+; (struct line (p q l r) #:transparent)
 ; p and q are points. l and r are booleans. 
 
 ; a, b, and, c are reals. u and v are vecs.
@@ -54,6 +85,122 @@
 (define (new-line p q [extend-p #t] [extend-q #t])
   (when (equal? p q) (error 'new-line "the points need to be different"))
   (line p q extend-p extend-q))
+
+(define (line-intersection l1 l2)
+  ; this handles all combinations of line, ray and segment intersections
+  (defm (line p1 q1 a1 b1) l1)
+  (defm (line p2 q2 a2 b2) l2)
+
+  (def  v1 (pt- q1 p1))
+  (def  v2 (pt- q2 p2))
+  ; If the two segments intersect, there exists s and t 
+  ; such that:
+  ;     p1 +t v1 = p2 + s v2
+  ;      p1 - p2 = s v2 - t v1
+  ;            P = s v2 - t v1
+  (def P (pt- p1 p2))
+
+  ; Isolate t by taking the inner product with v2^
+  ; P * v2^ = (s v2)*v2^ - t (v1 * v2^)
+  ; P * v2^ =            - t (v1*v2^)
+  ; t = - (P * v2^) / (v1 * v2^)
+  (def v2^ (rot90 v2))
+
+  ; Isolate s by taking the inner product with v1^
+  ; P * v1^ = (s v2)*v1^ - t (v1 * v1^)
+  ; P * v1^ = (s v2)*v1^
+  ; s = P*v1^ / v2*v1^
+  (def v1^ (rot90 v1))
+
+  ; The denominators are:  
+  (def d12 (dot v1 v2^))
+  (def d21 (dot v2 v1^))
+  (cond
+    ; better safe than sorry, so we check both
+    [(or (zero? d12) (zero? 21))
+     ; if the lines are parallel we end up here
+     #f]
+    [else
+     (def t (/ (- (dot P v2^)) d12))
+     (def s (/ (dot P v1^) d21))
+     ; The potential intersection point is:
+     (def i1 (pt+ p1 (vec* t v1)))
+     (if (or (and (<= 0 s 1) (<= 0 t 1)) 
+             (and (<= 0 s 1) (< t 0) a1) 
+             (and (<= 0 s 1) (> t 1) b1)
+
+             (and (< s 0) a2 (<= 0 t 1))
+             (and (< s 0) a2 (< t 0) a1)
+             (and (< s 0) a2 (> t 1) b1)
+
+             (and (> s 1) b2 (<= 0 t 1))
+             (and (> s 1) b2 (< t 0) a1)
+             (and (> s 1) b2 (> t 1) b1))
+         i1
+         #f)]))
+
+(define (uniqify-pts ps)
+  (let loop ([us (sort (filter values ps) pt<)])
+    (match us
+      [(list* u u us)          (loop (cons u us))]
+      [(list* u u1 us) (cons u (loop (cons u1 us)))]
+      [(list u)        us]
+      [(list)          '()]
+      [_ (error 'uniqify-pts (~a "got: " ps))])))
+
+(define (draw-line l)
+  (defm (line from to a b) l)
+  (def win (curve-pict-window))
+  (defv (lr ur ul ll) (window-corners win))
+  ; the four sides of the window
+  (def right (new-line lr ur #f #f)) ; segments
+  (def upper (new-line ur ul #f #f))
+  (def left  (new-line ul ll #f #f))
+  (def lower (new-line ll lr #f #f))
+  ; intersections if any
+  (def (falsify p) (defm (pt x y) p) (if (infinite? x) #f p))
+  (def p (line-intersection l right))
+  (def q (line-intersection l upper))
+  (def r (line-intersection l left))
+  (def s (line-intersection l lower))
+  ; cases:
+  ; 1) two different boundary intersections
+  ;    (connect them)
+  ; 2) one boundary intersection
+  ;    (connect point inside to boundary)
+  ; 3) zero boundary intersections
+  ;    (either entirely inside or outside)
+  (define (connect u v) (draw (curve u -- v)))
+  (match (uniqify-pts (list p q r s))
+    [(list u v)  (connect u v)]
+
+    [(list u)
+     (cond
+       [(inside-window? win from)
+        (cond
+          [(inside-window? win to)
+           ; both inside connect the point farthest away
+           (if (< (dist from u) (dist to u))
+               (connect to u)
+               (connect from u))]
+          [else
+           ; only from is inside
+           (connect from u)])]
+       [(inside-window? win to)
+        ; from outside, to inside
+        (connect u to)]
+       [else
+        ; both from and to outside => nothing in window
+        (draw)])]
+    
+    [(list)      (cond [(and (inside-window? win from)
+                             (inside-window? win to))
+                        (connect from to)]
+                       [else
+                        (draw)])]))
+
+(current-draw-line draw-line)
+
 
 ; line-abc : line -> (values real real real)
 ;   return a, b, and, c such that ax+by+c=0
@@ -123,6 +270,8 @@
 ; line/line-intersection : line line -> (or pt +inf.0)
 ;   return the intersection between line1 and line2
 ;   if there are none, return (pt +inf.0 +inf.0)
+; NOTE: This one treats line1 and line2 as true lines
+;       i.e. segments and rays are treated as lines
 (define (line/line-intersection line1 line2)
   (match-define (line (pt x1 y1) (pt x2 y2) l1 r1) line1)
   (match-define (line (pt x3 y3) (pt x4 y4) l2 r2) line2)
@@ -140,6 +289,8 @@
   (check-equal? (line/line-intersection (new-line (pt 0 0) (pt 2 2))
                                         (new-line (pt 0 2) (pt 2 0)))
                 (pt 1 1)))
+
+
 
 ;;;
 
@@ -336,10 +487,20 @@
 
 ;;; CIRCLE
 
-(struct circle: (c r l) #:transparent)
+(struct circle: (c r l)
+  #:transparent
+  #:property prop:drawable
+  (λ (c) ((current-draw-circle) c)))
 ; c = center
-; r = radiues
+; r = radius
 ; l = line used if r=+inf.0
+
+(define (draw-circle c)
+  (defm (circle: p r l) c)
+  (draw (circle p r)))
+
+(current-draw-circle draw-circle)
+
 
 (define point? pt?)
 
@@ -392,13 +553,49 @@
   (define u (circum-center a b c))
   (new-circle u (dist u a)))
 
+;;;
+;;; PARAMETERIZATION
+;;;
 
+(struct parameterization (ac a b bc closed? f)
+  #:property prop:drawable (λ (p) ((current-draw-parameterization) p))
+  #:transparent)
+; represents a function from the interval from a to b to pt
+;  Interval    ac bc
+;   ]a;b[      #f #f
+;   ]a;b]      #f #t
+;   [a;b[      #t #f
+;   [a;b]      #f #t
+
+(define (parameterization->curve p #:steps [n 40])
+  (defm (parameterization ac a b bc closed? f) p)
+  (def w (- b a))
+  (def Δ (/ w n))
+  (def ε (min 0.00001 Δ))
+  (def a0 (if ac a (+ a ε)))
+  (def b0 (if bc b (- b ε)))
+  (def pts (append (list (f a0))
+                   (for/list ([x (in-range (+ a Δ) b Δ)])
+                     (f x))
+                   (list (f b0))))
+  (curve* (add-between pts ..)))
+
+(define (draw-parameterization p)
+  (draw (parameterization->curve p)))
+
+(current-draw-parameterization draw-parameterization)
+
+;;;
 ;;; PARABOLAS
+;;;
 
-(struct parabola (f v) #:transparent)
-; f and v are points
-; f is the focus 
-; v is the vertex 
+(struct parabola (f v)
+  #:transparent
+  #:property prop:drawable
+  (λ (p) ((current-draw-parabola) p)))
+; f and v are points:
+;   f is the focus 
+;   v is the vertex 
 ; The parabola consists of all points whose distances to f and v are the same
 
 ; The focal parameter a is the distance from the from the vertex to the focus.
@@ -410,8 +607,8 @@
 (define (directrix p)
   (match-define (parabola f v) p)
   (define fv (pt- v f))
-  (define P (pt+ v fv))
-  (define Q (pt+ P (rot90 fv)))
+  (define P  (pt+ v fv))
+  (define Q  (pt+ P (rot90 fv)))
   (new-line P Q))
 
 (define (excentricity x)
@@ -421,6 +618,36 @@
     ; TODO case for ellipse
     [_ (error)]))
 
+
+(define (parabola-parameterization conic)
+  (match conic
+    [(and (parabola F V) p)
+     (def e (excentricity p))
+     (def d (directrix p))
+     ; If the focus F is at origo O and D=distance from focus to directrix
+     ; then
+     ;                 e D
+     ;        r = -------------
+     ;             1 -e cos(θ)
+     ; where θ is is the angle from the x-axis to the point
+     (def D (distance F d))
+     (def θ0 (angle2 (vec 1 0) (line-normal-vector d)))
+     (def eD (* e D))
+     (parameterization #f 0 2π #f ; ]0;2π[
+                       #f         ; not closed
+                       (λ (θ)
+                         (let ([θ (- θ θ0)])
+                           (def r (/ eD
+                                     (- 1 (* e (cos θ)))))
+                           (shifted F (pt@ r (+ θ θ0))))))]
+     [_ (error 'polar-parameterization
+              "TODO: implement the hypoerbola and ellipse cases")]))
+
+(define (draw-parabola p)
+  (draw (parabola-parameterization p)))
+
+(current-draw-parabola draw-parabola)
+  
 ;;; SIDE (in a triangle)
 
 (struct side (n t) #:transparent)
@@ -469,4 +696,5 @@
   (define β (angle (pt- B O)))
   (for/draw ([n (in-range 1 (add1 n))])
     (shifted O (arc (+ r (* sep (sub1 n))) α β))))
+
 
