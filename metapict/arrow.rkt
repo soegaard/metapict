@@ -42,7 +42,6 @@
   (unless α (set! α (ahangle)))
   (unless β (set! β (ahflankangle)))
   (unless γ (set! γ (ahtailcurvature)))
-  ; (set! l (norm (pt- (devpt (values l l)) origo))) ; xxx
   ; See http://www.ntg.nl/maps/36/19.pdf
   (def xmax (* r l))
   (def xmin (- xmax l))
@@ -58,9 +57,14 @@
   (def D (pt xmin ymin)) ; tail bottom
   (def BC  (curve B (dir (- -α/2 β))     .. (dir (+ -α/2 β)) C))
   (def CD  (curve C (dir (-  α/2 β 180)) .. (dir (+ -180 α/2  β)) D))
-  (def DAB (curve D .. A .. B))
+  (def DA-angle (let-values ([(_ θ) (@ (pt- A D))]) (deg θ))) ; angle from x-axis to vector DA
+  (def AB-angle (let-values ([(_ θ) (@ (pt- B A))]) (deg θ))) ; angle from x-axis to vector AB
+  (def DAB (curve D (dir (- DA-angle γ)) .. (dir (+ DA-angle γ)) A
+                    (dir (- AB-angle γ)) .. (dir (+ AB-angle γ)) B))
   (def head (curve-append (curve-append DAB BC) CD))
   (head/info head tipx l r))
+
+
 
 (define (harpoon-up #:length            [l #f] 
                     #:length-ratio      [r #f] 
