@@ -23,7 +23,7 @@
 ; We now set the logical coordinate system to match.
 (set-curve-pict-size w h)
 (curve-pict-window (window 0 w 0 h))
-(ahlength (px 4))
+(ahlength (px 5))
 
 ; This is almost enough, but MetaPict uses a
 ; normal y-axis, while the pict y-axis is flipped.

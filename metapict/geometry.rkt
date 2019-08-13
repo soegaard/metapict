@@ -9,14 +9,14 @@
 
 ;;; Functions and structs
 
-; (struct line (p q l r) #:transparent)        ; p, q points;  l,r booleans
+; (struct line: (p q l r) #:transparent)        ; p, q points;  l,r booleans
 ;   Here p and q are points in logical coordinates
 ;   and l and r are booleans.
 
-; (line p q #t #t) represents a line through points p and q
-; (line p q #f #f) represents a line segment from p to q
-; (line p q #t #f) represents a ray from q through p
-; (line p q #f #t) represents a ray from p through q
+; (line: p q #t #t) represents a line through points p and q
+; (line: p q #f #f) represents a line segment from p to q
+; (line: p q #t #f) represents a ray from q through p
+; (line: p q #f #t) represents a ray from p through q
 
 ; A line can conceptually be represented as an equation of the form
 ;    ax + by + c = 0
@@ -50,9 +50,7 @@
 
 
 (require racket/list racket/match racket/format (except-in math permutations)
-         metapict metapict/structs)
-
-(require 
+         metapict metapict/structs
          "parameters.rkt" "window.rkt" "pt-vec.rkt")
 
 (module+ test (require rackunit))
@@ -81,15 +79,41 @@
 ; (line p q #t #f) represents a ray from q through p
 ; (line p q #f #t) represents a ray from p through q
 
+(define (line? x)
+  (line:? x))
+
 ; new-line : point point boolean boolean -> line
 (define (new-line p q [extend-p #t] [extend-q #t])
   (when (equal? p q) (error 'new-line "the points need to be different"))
-  (line p q extend-p extend-q))
+  (line: p q extend-p extend-q))
+
+(define (line . args)
+  (def n? number?)
+  (match args
+    [(list (? pt? p) (? pt? q))          (line: p q #t #t)]
+    [(list (? pt? p) (? vec? v))         (line: p (pt+ p v) #t #t)]
+    [(list (? n? a) (? n? b))            (line: (pt 0 b) (vec 1 a))]  ; y = ax+b
+    [(list (? n? a) (? n? b) (? n? c))   (line-from-abc a b c)]       ; ax + by + c = 0
+    [_ (error 'line
+              (~a "expected either: two pts, a pt and a vec, two or three numbers; got: "
+                  args))]))
+
+(define (line-segment . args)
+  (def n? number?)
+  (match args
+    [(list (? pt? p) (? pt? q))          (line: p q #f #f)]
+    [(list (? pt? p) (? vec? v))         (line: p (pt+ p v) #f #f)]
+    [(list (? n? a) (? n? b))            (line: (pt 0 b) (vec 1 a) #f #f)]  ; y = ax+b
+    [(list (? n? a) (? n? b) (? n? c))   (line-segment-from-abc a b c)]       ; ax + by + c = 0
+    [_ (error 'line
+              (~a "expected either: two pts, a pt and a vec, two or three numbers; got: "
+                  args))]))
+
 
 (define (line-intersection l1 l2)
   ; this handles all combinations of line, ray and segment intersections
-  (defm (line p1 q1 a1 b1) l1)
-  (defm (line p2 q2 a2 b2) l2)
+  (defm (line: p1 q1 a1 b1) l1)
+  (defm (line: p2 q2 a2 b2) l2)
 
   (def  v1 (pt- q1 p1))
   (def  v2 (pt- q2 p2))
@@ -149,7 +173,7 @@
       [_ (error 'uniqify-pts (~a "got: " ps))])))
 
 (define (draw-line l)
-  (defm (line from to a b) l)
+  (defm (line: from to a b) l)
   (def win (curve-pict-window))
   (defv (lr ur ul ll) (window-corners win))
   ; the four sides of the window
@@ -206,11 +230,25 @@
 ;   return a, b, and, c such that ax+by+c=0
 ;   is an equation for the line through p and q
 (define (line-abc l)
-  (match-define (line (pt px py) (pt qx qy) _ _) l)
+  (match-define (line: (pt px py) (pt qx qy) _ _) l)
   (define a (- qy py))
   (define b (- px qx))
   (define c (- (* py qx) (* px qy)))
   (values a b c))
+
+(define (line-from-abc a b c)
+  ; for x=0 we have: by + c = 0  =>  y=-c/b
+  ; for y=0 we have: ax + c = 0  =>  x=-c/a
+  (cond
+    [(not (zero? b))  (new-line (pt 0 (- (/ c b))) (rot90 (vec a b)))]
+    [(not (zero? a))  (new-line (pt (- (/ c a)) 0) (rot90 (vec a b)))]
+    [else (error 'line-from-abc (~a "expected non-null normal vector (a,b); got: "
+                                    (vec a b)))]))
+
+(define (line-segment-from-abc a b c)
+  (match (line-from-abc a b c)
+    [(line: p q a b)
+     (line: p q #f #f)]))
 
 ; unit : vec -> vec
 ;   return unit vector with same direction as v
@@ -221,7 +259,7 @@
 ;   unit vector parallel to the line l
 ;   [Asymptote: line-u]
 (define (line-direction-vector l) 
-  (match-define (line p q _ _) l)
+  (match-define (line: p q _ _) l)
   (unit (pt- q p)))
 
 ; line-normal-vector : line -> vec
@@ -234,7 +272,7 @@
 ;   compute slope for line l.
 ;   if the line is vertical return +inf.0
 (define (line-slope l)
-  (match-define (line (pt x1 y1) (pt x2 y2) _ _) l)
+  (defm (line: (pt x1 y1) (pt x2 y2) _ _) l)
   (if (= x1 x2)
       +inf.0
       (/ (- y2 y1)
@@ -247,8 +285,8 @@
 ; line-origin : line -> real
 ;   return y when x=0
 (define (line-origin l) 
-  (match-define (line (pt x y) _ _ _) l)
-  (define a (line-slope l))
+  (defm (line: (pt x y) _ _ _) l)
+  (def a (line-slope l))
   (- y (* a x)))
 
 (module+ test (check-equal? (line-origin (new-line (pt -1 2) (pt 1 4))) 3))
@@ -273,8 +311,8 @@
 ; NOTE: This one treats line1 and line2 as true lines
 ;       i.e. segments and rays are treated as lines
 (define (line/line-intersection line1 line2)
-  (match-define (line (pt x1 y1) (pt x2 y2) l1 r1) line1)
-  (match-define (line (pt x3 y3) (pt x4 y4) l2 r2) line2)
+  (defm (line: (pt x1 y1) (pt x2 y2) l1 r1) line1)
+  (defm (line: (pt x3 y3) (pt x4 y4) l2 r2) line2)
   (define denom      (- (* (- x1 x2) (- y2 y4))
                         (* (- y1 y2) (- x3 x4))))
   (define d12 (- (* x1 y2) (* y1 x2)))
@@ -559,6 +597,7 @@
 
 (struct parameterization (ac a b bc closed? f)
   #:property prop:drawable (λ (p) ((current-draw-parameterization) p))
+  #:property prop:procedure (struct-field-index f)
   #:transparent)
 ; represents a function from the interval from a to b to pt
 ;  Interval    ac bc
@@ -586,43 +625,35 @@
 (current-draw-parameterization draw-parameterization)
 
 ;;;
-;;; PARABOLAS
-;;;
+;;; CONICS
+;;; 
 
-(struct parabola (f v)
-  #:transparent
-  #:property prop:drawable
-  (λ (p) ((current-draw-parabola) p)))
-; f and v are points:
-;   f is the focus 
-;   v is the vertex 
-; The parabola consists of all points whose distances to f and v are the same
+; There are three types of conic sections (short: conics), namely:
+;   parabolas, ellipses and hyperbolas
+; They can be represented as two points (focus f, vertex v) and a number (eccentricity e).
+;   e=0  parabola
+;   e>1  hyperbola
+; 0<e<1  ellipse
 
-; The focal parameter a is the distance from the from the vertex to the focus.
+(define (conic? x) (conic:? x))
+(define (eccentricity c) (defm (conic: _ _ e) c) e)
+(define (focus c)        (defm (conic: f _ _) c) f)
+(define (vertex c)       (defm (conic: _ v _) c) v)
 
-(define (parabola-focal p)
-  (match-define (parabola f v) p)
-  (dist f v))
+(define (hyperbola? x) (and (conic? x) (>   (eccentricity x) 1)))
+(define (ellipse? x)   (and (conic? x) (< 0 (eccentricity x) 1)))
+(define (parabola? x)  (and (conic? x) (=   (eccentricity x) 1)))
 
 (define (directrix p)
-  (match-define (parabola f v) p)
+  (defm (conic: f v e) p)
   (define fv (pt- v f))
-  (define P  (pt+ v fv))
+  (define P  (pt+ v (vec* (/ e) fv)))
   (define Q  (pt+ P (rot90 fv)))
   (new-line P Q))
 
-(define (excentricity x)
-  (match x
-    [(parabola f v) 1]
-    ; TODO case for hyperbola
-    ; TODO case for ellipse
-    [_ (error)]))
-
-
-(define (parabola-parameterization conic)
+(define (conic-parameterization conic)
   (match conic
-    [(and (parabola F V) p)
-     (def e (excentricity p))
+    [(and (conic: F V e) p)
      (def d (directrix p))
      ; If the focus F is at origo O and D=distance from focus to directrix
      ; then
@@ -641,12 +672,179 @@
                                      (- 1 (* e (cos θ)))))
                            (shifted F (pt@ r (+ θ θ0))))))]
      [_ (error 'polar-parameterization
-              "TODO: implement the hypoerbola and ellipse cases")]))
+               "TODO: implement the hyperbola and ellipse cases")]))
 
-(define (draw-parabola p)
-  (draw (parabola-parameterization p)))
+(define (draw-conic c)
+  (defm (conic: focus vertex eccentricity) c)
+  (def e eccentricity)
+  (cond
+    [(= e 1)    (draw-parabola c)]
+    [(> e 1)    (draw-ellipse c)]
+    [(<= 0 e 1) (draw-hyperbola c)]
+    [else (error 'draw-conic
+                 (~a "expected a non-negative eccentricity, got: " e))]))
 
-(current-draw-parabola draw-parabola)
+(define (draw-parabola c)
+  (draw-parameterization (conic-parameterization c)))
+
+(define (draw-ellipse c)
+  (draw-parameterization (conic-parameterization c)))
+
+(define (draw-hyperbola c)
+  (draw-parameterization (conic-parameterization c)))
+
+#;(define (draw-conic c)
+    (draw-parameterization (conic-parameterization c)))
+
+(current-draw-parabola  draw-parabola)
+(current-draw-ellipse   draw-ellipse)
+(current-draw-hyperbola draw-hyperbola)
+(current-draw-conic     draw-conic)
+
+
+;;;
+;;; PARABOLAS
+;;;
+
+; (conic: (f v 1)
+
+; f and v are points:
+;   f is the focus 
+;   v is the vertex 
+; The parabola consists of all points whose distances to f and v are the same
+
+; The focal parameter a is the distance from the from the vertex to the focus.
+
+(define (parabola . args)
+  (def r real?)
+  (match args
+    [(list (? pt? focus) (? pt? vertex))
+     ; Focus and Vertex is given
+     (conic: focus vertex 1)]
+    [(list (? r a) (? r b) (? r c))
+     ; y = ax² + bx + c
+     (when (zero? a)
+       (error 'parabola
+              "expected non-zero coefficient for second-degree term"))     
+     (def d (- (* b b) (* 4 a c)))
+     (def vertex-x (/ b (* -2 a)))
+     (def vertex-y (/ d (* -4 a)))
+     (def focus-x  vertex-x)
+     (def focus-y (+ (/ (- 1 (* b b)) (* 4 a)) c))
+     (conic: (pt focus-x focus-y) (pt vertex-x vertex-y) 1)]
+    [(list (? pt? focus) (? line? directrix))
+     (def vertex (midpoint focus (projection focus directrix)))
+     (def eccentricity 1)
+     (conic: focus vertex eccentricity)]
+    [_ (error 'parabola
+              (~a "expected: two pts (focus and vertex), "
+                  "three numbers (a,b,c in y=ax²+bx+c, or ,"
+                  "a pt and a line (focus and directrix), got: "
+                  args))]))
+
+
+; projection of point P on line l
+(define (projection P l)
+  (defm (line: p q a b) l)
+  (def r (line-direction-vector l))
+  (def pP (pt- P p))
+  (pt+ p (proj pP r)))
+
+
+(define (parabola-focal p)
+  (defm (conic: f v 1) p)
+  (dist f v))
+
+
+
+
+
+
+
+;;; ELLIPSE
+
+;     2a = distance between foci = semi major axis
+; center = midpoint of the foci
+;     c = distance from center to focus
+;   e = c/a = eccentricity
+;  ae = c
+; c-a = distance from focus to vertex = d
+;  c-a = d
+; ae-a = d
+; a(e-1) = d
+; a = d / (e-1)
+
+(define (major-axis c)
+  (unless (ellipse? c)
+    (error 'major-axis "ellipse expected"))  
+  (defm (conic: f v e) c)
+  ; 2a = major semi axis
+  (def d (distance f v))
+  (def a (/ d (- e 1)))
+  (* 2 a))
+
+(define (minor-axis c)
+  (unless (ellipse? c)
+    (error 'minor-axis "ellipse expected"))
+  (defm (conic: f v e) c)
+  (def a (* 0.5 (major-axis c)))  
+  ; e²= 1 - b² / a^2
+  ; b²/a² = 1 - e²
+  ; a² (1-e²) = b²
+  (def b (sqrt (* (sqr a) (- 1. (sqr e)))))
+  (* 2. b))
+
+(define (other-vertex conic)
+  (def c  (ellipse-center conic))
+  (def v  (vertex conic))
+  (def vc (pt- c v))
+  (pt+ c vc))
+
+(define (other-focus conic)
+  (defm (conic: f v e) conic)
+  (def d (distance f v))
+  (def a (/ d (- e 1)))
+  (def c (+ a d))
+  (def fv (pt- f v))
+  (pt- f (vec* (* 2 c) (unit fv))))
+
+(define (covertex conic)
+  ; ellipse expected
+  (def c (ellipse-center conic))
+  (def v (vertex conic))
+  (def cv (pt- v c))
+  (def b (* 0.5 (minor-axis conic)))
+  (pt+ c (rot90 (vec* b (unit cv)))))
+
+(define (other-covertex conic)
+  ; ellipse expected
+  (def c (ellipse-center conic))
+  (def v (vertex conic))
+  (def cv (pt- v c))
+  (def b (* 0.5 (minor-axis conic)))
+  (pt- c (rot90 (vec* b (unit cv)))))
+
+(define (other-directrix conic)
+  (def c (ellipse-center conic))
+  (def d (directrix conic))
+  (def p (projection c d))
+  (def pc (pt- c p))
+  (line (pt+ c pc) (line-direction-vector d)))
+
+
+(define (ellipse-center c)
+  (midpoint (focus c) (other-focus c)))
+
+(define (ellipse . args)
+  (def r real?)
+  (match args
+    [(list (? pt? focus) (? pt? vertex) (? r eccentricity))
+     (conic: focus vertex eccentricity)]
+    [(list (? pt? focus) (? line:? directrix))
+     
+     (error)]))
+
+
   
 ;;; SIDE (in a triangle)
 
@@ -663,15 +861,15 @@
   (med 1/2 p1 p2))
 
 (define (distance o1 o2)
-  (match* {o1 o2}
-    [{(? pt?) (? pt?)}   (dist o1 o2)]
-    [{(? pt?) (? line?)} (dist-pt-to-line o1 o2)]
-    [{(? line?) (? pt?)} (dist-pt-to-line o2 o1)]
-    [{_ _} (error 'distance)]))
+  (match* (o1 o2)
+    [((? pt?) (? pt?))   (dist o1 o2)]
+    [((? pt?) (? line?)) (dist-pt-to-line o1 o2)]
+    [((? line?) (? pt?)) (dist-pt-to-line o2 o1)]
+    [(_ _) (error 'distance)]))
 
 (define (same-side? m n l)
   ; are the points m and n on the same side of the line l?
-  (defm (line (pt x1 y1) (pt x2 y2) _ _) l)
+  (defm (line: (pt x1 y1) (pt x2 y2) _ _) l)
   (defm (pt ax ay) m)
   (defm (pt bx by) n)
   (positive? (* (+ (* (- y1 y2) (- ax x1))
@@ -697,4 +895,25 @@
   (for/draw ([n (in-range 1 (add1 n))])
     (shifted O (arc (+ r (* sep (sub1 n))) α β))))
 
+(define (mark p #:color [c #f] #:size [size 2.5])
+  (define (draw-mark) (fill (circle p (px size))))
+  (if c (color c (draw-mark)) (draw-mark)))
 
+(let ()
+  (set-curve-pict-size 800 400)
+  (with-window (window -10 10 -5 5)
+    (def c (ellipse (pt 0 0) (pt 1 0) 0.5))
+    (def f (conic-parameterization c))
+    (def P (f (rad 30)))
+    (draw c
+          (line-segment P (projection P (directrix c)))
+          (line-segment P (focus c))
+          (directrix c)
+          (other-directrix c)
+          (mark (ellipse-center c)   #:color "red")
+          (mark (vertex c)           #:color "blue")
+          (mark (other-vertex c)     #:color "orange")
+          (mark (covertex c)         #:color "magenta")
+          (mark (other-covertex c)   #:color "cyan")
+          (mark (focus c)            #:color "green")
+          (mark (other-focus c)      #:color "brown"))))

@@ -79,6 +79,8 @@
   (define (angle v) ; 0<= angle <2pi ; directed angle from east to v, 
     (angle2 east v))
   (if (pt? x) (@ (pos x)) (values (len x) (angle x)))) ; to polar
+(define (proj u v) ; project u on v
+  (vec* (/ (dot u v) (sqr (norm v))) v))
 
 (define (rot90 v)  
   (defm (or (vec x y) (pt x y)) v) 

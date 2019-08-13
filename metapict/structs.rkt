@@ -198,25 +198,37 @@
 (struct axis   (origin unit-vector) #:transparent)
 (provide-structs axis)
 
+
 ;;;
-;;; Geometry
+;;; Drawable
 ;;;
 
+; If a structure has the prop:drawable property, draw
+; will use the function draw-convert to render it.
 
 (define-values (prop:drawable drawable? drawable-convert)
   (make-struct-type-property 'prop:drawable))
 
 (provide prop:drawable drawable? drawable-convert)
 
-                             
 
-(struct line (p q l r)
+;;;
+;;; Geometry
+;;;                             
+
+; Note: Rather than refer to draw-line, draw-parabola here,
+;       we refer to current-draw-line, current-draw-parabola.
+;       This 1) prevents a circular reference
+;       and  2) allows custom renderers.
+
+(struct line: (p q l r)
+  #:reflection-name 'line
   #:transparent
   #:property prop:drawable
   (λ (l) ((current-draw-line) l)))
 
   
-(provide-structs line)
+(provide-structs line:)
 ;   Here p and q are points in logical coordinates
 ;   and l and r are booleans.
 
@@ -224,3 +236,27 @@
 ; (line p q #f #f) represents a line segment from p to q
 ; (line p q #t #f) represents a ray from q through p
 ; (line p q #f #t) represents a ray from p through q
+
+(struct conic: (f v e)
+  #:transparent
+  #:property prop:drawable
+  (λ (c) ((current-draw-conic) c)))
+(provide-structs conic:)
+; f focus
+; v vertex
+; e eccentricity  (e=1 parabola, e>1 hyperbola, 0<e<1 ellipse)
+
+
+(struct parabola: (f v)
+  #:transparent
+  #:property prop:drawable
+  (λ (p) ((current-draw-parabola) p)))
+(provide-structs parabola:)
+
+; f and v are points:
+;   f is the focus 
+;   v is the vertex 
+; The parabola consists of all points whose distances to f and v are the same
+
+; The focal parameter a is the distance from the from the vertex to the focus.
+

@@ -1,7 +1,7 @@
 #lang racket/base
 (require "angles.rkt" "arrow.rkt" "curve.rkt" "def.rkt" "draw.rkt" "label.rkt" 
          "path.rkt" "pt-vec.rkt" "shapes.rkt" "structs.rkt" "trans.rkt" "parameters.rkt"
-         "text.rkt" "pict.rkt" "gradient.rkt" "device.rkt"
+         "text.rkt" "pict.rkt" "gradient.rkt" "device.rkt" 
          racket/list racket/match racket/format)
 (require (for-syntax syntax/parse racket/base))
 
@@ -64,6 +64,15 @@
 
 ;   If the default curve drawn between the two nodes are unsatisfactory,
 ;   it is possible to specify a few intermediary points on the curve. Use #:via.
+
+;   The arrow curve is drawn with a pen and the arrow head is filled with a brush.
+;   If the keyword argument #:color is given, then that color is used both
+;   as pen and brush color.
+;   Otherwise the value of the parameter current-arrow-color is used also
+;   for both pen and brush color.
+;   If the value of current-arrow-color is #f, then the current pen and
+;   brush from the drawing context are used.
+
 (define (edge from to
               ; directions the edge is leaving/entering the from/to-node
               [from-dir #f]
@@ -82,7 +91,8 @@
               #:label-time [label-time     #f]
               #:label-dir  [label-dir      #f]
               #:label-gap  [label-gap      #f]  ; #f means auto
-              #:loop-size  [loop-size      #f]  )
+              #:loop-size  [loop-size      #f]
+              #:color      [col            (current-edge-color)])
   ; handle via points
   (when via
     (when (pt? via)
@@ -219,12 +229,18 @@
                 (label label-str/pict pos (cnt)))))
            
   ;convert : edge -> pict
-  (define (convert e)    
-    (match* (from-head to-head)
-      [(#f #f) (draw c l)]
-      [(fh #f) (draw (draw-arrow c #:head #f #:tail fh) l)]
-      [(fh th) (draw (draw-arrow c #:head th #:tail fh) l)]
-      [(#f th) (draw (draw-arrow c #:head th #:tail #f) l)]))
+  (define (convert e)
+    (define (wrap t)
+      (if col
+          (pencolor col (brushcolor col (t)))
+          (t)))
+    (wrap
+     (λ ()
+      (match* (from-head to-head)
+        [(#f #f) (draw c l)]
+        [(fh #f) (draw (draw-arrow c #:head #f #:tail fh) l)]
+        [(fh th) (draw (draw-arrow c #:head th #:tail fh) l)]
+        [(#f th) (draw (draw-arrow c #:head th #:tail #f) l)]))))
   ; 
   (make-edge convert c from to
              d1 d2

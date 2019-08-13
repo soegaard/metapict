@@ -16,7 +16,8 @@
  ahratio)            ; arrow ratio
 
 (require "angles.rkt" "def.rkt" "device.rkt" "curve.rkt" "trans.rkt" "shapes.rkt" "draw.rkt"
-         "path.rkt" "trig.rkt" "pt-vec.rkt" "structs.rkt" "angles.rkt" "color.rkt")
+         "path.rkt" "trig.rkt" "pt-vec.rkt" "structs.rkt" "angles.rkt" "color.rkt"
+         "parameters.rkt" "pict.rkt")
 
 ; The shape is inspired by:
 ;     http://www.ntg.nl/maps/36/19.pdf
@@ -167,7 +168,8 @@
                  #:fill-head         [fill-head? #t]
                  #:fill-tail         [fill-tail? #t]
                  #:head              [head arrow-head]
-                 #:tail              [tail #f])
+                 #:tail              [tail #f]
+                 #:color             [col (current-arrow-color)])
   (def the-head (if head
                     (place-arrow-head 
                      c (head
@@ -187,28 +189,37 @@
                      #:flank-indentation β
                      #:tail-indentation  γ))
                     empty-curve))
-  (draw c 
-        (if fill-head? (filldraw the-head) (draw the-head))
-        (if fill-tail? (filldraw the-tail) (draw the-tail))))
+  (define (wrap t)
+    (if col
+        (pencolor col (brushcolor col (t)))
+        (t)))
+  (wrap
+   (λ ()
+     (draw c 
+           (if fill-head? (filldraw the-head) (draw the-head))
+           (if fill-tail? (filldraw the-tail) (draw the-tail))))))
 
 (def (draw-double-arrow c 
                         #:length            [l #f] 
                         #:length-ratio      [r #f] 
                         #:head-angle        [α #f]  ; angle in degrees
                         #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
-                        #:tail-indentation  [γ #f])
+                        #:tail-indentation  [γ #f]
+                        #:color             [col (current-arrow-color)])
   (draw (draw-arrow c 
                     #:length            l
                     #:length-ratio      r
                     #:head-angle        α
                     #:flank-indentation β
-                    #:tail-indentation  γ)
+                    #:tail-indentation  γ
+                    #:color             col)
         (draw-arrow (curve-reverse c) 
                     #:length            l
                     #:length-ratio      r
                     #:head-angle        α
                     #:flank-indentation β
-                    #:tail-indentation  γ)))
+                    #:tail-indentation  γ
+                    #:color             col)))
 
 (def (arrow-head-mp c) ; plain
   ; Old MetaPost Style - not too pretty
@@ -217,4 +228,3 @@
   (def side1 ((rotated    (ahangle))  stem))
   (def side2 ((rotated (- (ahangle))) stem))
   (draw side1 side2 (curve (point-of side1 0) -- (point-of side2 0))))
-

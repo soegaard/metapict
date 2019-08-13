@@ -109,6 +109,10 @@
 (def SP  (rectangle-node ScrollablePanel    #:below BP))
 
 
+(current-edge-color "red")
+(current-arrow-color "red")
+
+
 (draw          W
             L TA P
           BL BTA BP
@@ -128,3 +132,4 @@
            (Curve (anchor STA left) --++ (vec -10 0) /-  (anchor TA left)))
           (draw-arrow
            (Curve (anchor SP right) --++ (vec 10 0)  /-  (anchor P right))))
+

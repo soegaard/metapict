@@ -35,6 +35,10 @@
 (def colorizer (make-parameter (λ x (error 'colorizer "internal error: parameter wasn't set"))))
 
 
+;;; Arrows
+
+(def current-arrow-color (make-parameter #f))  ; #f means use current pen and brush
+
 ;;; Nodes
 
 (def current-node-minimum-size   (make-parameter #f))
@@ -76,6 +80,7 @@
 
 (def current-incoming-edge-size (make-parameter 0.15))
 (def current-outgoing-edge-size (make-parameter 0.15))
+(def current-edge-color         (make-parameter #f))  ; #f means use current pen and brush
 
 (def current-test-value (make-parameter #f))
 
@@ -93,5 +98,7 @@
 (def current-draw-line   (make-parameter #f)) ; set in geometry.rkt
 (def current-draw-circle (make-parameter #f)) ; set in geometry.rkt
 (def current-draw-parameterization (make-parameter #f)) 
-(def current-draw-parabola (make-parameter #f))
-
+(def current-draw-conic     (make-parameter #f))
+(def current-draw-parabola  (make-parameter #f))
+(def current-draw-ellipse   (make-parameter #f))
+(def current-draw-hyperbola (make-parameter #f))
