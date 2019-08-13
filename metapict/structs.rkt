@@ -186,6 +186,7 @@
 (struct domain-interval (from-closed? from to to-closed?) #:transparent)
 (struct domain          (intervals)                       #:transparent)
 (provide-structs domain-interval domain)
+
 ;;;
 ;;;  Axis
 ;;;

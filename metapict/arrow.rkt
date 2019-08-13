@@ -169,7 +169,17 @@
                  #:fill-tail         [fill-tail? #t]
                  #:head              [head arrow-head]
                  #:tail              [tail #f]
-                 #:color             [col (current-arrow-color)])
+                 ; colors
+                 ; The general #:colors sets both stem and head color (but doesn't override)
+                 #:color              [col (current-arrow-color)]
+                 ; The specific colors
+                 #:stem-color         [stem-col         (current-arrow-stem-color)]
+                 #:head-color         [head-col         (current-arrow-head-color)]
+                 #:head-outline-color [head-outline-col (current-arrow-head-outline-color)]
+                 ; hooks for custom draw functions
+                 #:draw-head         [draw-head    (or (current-draw-arrow-head) filldraw)]
+                 #:draw-stem         [draw-stem    (or (current-draw-arrow-stem) draw)]
+                 #:draw-outline      [draw-outline (or (current-draw-arrow-head-outline) draw)])
   (def the-head (if head
                     (place-arrow-head 
                      c (head
@@ -189,15 +199,23 @@
                      #:flank-indentation β
                      #:tail-indentation  γ))
                     empty-curve))
-  (define (wrap t)
-    (if col
-        (pencolor col (brushcolor col (t)))
-        (t)))
-  (wrap
+
+  (define (make-pen-wrap c)   (λ (t) (if c (pencolor c (t)) (t))))
+  (define (make-brush-wrap c) (λ (t) (if c (brushcolor c (t)) (t))))
+  (def stem-wrap    (make-pen-wrap   (or stem-col col)))
+  (def outline-wrap (make-pen-wrap   (or head-outline-col head-col stem-col col)))
+  (def fill-wrap    (make-brush-wrap (or head-col stem-col col)))
+  (define (head-wrap t) (outline-wrap (λ () (fill-wrap t))))
+  
+  (stem-wrap
    (λ ()
-     (draw c 
-           (if fill-head? (filldraw the-head) (draw the-head))
-           (if fill-tail? (filldraw the-tail) (draw the-tail))))))
+     (draw-stem c 
+                (if fill-head?
+                    (head-wrap    (λ () (draw-head the-head head-col head-outline-col)))
+                    (outline-wrap (λ () (draw-outline the-head))))
+                (if fill-tail?
+                    (head-wrap    (λ () (draw-head the-tail head-col head-outline-col)))
+                    (outline-wrap (λ () (draw-outline the-tail))))))))
 
 (def (draw-double-arrow c 
                         #:length            [l #f] 
@@ -205,21 +223,43 @@
                         #:head-angle        [α #f]  ; angle in degrees
                         #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
                         #:tail-indentation  [γ #f]
-                        #:color             [col (current-arrow-color)])
+
+                        #:color              [col (current-arrow-color)]
+                        ; The specific colors
+                        #:stem-color         [stem-col         (current-arrow-stem-color)]
+                        #:head-color         [head-col         (current-arrow-head-color)]
+                        #:head-outline-color [head-outline-col (current-arrow-head-outline-color)]
+                        ; hooks for custom draw functions
+                        #:draw-head         [draw-head    (or (current-draw-arrow-head) filldraw)]
+                        #:draw-stem         [draw-stem    (or (current-draw-arrow-stem) draw)]
+                        #:draw-outline      [draw-outline (or (current-draw-arrow-head-outline) draw)])
+
   (draw (draw-arrow c 
-                    #:length            l
-                    #:length-ratio      r
-                    #:head-angle        α
-                    #:flank-indentation β
-                    #:tail-indentation  γ
-                    #:color             col)
+                    #:length             l
+                    #:length-ratio       r
+                    #:head-angle         α
+                    #:flank-indentation  β
+                    #:tail-indentation   γ
+                    #:color              col
+                    #:stem-color         stem-col
+                    #:head-color         head-col
+                    #:head-outline-color head-outline-col
+                    #:draw-head         [draw-head    (or (current-draw-arrow-head) filldraw)]
+                    #:draw-stem         [draw-stem    (or (current-draw-arrow-stem) draw)]
+                    #:draw-outline      [draw-outline (or (current-draw-arrow-head-outline) draw)])
         (draw-arrow (curve-reverse c) 
                     #:length            l
                     #:length-ratio      r
                     #:head-angle        α
                     #:flank-indentation β
                     #:tail-indentation  γ
-                    #:color             col)))
+                    #:color             col
+                    #:stem-color         stem-col
+                    #:head-color         head-col
+                    #:head-outline-color head-outline-col
+                    #:draw-head         [draw-head    (or (current-draw-arrow-head) filldraw)]
+                    #:draw-stem         [draw-stem    (or (current-draw-arrow-stem) draw)]
+                    #:draw-outline      [draw-outline (or (current-draw-arrow-head-outline) draw)])))
 
 (def (arrow-head-mp c) ; plain
   ; Old MetaPost Style - not too pretty

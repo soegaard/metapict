@@ -1,6 +1,8 @@
 #lang racket/base
 (require racket/contract racket/format racket/match
-         "def.rkt" "structs.rkt")
+         racket/math racket/string racket/list
+         "axis.rkt" "def.rkt" "curve.rkt" "draw.rkt" "path.rkt" "pict.rkt"
+         "pt-vec.rkt"  "structs.rkt" "parameters.rkt" "window.rkt")
 
 ;;;
 ;;; Domains (subsets of R)
@@ -18,13 +20,40 @@
 ;   I)  the intervals doesn't overlap
 ;  II)  the intervals are sorted in ascending order
 
+(provide
+ ;;; DOMAIN INTERVALS
+ an-empty-domain-interval
+ empty-domain-interval?
+ domain-interval-member?
+ domain-interval-overlap?
+ domain-interval<         
+ ; constructors
+ open-domain-interval
+ closed-domain-interval
+ oc-domain-interval
+ co-domain-interval
+ point-domain-interval
+
+ ;;; DOMAINS
+ ; values
+ R R+ R0+ R- R0-
+ ; constructors
+ interval
+ open
+ closed
+ ; operators
+ domain-member?
+ domain-interval-union
+ domain-union
+ ;
+ format-domain)
 
 (define/contract (empty-domain-interval? I)
   (-> domain-interval? boolean?)
   (defm (domain-interval ac a b bc) I)
   (and (= a b) (not (and ac bc))))
 
-(define/contract (interval-member? x I)
+(define/contract (domain-interval-member? x I)
   (-> real? domain-interval?   boolean?)
   (defm (domain-interval ac a b bc) I)
   (or (< a x b)
@@ -34,24 +63,26 @@
 
 (module+ test
   'interval-member?
-  (and (eq? (interval-member? 2 (domain-interval #f 1 3 #f)) #t)
-       (eq? (interval-member? 1 (domain-interval #f 1 3 #f)) #f)
-       (eq? (interval-member? 3 (domain-interval #f 1 3 #f)) #f)
-       (eq? (interval-member? 1 (domain-interval #t 1 3 #f)) #t)
-       (eq? (interval-member? 3 (domain-interval #f 1 3 #t)) #t)))
+  (and (eq? (domain-interval-member? 2 (domain-interval #f 1 3 #f)) #t)
+       (eq? (domain-interval-member? 1 (domain-interval #f 1 3 #f)) #f)
+       (eq? (domain-interval-member? 3 (domain-interval #f 1 3 #f)) #f)
+       (eq? (domain-interval-member? 1 (domain-interval #t 1 3 #f)) #t)
+       (eq? (domain-interval-member? 3 (domain-interval #f 1 3 #t)) #t)))
 
 (define/contract (domain-member? x D)
   (-> real? domain?   boolean?)
   (for/or ([I (in-list (domain-intervals D))])
-    (interval-member? x I)))
+    (domain-interval-member? x I)))
 
 (module+ test
   'domain-member?
   (and (not (domain-member? 2 (domain (list))))
        (domain-member? 2 (domain (list (domain-interval #f 1 3 #f))))
-       (domain-member? 4 (domain (list (domain-interval #f 1 3 #f) (domain-interval #f 3 5 #f))))
+       (domain-member? 4 (domain (list (domain-interval #f 1 3 #f)
+                                       (domain-interval #f 3 5 #f))))
        (not (domain-member? 3 (domain
-                               (list (domain-interval #f 1 3 #f) (domain-interval #f 3 5 #f)))))))
+                               (list (domain-interval #f 1 3 #f)
+                                     (domain-interval #f 3 5 #f)))))))
 
 (define/contract (domain-interval-overlap? I1 I2)
   (-> domain-interval? domain-interval?   boolean?)
@@ -120,10 +151,15 @@
   (defm (domain-interval ac a b bc) I1)
   (defm (domain-interval xc x y yc) I2)
   (unless (domain-interval-overlap? I1 I2)
-    (error 'domain-interval-union (~a "expected overlapping intervals, got: " I1 " and " I2)))
+    (error 'domain-interval-union
+           (~a "expected overlapping intervals, got: " I1 " and " I2)))
   (define maximum (max b y))
   (define minimum (min a x))
-  (domain-interval (or ac xc) minimum maximum (or bc yc)))
+  (domain-interval (or (and ac (= a minimum))
+                       (and xc (= x minimum)))
+                   minimum maximum
+                   (or (and bc (= b maximum))
+                       (and yc (= y maximum)))))
 
 (define/contract (two-intervals->domain I1 I2)
   (-> domain-interval? domain-interval?   domain?)
@@ -134,7 +170,8 @@
     [(empty-domain-interval? I2)  I1]
     [(domain-interval< I1 I2)         (domain (list I1 I2))]
     [(domain-interval< I2 I1)         (domain (list I2 I1))]
-    [(domain-interval-overlap? I1 I2)  (domain (list (domain-interval-union I1 I2)))]
+    [(domain-interval-overlap? I1 I2)
+     (domain (list (domain-interval-union I1 I2)))]
     [else (error 'two-intervals->domain (~a "got: "  I1 " and " I2))]))
 
 
@@ -157,10 +194,11 @@
                           [(domain-interval< i j)
                            (cons i (cons j js))]
                           [else
-                           (cons j (insert-domin-interval-into-intervals i js))])]))
+                      (cons j (insert-domin-interval-into-intervals i js))])]))
 
 (define/contract (merge-domain-intervals is* js*)
-  (-> (listof domain-interval?) (listof domain-interval?)    (listof domain-interval?))
+  (-> (listof domain-interval?) (listof domain-interval?)
+      (listof domain-interval?))
   (define merge merge-domain-intervals)
   ; the lists are sorted
   (match* (is* js*)
@@ -182,7 +220,57 @@
     (error 'interval (~a "expected a<=b, got: " a " and " b)))
   (domain (list (domain-interval ac a b bc))))
 
+(define (closed a b)      (interval a b #t #t))
+(define (open a b)        (interval a b #f #f))
+(define (open-closed a b) (interval a b #f #t))
+(define (closed-open a b) (interval a b #t #f))
+; Common intervals
+(define R   (open -inf.0 +inf.0))
+(define R+  (open             0 +inf.0))
+(define R0+ (closed-open      0 +inf.0))
+(define R-  (open        -inf.0      0))
+(define R0- (open-closed -inf.0      0))
 
-(define (closed a b) (interval a b #t #t))
-(define (open a b)   (interval a b #f #f))
-(define reals        (open -inf.0 +inf.0))
+
+
+(define (format-interval i)
+  (define (~ x)
+    (if (not (infinite? x))
+        (~a x)
+        (if (positive? x)
+            "∞"
+            "-∞")))    
+  (defm (domain-interval ac a b bc) i)
+  (~a (if ac "[" "]")
+      (~ a) "," (~ b)
+      (if bc "]" "[")))
+
+(define (format-domain d)
+  (defm (domain intervals) d)
+  (def  is (for/list ([i intervals])
+             (format-interval i)))
+  (string-append* (add-between is "U")))
+
+(define (draw-domain-interval i 
+                               #:offset-vec v
+                               #:direction  d
+                               #:color col)
+  (defm (domain-interval ac a b bc) i)
+  (def A (pt+ (pt+ origo (vec* a d)) v))
+  (def B (pt+ (pt+ origo (vec* b d)) v))
+  (draw (curve A -- B)))
+
+(define (draw-domain d
+                     #:axis   [a #f]
+                     #:offset [offset 0]
+                     #:color  [col (get current-domain-color)])
+  (defm (domain intervals) d)
+  (for/draw ([i intervals])
+            (draw-domain-interval
+             i
+             #:color col
+             #:offset-vec (vec 0 offset)
+             #:direction  (vec 1 0))))
+
+
+

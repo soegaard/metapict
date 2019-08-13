@@ -92,7 +92,7 @@
 (current-inner-separation 0)
 (current-neighbour-distance-x (px 60))
 (current-neighbour-distance-y (px 20))
-(ahlength (px 5))
+(ahlength (px 8))
 
 (def W   (rectangle-node Widget   #:at (pt 200 (- 600 50))))
 
@@ -111,25 +111,33 @@
 
 (current-edge-color "red")
 (current-arrow-color "red")
+; (current-arrow-head-color "blue")
+; (current-arrow-head-outline-color "black")
 
+(define my-draw-arrow draw-arrow)
+
+(def transparent (change-alpha (make-color* "white") 0))
 
 (draw          W
             L TA P
           BL BTA BP
           STA SL SP
           ; edges from second layer to first
-          (draw-arrow (Curve (anchor L up) /- (anchor W left)))
-          (draw-arrow (Curve (anchor P up) /- (anchor W right)))
+          (my-draw-arrow (Curve (anchor L up) /- (anchor W left))
+                         #:head-color "blue")
+          (my-draw-arrow (Curve (anchor P up) /- (anchor W right))
+                         #:head-outline-color "black"
+                         #:head-color "white")
           (edge TA W)
           ; edges from third layer to second layer
           (edge BL L)
           (edge BTA TA)
           (edge BP P)
           ; edges from fourth layer to second layer
-          (draw-arrow
+          (my-draw-arrow
            (Curve (anchor SL left)  --++ (vec -10 0) /-  (anchor L left)))
-          (draw-arrow
+          (my-draw-arrow
            (Curve (anchor STA left) --++ (vec -10 0) /-  (anchor TA left)))
-          (draw-arrow
+          (my-draw-arrow
            (Curve (anchor SP right) --++ (vec 10 0)  /-  (anchor P right))))
 

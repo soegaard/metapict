@@ -37,7 +37,22 @@
 
 ;;; Arrows
 
-(def current-arrow-color (make-parameter #f))  ; #f means use current pen and brush
+; There are three colors used to draw an arrow, one for each of the:
+; stem, outline and filling the arrow head.
+; There is a parameter for each. If the specific color is #f,
+; then the value of current-arrow-color is used.
+; If that too is #f, then the current pen and brush are used.
+
+(def current-arrow-color              (make-parameter #f))
+(def current-arrow-stem-color         (make-parameter #f))
+(def current-arrow-head-color         (make-parameter #f))
+(def current-arrow-head-outline-color (make-parameter #f))
+
+; The stem and heads curves are normally drawn by draw and filldraw respectively.
+; These parameters can be used to override this.
+(def current-draw-arrow-stem          (make-parameter #f)) ; #f = draw
+(def current-draw-arrow-head          (make-parameter #f)) ; #f = filldraw
+(def current-draw-arrow-head-outline  (make-parameter #f)) ; #f = draw
 
 ;;; Nodes
 
@@ -83,6 +98,12 @@
 (def current-edge-color         (make-parameter #f))  ; #f means use current pen and brush
 
 (def current-test-value (make-parameter #f))
+
+;;;
+;;; Domains
+;;;
+
+(def current-domain-color (make-parameter #f)) ; #f: use current pen and brush
 
 ;;;
 ;;; Axis and Ticks
