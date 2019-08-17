@@ -192,16 +192,31 @@
                  (list p (+ l t) (+ k u)))))))
 
 (define (intersection-points c1 c2)
+  ; Note: If the curves are cyclic and the intersection point
+  ;       is the start/end-point, we currently return it twice.
+  ;       Sort and uniqify if you need only one.
   (def ε 0.000001)
   (def n1 (curve-length c1))
+  (define (clamp t) (max 0 (min 1 t)))
   (match (intersection-point-and-times c1 c2)
     [#f '()]
-    [(list p t u) 
-     (def pre1  (subcurve c1 0 (- t ε)))
-     (def post1 (subcurve c1 (+ t ε) n1))
-     (append (intersection-points  pre1 c2)
-             (list p)
-             (intersection-points  post1 c2))]))
+    [(list p t u)
+     ; we need to remove a little section around the intersection point,
+     ; and ... handle the case where the intersection is the start or end of c1.
+     (cond
+       [(<= t ε)
+        (def post1 (subcurve c1 (+ (clamp t) ε) n1))
+        (append (list p) (intersection-points  post1 c2))]
+       [(>= t (- n1 ε))
+        (def pre1  (subcurve c1 0 (- (clamp t) ε)))        
+        (append (intersection-points  pre1 c2)
+                (list p))]
+       [else
+        (def pre1  (subcurve c1 0 (- t ε)))
+        (def post1 (subcurve c1 (+ t ε) n1))
+        (append (intersection-points pre1 c2)
+                (list p)
+                (intersection-points  post1 c2))])]))
 
 (define (cut-before c1 c2)
   ; cuts the parts of c1 that lie before the "first" intersection point of c1 and c2

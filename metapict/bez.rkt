@@ -250,6 +250,7 @@
     (check-true (pt~ (pt t1 t2) (pt 1/2 1/2)))))
 
 (define (bez-intersection-point-and-times b1 b2 [t- 0] [t+ 1] [u- 0] [u+ 1])
+  ; (displayln (list t- t+ u- u+))
   (set! t- (* 1. t-))
   (set! t+ (* 1. t+))
   (set! u- (* 1. u-))
@@ -271,28 +272,39 @@
   (def (mid s t) (/ (+ s t) 2))
   (def bb1 (bez-large-bounding-box b1))
   (def bb2 (bez-large-bounding-box b2))
+  (def small-bb1? (very-small? bb1))
+  (def small-bb2? (very-small? bb2))
   ; Note: When a Bezier curve is a line, the bounding box
   ;       has an area of zero. Thus to check smallness,
   ;       an area check is not enough. Both width and height
   ;       must be small too.
   ; Note: When searching and the two times becomes equal
   ;       ...  
-  (and (or (= t+ t-) (= u+ u-) ; omitting these makes
+  (and (or (>= t- t+) (>= u- u+) ; don't omit these
            (window-overlap? bb1 bb2))
-       (or (and (very-small? bb1) (very-small? bb2)
+       (or (and small-bb1? small-bb2?
                 (<= (+ (area bb1) (area bb2)) ε)
                 (list (window-center bb1) ; point
                       ; todo : instead of the center, find 
                       ; the intersection of lines
                       (/ (+ t- t+) 2)     ; time on original b1
                       (/ (+ u- u+) 2)))   ; time on original b2
-           (let ()
-             (defv (b11 b12) (split-bez b1 1/2))
-             (defv (b21 b22) (split-bez b2 1/2))
-             (or (again b11 b21 t- (mid t- t+) u- (mid u- u+))
-                 (again b11 b22 t- (mid t- t+) (mid u- u+) u+)
-                 (again b12 b21 (mid t- t+) t+ u- (mid u- u+))
-                 (again b12 b22 (mid t- t+) t+ (mid u- u+) u+))))))
+           (cond
+             ;; [small-bb1?
+             ;;  (defv (b21 b22) (split-bez b2 1/2))
+             ;;  (or (again b1 b21 t- t- u- (mid u- u+))
+             ;;      (again b1 b22 t- t- (mid u- u+) u+))]
+             ;; [small-bb2?
+             ;;  (defv (b11 b12) (split-bez b1 1/2))
+             ;;  (or (again b12 b2 (mid t- t+) t+ (mid u- u+) u+)
+             ;;      (again b12 b2 (mid t- t+) t+ (mid u- u+) u+))]
+             [else
+              (defv (b11 b12) (split-bez b1 1/2))
+              (defv (b21 b22) (split-bez b2 1/2))
+              (or (again b11 b21 t- (mid t- t+) u- (mid u- u+))
+                  (again b11 b22 t- (mid t- t+) (mid u- u+) u+)
+                  (again b12 b21 (mid t- t+) t+ u- (mid u- u+))
+                  (again b12 b22 (mid t- t+) t+ (mid u- u+) u+))]))))
 
 
 ; bez-arc-length : bez -> number
