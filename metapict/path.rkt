@@ -8,7 +8,10 @@
 ; TODO: (curve (pt@ 1 0) (dir  90) .. (pt@ 1 (rad  90)) (dir 180))
 ;       The problem is the vec *after* the last point.
 (module+ test (require rackunit))
+
+;;;
 ;;; Paths
+;;;
 
 ;; A path is basically a list of knots, which can be open or closed.
 ;; This representation is meant to be internal. Users should use path: to construct paths.

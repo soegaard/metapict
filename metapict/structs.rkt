@@ -21,6 +21,7 @@
 (provide-structs curl)
 ;;; Accessors
 (provide left-tension right-tension get-tension)
+(provide-structs path-operation)
 ;;; Labels and their placements
 (provide-structs label lft rt top bot ulft urt llft lrt cnt placement)
 
@@ -98,6 +99,12 @@
 (define (right-tension k) (non-explicit-τ (knot-right-type k)))
 (define (get-tension t) (and (non-explicit? t) (non-explicit-τ t)))
 
+; path operations
+;   the user can specify his own path-operations that
+;   expands a path specification into a simpler one
+(struct path-operation (handle) #:transparent)
+
+
 ;;; Labels
 (struct label (string-or-pict pos plc) #:transparent)
 ;;; Label placements
@@ -167,6 +174,29 @@
 
 (provide-structs raw-color-stops raw-gradient raw-linear-gradient raw-radial-gradient)
 
+
+;;;
+;;; Drawable
+;;;
+
+; If a structure has the prop:drawable property, draw
+; will use the function draw-convert to render it.
+
+(define-values (prop:drawable drawable? drawable-convert)
+  (make-struct-type-property 'prop:drawable))
+
+(provide prop:drawable drawable? drawable-convert)
+
+;;;
+;;; Property: Convertible to pt 
+;;;
+
+(define-values (prop:pt-convertible pt-convertible? pt-convert)
+  (make-struct-type-property 'prop:pt-convertible))
+
+(provide prop:pt-convertible pt-convertible? pt-convert)
+
+
 ;;;
 ;;;  Domain
 ;;;
@@ -196,21 +226,29 @@
 ;; which is a vector from the origo to the point where 1 is placed.
 ;; The coordinates of origin and unit-vector are logical coordinates.
 
-(struct axis   (origin unit-vector) #:transparent)
+(struct axis (origin unit-vector)
+  #:property prop:drawable (λ (a) ((current-draw-axis) a))
+  #:transparent)
 (provide-structs axis)
 
+;;;
+;;; Coordinate System
+;;;
+
+(struct system: (origin axis1 axis2)
+  #:property prop:drawable (λ (a) ((current-draw-system) a))
+  #:transparent)
+(provide-structs system:)
 
 ;;;
-;;; Drawable
+;;; Point
 ;;;
 
-; If a structure has the prop:drawable property, draw
-; will use the function draw-convert to render it.
-
-(define-values (prop:drawable drawable? drawable-convert)
-  (make-struct-type-property 'prop:drawable))
-
-(provide prop:drawable drawable? drawable-convert)
+(struct point: (system pt)
+  #:property prop:drawable       (λ (p) ((current-draw-point) p))
+  #:property prop:pt-convertible (λ (p) ((current-point-to-pt-converter) p))
+  #:transparent)
+(provide-structs point:)
 
 
 ;;;
@@ -224,9 +262,8 @@
 
 (struct line: (p q l r)
   #:reflection-name 'line
-  #:transparent
-  #:property prop:drawable
-  (λ (l) ((current-draw-line) l)))
+  #:property prop:drawable (λ (l) ((current-draw-line) l))
+  #:transparent)
 
   
 (provide-structs line:)

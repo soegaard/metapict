@@ -22,6 +22,7 @@
 ; as a pattern in a match clause.
 
 (require math/matrix racket/match racket/list racket/math racket/function
+         racket/format
          (for-syntax racket/base)
          "structs.rkt" "path.rkt" "def.rkt" "pt-vec.rkt" "angles.rkt" "bez.rkt")
 
@@ -56,7 +57,9 @@
  make-choices
  resolve-path-to-bezs
  segment->bezs
- segments->bezs)
+ segments->bezs
+ ; path operations
+ -/ /- --++)
 
 
 (define empty-curve (curve: #f '())) ; the empty curve
@@ -65,7 +68,7 @@
   (match xs
     [(list (? pt? p))   (curve: #t (list (bez p p p p)))]
     [(list (? path? p)) (resolve-path p)]
-    [(list* path-elms)  (resolve-path (path* path-elms))]))
+    [(list* path-elms)  (resolve-path (path* (do-super-curve path-elms)))]))
 
 (define-match-expander curve 
   (λ(stx) (syntax-case stx () [(_ e ...) (syntax/loc stx (curve: e ...))]))
@@ -613,4 +616,74 @@
                       [(<= a l) (bez-arc-time (first cs) a)]
                       [else     (+ 1. (loop (rest cs) (- a l)))])])))
 
-  
+;;;
+;;; User Extensible Curve Path Syntax
+;;;
+
+; User can use path-operation to define their own path operations.
+
+; (struct path-operation (handle) #:transparent)
+
+; <spec> ::= <pt>
+;         |  <spec> <path-op> <more>
+;         |  <spec> <dir>? <join> <dir>> <spect>
+
+; where ((handler <path-op>) <mumbler>) must return a <spec>
+; and   <dir> is a direction specifier
+; and   <join> is a join
+
+(define (do-super-curve specification)
+  (def loop do-super-curve)
+  (def spec specification)
+  (def ds?  direction-specifier?)
+  (match spec
+    [(list  (? pt? p))                                         spec]
+    [(list  'cycle)                                            spec]
+    ; note: the order of the rules are important
+    [(list* (? pt? p) (? ds? d1) (? join? j) (? ds? d2) more)  (list* p d1 j d2 (loop more))]
+    [(list* (? pt? p) (? join? j) (? ds? d)  more)             (list* p    j d  (loop more))]
+    [(list* (? pt? p) (? ds? d) (? join? j)  more)             (list* p d  j    (loop more))]
+    [(list* (? pt? p) (? join? j) more)                        (list* p    j    (loop more))]
+    [(list* (? pt? p) (? ds? d) more)                          (list* p d       (loop more))]
+    [(list* (? pt? p) (? path-operation? op) more)
+     (define handle (path-operation-handle op))
+     (loop (handle spec))]    
+    [else (error 'do-super-curve (~a "got: " spec))]))
+
+;;; A few handy path operations
+
+;;  /-
+;;  -/
+;;  --++
+
+(define (handle/- spec)
+  (match spec
+    [(list* (? pt? p0) /- (? pt? p1) more)
+     (defm (pt x0 _) p0)
+     (defm (pt _ y1) p1)
+     (list* p0 -- (pt x0 y1) -- p1 more)]
+    [_ (error 'handle/- (~a "error in specification" spec))]))
+
+(define (handle-/ spec)
+  (match spec
+    [(list* (? pt? p0) -/ (? pt? p1) more)
+     (defm (pt _ y0) p0)
+     (defm (pt x1 _) p1)
+     (list* p0 -- (pt x1 y0) -- p1 more)]
+    [_ (error 'handle-/ (~a "error in specification" spec))]))
+
+(define (handle--++ spec)
+  (match spec
+    [(list* (? pt? p0) --++ (or (? vec? v) (? pt v)) more)
+     (defm (pt x0 y0) p0)
+     (defm (or (pt x1 y1) (vec x1 y1)) v)
+     (list* p0 -- (pt+ p0 (vec x1 y1)) more)]
+    [_ (error 'handle-++- (~a "error in specification" spec))]))
+
+
+(define /-   (path-operation handle/-))
+(define -/   (path-operation handle-/))
+(define --++ (path-operation handle--++))
+
+
+

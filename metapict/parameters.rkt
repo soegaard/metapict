@@ -16,6 +16,10 @@
   (def v (parameter))
   (if (thunk? v) (v) v))
 
+;;; Device
+
+(def current-device-post-transformation (make-parameter #f))
+
 ;;; Label
 (def current-label-font (make-parameter (make-font)))
 (def current-label-gap  (make-parameter 0.15))
@@ -109,7 +113,18 @@
 ;;; Axis and Ticks
 ;;;
 
-(def current-tick-size (make-parameter (λ() 1)))
+(def current-tick-size (make-parameter (λ() 1))) ; 
+
+(def current-draw-axis (make-parameter #f))
+
+
+;;;
+;;; Coordinate System 
+;;;
+
+(def current-draw-system           (make-parameter #f))
+(def current-draw-point            (make-parameter #f))
+(def current-point-to-pt-converter (make-parameter #f))
 
 
 ;;;
