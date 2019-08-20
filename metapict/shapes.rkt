@@ -9,6 +9,7 @@
          arc               ; arc of circle of radius r from f to t (f and t is in radian)
                            ; or: (arc c a b) arc with center c from a to b
          arc/deg           ; same, f and t in degrees
+         arc-from          ; (arc-from p start stop radius) arc starts at p angles are in degrees
          circle            ; circle with center (x0,y0) and radius r
          ellipse-curve     ; ellipse with center (x0,y0) and width w and height h
          ellipse-arc
@@ -87,6 +88,15 @@
 
 (define (arc/deg radius from to)
   (arc radius (rad from) (rad to)))
+
+(define (arc-from p radius start stop)
+  ; arc starts at p, the angle (in degrees) start
+  ; with  start degrees and ends with stop degrees
+  ; (measured from the x-axis), the radius of the arc is radus.
+  (def center (pt- p (vec* radius (dir start))))
+  (shifted (shifted (vec* (- radius) (dir start)) p)
+           (arc/deg radius start stop)))
+
 
 (define (ellipse-arc x-radius y-radius from-angle to-angle) ; radians
   ; TODO: handle angles outside normal range

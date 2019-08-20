@@ -13,7 +13,8 @@
  window-opposite-corners   ; return two values: lower left and upper right pts of the window
  window-from-opposite-corners ; return window containing two diagonal points
  inside-window?
- outside-window? 
+ outside-window?
+ transform-window  ; apply trans on window
  (contract-out
   [window-overlap? (-> window? window?  boolean?)] ; do the windows overlap?
   [window-center   (-> window?          pt?)]      ; return pt in center
@@ -57,6 +58,12 @@
 (define (scale-window k win)
   (defm (window a b c d) win)
   (window (* k a) (* k b) (* k c) (* k d)))
+
+(define (transform-window T win)
+  (defm (window a b c d) win)
+  (defm (pt a1 b1) (T (pt a b)))
+  (defm (pt c1 d1) (T (pt c d)))
+  (window a1 b1 c1 d1))
 
 (define (window-overlap? w1 w2)
   (defm (window x- x+ y- y+) w1)

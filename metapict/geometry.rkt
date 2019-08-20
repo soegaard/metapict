@@ -1,13 +1,27 @@
 #lang racket/base
+(provide (all-defined-out))
+
 ;;;
 ;;; LINES, RAYS, AND SEGMENTS
 ;;;
 
-;; This module provides functions work with lines, rays and segments.
-;; The goal is to provide functionality similar to geometry.asy from Asymptote.
+;; This module provides functions work with lines, rays and segments
+;; as well as conics (parabolas, ellipses and hyperbolas) as geometrical objects.
 
+;; The structure definitions are in "structs.rkt".
+;; The structures have the prop:drawable property, which means that draw
+;; can draw them using the convert function stored in the property.
 
+;; Lines, rays and line segments are represented using the same line: structure.
+;; TODO: segments need a way to store whether their end points belong the segment.
+
+;; The goal is to provide functionality that can be used to describe
+;; objects using Euclidean geometry (coordinate free).
+;; The main inspiration is "geometry.asy" from Asymptote.
+
+;;;
 ;;; Functions and structs
+;;;
 
 ; (struct line: (p q l r) #:transparent)        ; p, q points;  l,r booleans
 ;   Here p and q are points in logical coordinates
@@ -32,8 +46,6 @@
 ; line-abc : line -> (values real real real)   ; a, b, and, c such that ax+by+c=0
 ;                                                is an equation for the line through p and q
 
-; unit                   : vec       -> vec     ; unit vector with same direction as v
-
 ; line-direction-vector  : line      -> vec     ; unit vector parallel  to the line l
 ; line-normal-vector     : line      -> vec     ; unit vector ortogonal to the line l 
 ; line-slope             : line      -> real    ; slope for line l (+inf.0 when vertical)
@@ -55,11 +67,6 @@
 
 (module+ test (require rackunit))
 
-(define (quadratic-solutions* a b c)
-  ; quadratic-solutions from racket/math doesn't handle the case a=0
-  (if (= a 0) 
-      (list (/ (- c) b))
-      (quadratic-solutions a b c)))
 
 
 ;;; LINES, RAYS, AND SEGMENTS
@@ -166,7 +173,7 @@
 (define (uniqify-pts ps)
   (let loop ([us (sort (filter values ps) pt<)])
     (match us
-      [(list* u u us)          (loop (cons u us))]
+      [(list* u u  us)         (loop (cons u us))]
       [(list* u u1 us) (cons u (loop (cons u1 us)))]
       [(list u)        us]
       [(list)          '()]
@@ -242,18 +249,15 @@
   (cond
     [(not (zero? b))  (new-line (pt 0 (- (/ c b))) (rot90 (vec a b)))]
     [(not (zero? a))  (new-line (pt (- (/ c a)) 0) (rot90 (vec a b)))]
-    [else (error 'line-from-abc (~a "expected non-null normal vector (a,b); got: "
-                                    (vec a b)))]))
+    [else (error 'line-from-abc
+                 (~a "expected non-null normal vector (a,b); got: "
+                     (vec a b)))]))
 
 (define (line-segment-from-abc a b c)
   (match (line-from-abc a b c)
     [(line: p q a b)
      (line: p q #f #f)]))
 
-; unit : vec -> vec
-;   return unit vector with same direction as v
-(define (unit v) 
-  (vec/ v (len v)))
 
 ; line-direction-vector : line -> vec
 ;   unit vector parallel to the line l
@@ -331,6 +335,13 @@
 
 
 ;;;
+
+
+(define (quadratic-solutions* a b c)
+  ; quadratic-solutions from racket/math doesn't handle the case a=0
+  (if (= a 0) 
+      (list (/ (- c) b))
+      (quadratic-solutions a b c)))
 
 (define eps-geo 1e-10)
 
@@ -600,13 +611,13 @@
   #:property prop:procedure (struct-field-index f)
   #:transparent)
 ; represents a function from the interval from a to b to pt
-;  Interval    ac bc
+;  Interval    ac bc    (ac is short for "a closed?") 
 ;   ]a;b[      #f #f
 ;   ]a;b]      #f #t
 ;   [a;b[      #t #f
 ;   [a;b]      #f #t
 
-(define (parameterization->curve p #:steps [n 40])
+(define (parameterization->curve p #:steps [n 100])
   (defm (parameterization ac a b bc closed? f) p)
   (def w (- b a))
   (def Δ (/ w n))
@@ -629,13 +640,16 @@
 ;;; 
 
 ; There are three types of conic sections (short: conics), namely:
-;   parabolas, ellipses and hyperbolas
-; They can be represented as two points (focus f, vertex v) and a number (eccentricity e).
-;   e=0  parabola
-;   e>1  hyperbola
-; 0<e<1  ellipse
+;   parabolas, ellipses and hyperbolas.
+
+; It is practical to have a common representation for the three types.
+; Here they are represented as two points (focus f, vertex v) and a number (eccentricity e).
+;     e=0  parabola
+;     e>1  hyperbola
+;   0<e<1  ellipse
 
 (define (conic? x) (conic:? x))
+
 (define (eccentricity c) (defm (conic: _ _ e) c) e)
 (define (focus c)        (defm (conic: f _ _) c) f)
 (define (vertex c)       (defm (conic: _ v _) c) v)
@@ -651,6 +665,41 @@
   (define Q  (pt+ P (rot90 fv)))
   (new-line P Q))
 
+(define (major-axis c)
+  (cond
+    [(ellipse? c)   (ellipse-major-axis c)]
+    [(hyperbola? c) (hyperbola-major-axis c)]
+    [(parabola? c)  +inf.0]
+    [else           (error 'major-axis (~a "expected a conic, got: " c))]))
+
+(define (minor-axis c)
+  (cond
+    [(ellipse? c)   (ellipse-minor-axis c)]
+    [(hyperbola? c) (hyperbola-minor-axis c)]
+    [(parabola? c)  +inf.0]
+    [else           (error 'minor-axis (~a "expected a conic, got: " c))]))
+
+(define (other-focus c)
+  (cond
+    [(ellipse? c)   (ellipse-other-focus c)]
+    [(hyperbola? c) (hyperbola-other-focus c)]
+    [(parabola? c)  (error 'todo)]
+    [else           (error 'minor-axis (~a "expected a conic, got: " c))]))
+
+
+(define (center-to-focus-distance conic)
+  ; does this make sense for parabolas?
+  (def a (* 0.5 (major-axis conic)))
+  (def e (eccentricity conic))
+  (def c (* a e))
+  c)
+
+; angle between major axis and x-axis
+(define (conic-rotation-angle conic)
+  (defm (conic: f v e) conic)
+  (angle2 (vec 1 0) (pt- v f)))
+
+; The parameterization is a ideal for plotting the conic.
 (define (conic-parameterization conic)
   (match conic
     [(and (conic: F V e) p)
@@ -679,8 +728,8 @@
   (def e eccentricity)
   (cond
     [(= e 1)    (draw-parabola c)]
-    [(> e 1)    (draw-ellipse c)]
-    [(<= 0 e 1) (draw-hyperbola c)]
+    [(> e 1)    (draw-hyperbola c)]
+    [(<= 0 e 1) (draw-ellipse c)]
     [else (error 'draw-conic
                  (~a "expected a non-negative eccentricity, got: " e))]))
 
@@ -693,8 +742,8 @@
 (define (draw-hyperbola c)
   (draw-parameterization (conic-parameterization c)))
 
-#;(define (draw-conic c)
-    (draw-parameterization (conic-parameterization c)))
+; Having separate drawing functions makes it possible
+; to have custom styling for each type. 
 
 (current-draw-parabola  draw-parabola)
 (current-draw-ellipse   draw-ellipse)
@@ -706,23 +755,30 @@
 ;;; PARABOLAS
 ;;;
 
-; (conic: (f v 1)
+;; Reminder: a parabola is represented as a focus f, a vertex v and
+;; an eccentricity of 1:   (conic: (f v 1)
 
 ; f and v are points:
 ;   f is the focus 
-;   v is the vertex 
-; The parabola consists of all points whose distances to f and v are the same
+;   v is the vertex
 
-; The focal parameter a is the distance from the from the vertex to the focus.
+; The relation between the focus/vertex and the parabola is:
+;     The parabola consists of all points P whose distances to f and v are the same.
+;         {P | |PF| = |PV|}
+
+
+; The represenation above is not the only way to represent parabolas, so
+; we need a smart constructor.
 
 (define (parabola . args)
   (def r real?)
   (match args
+    ; Focus and Vertex is given
     [(list (? pt? focus) (? pt? vertex))
-     ; Focus and Vertex is given
      (conic: focus vertex 1)]
+
+    ; y = ax² + bx + c
     [(list (? r a) (? r b) (? r c))
-     ; y = ax² + bx + c
      (when (zero? a)
        (error 'parabola
               "expected non-zero coefficient for second-degree term"))     
@@ -732,15 +788,24 @@
      (def focus-x  vertex-x)
      (def focus-y (+ (/ (- 1 (* b b)) (* 4 a)) c))
      (conic: (pt focus-x focus-y) (pt vertex-x vertex-y) 1)]
+
+    ; focus and directrix
     [(list (? pt? focus) (? line? directrix))
      (def vertex (midpoint focus (projection focus directrix)))
      (def eccentricity 1)
      (conic: focus vertex eccentricity)]
+    
     [_ (error 'parabola
               (~a "expected: two pts (focus and vertex), "
                   "three numbers (a,b,c in y=ax²+bx+c, or ,"
                   "a pt and a line (focus and directrix), got: "
                   args))]))
+
+; The focal parameter a is the distance from the from the vertex to the focus.
+
+(define (parabola-focal p)
+  (defm (conic: f v 1) p)
+  (dist f v))
 
 
 ; projection of point P on line l
@@ -751,39 +816,46 @@
   (pt+ p (proj pP r)))
 
 
-(define (parabola-focal p)
-  (defm (conic: f v 1) p)
-  (dist f v))
-
-
-
-
-
-
-
+;;;
 ;;; ELLIPSE
+;;;
+
+;; Reminder: an ellipse is represented as a focus f, a vertex v and
+;; an eccentricity 0<e<1:   (conic: (f v e)
+
+; f and v are points:
+;   f is the focus 
+;   v is the vertex
+;   e is the eccentricity,  0<e<1
+
+; The relation between the focus/vertex and the parabola is:
+;     The ellipse consists of all points P whose distances to
+;     a focus F and a directrix (line) d have a constant ratio e.
+
+;         {P | |PF| = e dist(P,d) }
+
 
 ;     2a = distance between foci = semi major axis
 ; center = midpoint of the foci
 ;     c = distance from center to focus
 ;   e = c/a = eccentricity
 ;  ae = c
-; c-a = distance from focus to vertex = d
-;  c-a = d
-; ae-a = d
-; a(e-1) = d
-; a = d / (e-1)
+;  a-c  = distance from focus to vertex = d
+;  a-c  = d
+;  a-ae = d
+; a(1-e) = d
+; a = d / (1-e)
 
-(define (major-axis c)
+(define (ellipse-major-axis c)
   (unless (ellipse? c)
     (error 'major-axis "ellipse expected"))  
   (defm (conic: f v e) c)
   ; 2a = major semi axis
   (def d (distance f v))
-  (def a (/ d (- e 1)))
+  (def a (/ d (- 1 e)))
   (* 2 a))
 
-(define (minor-axis c)
+(define (ellipse-minor-axis c)
   (unless (ellipse? c)
     (error 'minor-axis "ellipse expected"))
   (defm (conic: f v e) c)
@@ -794,13 +866,24 @@
   (def b (sqrt (* (sqr a) (- 1. (sqr e)))))
   (* 2. b))
 
+(define (ellipse-equation conic)
+  ; WARNING: only correct of major axis is parallel with x-axis
+  (defm (pt x0 y0) (ellipse-center conic))
+  (def a (* 0.5 (major-axis conic)))
+  (def b (* 0.5 (minor-axis conic)))
+  `(= 1
+      (+ (/ (sqr (- x ,x0))
+            ,(sqr a))
+         (/ (sqr (- y ,y0))
+            ,(sqr b)))))
+  
 (define (other-vertex conic)
   (def c  (ellipse-center conic))
   (def v  (vertex conic))
   (def vc (pt- c v))
   (pt+ c vc))
 
-(define (other-focus conic)
+(define (ellipse-other-focus conic)
   (defm (conic: f v e) conic)
   (def d (distance f v))
   (def a (/ d (- e 1)))
@@ -833,7 +916,7 @@
 
 
 (define (ellipse-center c)
-  (midpoint (focus c) (other-focus c)))
+  (midpoint (focus c) (ellipse-other-focus c)))
 
 (define (ellipse . args)
   (def r real?)
@@ -844,6 +927,69 @@
      
      (error)]))
 
+;;;
+;;; HYPERBOLA
+;;;
+
+;     2a = distance between foci = semi major axis
+; center = midpoint of the foci
+;     c = distance from center to focus
+
+;    e  = c/a = eccentricity
+;   ae  = c
+;  a-c  = distance from focus to vertex = d
+
+; c-a = distance from focus to vertex = d
+;  c-a = d
+; ae-a = d
+; a(e-1) = d
+; a = d / (e-1)
+
+(define (hyperbola-major-axis conic)
+  (unless (hyperbola? conic)
+    (error 'major-axis "hyperbola expected"))  
+  (defm (conic: f v e) conic)
+  ; 2a = major semi axis
+  (def d (distance f v))
+  (def a (/ d (- e 1)))
+  (* 2 a))
+
+(define (hyperbola-minor-axis c)
+  (unless (hyperbola? c)
+    (error 'minor-axis "hyperbola expected"))
+  (defm (conic: f v e) c)
+  (def a (* 0.5 (major-axis c)))
+  (def b (* a (sqrt (- (sqr e) 1.))))
+  (* 2. b))
+
+(define (hyperbola-equation c)
+  ; WARNING: only correct of major axis is parallel with x-axis
+  (defm (pt x0 y0) (ellipse-center c))
+  (def a (* 0.5 (major-axis c)))
+  (def b (* 0.5 (minor-axis c)))
+  `(= 1
+      (- (/ (sqr (- x ,x0))
+            ,(sqr a))
+         (/ (sqr (- y ,y0))
+            ,(sqr b)))))
+
+(define (hyperbola-other-focus conic)
+  (defm (conic: f v e) conic)
+  (def c+d (center-to-focus-distance conic))
+  (pt+ f (vec* c+d (unit (pt- v f)))))
+
+(define (hyperbola-center c)
+  (midpoint (focus c) (hyperbola-other-focus c)))
+
+
+(define (hyperbola-asymptote c)
+  (defm (conic: f v e) c)
+  (def C (hyperbola-center c))
+  (def fv (pt- v f))
+  (def d (directrix c))
+  (def θ (angle2 (vec 1 0) (line-normal-vector d)))
+  (def l (line C (rotated θ fv)))
+  l)
 
   
 ;;; SIDE (in a triangle)
@@ -917,3 +1063,49 @@
           (mark (other-covertex c)   #:color "cyan")
           (mark (focus c)            #:color "green")
           (mark (other-focus c)      #:color "brown"))))
+
+(let ()
+  (set-curve-pict-size 800 400)
+  (with-window (window -10 10 -5 5)
+    (def c (conic: (pt 0 0) (pt 1 0) 1.5)) ; hyperbola
+    (def f (conic-parameterization c))
+    (def P (f (rad 30)))
+    (draw c
+          ; (line-segment P (projection P (directrix c)))
+          ; (line-segment P (focus c))
+          ; (directrix c)
+          ; (other-directrix c)
+          ; (mark (ellipse-center c)   #:color "red")
+          ; (mark (vertex c)           #:color "blue")
+          ; (mark (other-vertex c)     #:color "orange")
+          ; (mark (covertex c)         #:color "magenta")
+          ; (mark (other-covertex c)   #:color "cyan")
+          ; (mark (focus c)            #:color "green")
+          ; (mark (other-focus c)      #:color "brown")
+          )))
+
+(let ()
+  (set-curve-pict-size 800 400)
+  (with-window (window -10 10 -5 5)
+    (with-scaled-window 10
+      (def c (conic: (pt 0 0) (pt 1 1) 1)) ; parabola
+      (def f (conic-parameterization c))
+      (def P (f (rad 30)))
+      (draw c
+            (directrix c)
+            (for/draw ([x (in-range 0 300 10)])
+                      (def Q (f (rad x)))
+                      (draw (dot-label (~a x) Q)
+                            (mark Q)))
+            (mark (vertex c)      #:color "red")
+            (mark (focus c)       #:color "blue")
+            #; (mark (other-focus c) #:color "brown")))))
+
+
+;; TODO: Fix the angles in parametrization
+;;       The angle interval doesn't take in considerations
+;;       that the focus-focus axis is rotated.
+;;       Also: one or two branches for parabolas and hyperbolas?
+
+
+

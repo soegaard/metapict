@@ -1,8 +1,8 @@
 #lang racket/base
 (require racket/contract racket/format racket/match
          racket/math racket/string racket/list
-         "axis.rkt" "def.rkt" "curve.rkt" "draw.rkt" "path.rkt" "pict.rkt"
-         "pt-vec.rkt"  "structs.rkt" "parameters.rkt" "window.rkt")
+         "axis.rkt" "def.rkt" "device.rkt" "curve.rkt" "draw.rkt" "path.rkt"
+         "pict.rkt" "pt-vec.rkt"  "structs.rkt" "parameters.rkt" "window.rkt")
 
 ;;;
 ;;; Domains (subsets of R)
@@ -255,10 +255,16 @@
                                #:offset-vec v
                                #:direction  d
                                #:color col)
+  (define (symbol xc x)
+    (case x
+      [(-inf.0 +inf.0) #f]
+      [else            (if xc 'closed 'open)]))
   (defm (domain-interval ac a b bc) i)
   (def A (pt+ (pt+ origo (vec* a d)) v))
   (def B (pt+ (pt+ origo (vec* b d)) v))
-  (draw (curve A -- B)))
+  (attach-circles (curve A -- B)
+                  (symbol ac a)
+                  (symbol bc b)))
 
 (define (draw-domain d
                      #:axis   [a #f]
@@ -272,5 +278,44 @@
              #:offset-vec (vec 0 offset)
              #:direction  (vec 1 0))))
 
+(require "shapes.rkt")
 
+(define (attach-circles c start end
+                        #:size [size (px 3)])
+  (define (shape x pos) (if x (circle pos size) (curve pos)))
+  (define (make-draw x)
+    (case x
+      [(open)   draw]
+      [(closed) fill]
+      [else     (λ x #f)]))        
+  (def A (start-point c))
+  (def B (end-point c))
+  (def sA (shape start A))
+  (def sB (shape end   B))
+  (draw ((make-draw start) sA)
+        (cut-after (cut-before c sA) sB)
+        ((make-draw end) sB)))
+
+(attach-circles (curve (pt 0 0) -- (pt 1/2 1/2))
+                'open 'closed)
+
+(attach-circles (curve (pt 0 0) -- (pt 1/2 1/2))
+                'open #f)
+
+#;(draw-domain (domain-union (domain-union (open-closed -1 -1/2)
+                                           (closed-open 0 1/2))
+                             (open 3/4 +inf.0)))
+
+(draw-domain (open-closed -1 -1/2))
+(draw-domain (open-closed  0  1/2))
+;(draw-domain (open-closed  3/4  +inf.0)) ; bug
+
+(draw-domain (domain-union (open-closed -1 0)
+                           (open-closed  0.3  1/2)))
+
+
+
+
+
+  
 

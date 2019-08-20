@@ -97,7 +97,9 @@
 ; accessors
 (define (left-tension k)  (non-explicit-τ (knot-left-type k)))
 (define (right-tension k) (non-explicit-τ (knot-right-type k)))
-(define (get-tension t) (and (non-explicit? t) (non-explicit-τ t)))
+(define (get-tension t)
+  (or (and (non-explicit? t) (non-explicit-τ t))
+      1)) ; XXX XXXXXXXXXXXXXXXXXXXXXXX
 
 ; path operations
 ;   the user can specify his own path-operations that

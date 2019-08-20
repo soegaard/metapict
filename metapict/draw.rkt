@@ -21,7 +21,7 @@
 
 ; draw : list-of-drawables -> pict
 (define (draw . cs)
-  (smoothed
+  (aligned
    (match cs
      ['() (blank (curve-pict-width) (curve-pict-height))]
      [_   (apply cc-superimpose
@@ -37,6 +37,7 @@
                      [(? edge? n)           ((edge-convert n) n)]
                      ;[(? pict-convertible?) (pict-convert c)]
                      [(? drawable? d)       ((drawable-convert d) d)]
+                     [(? list? xs)          (draw* xs)]
                      [#f                    (blank (curve-pict-width) (curve-pict-height))]
                      [else            (error 'combine (~a "curve or pict expected, got " c))])))])))
 
@@ -74,7 +75,8 @@
           (def Tp (bezs->dc-path (map T bs)))
           (send dc draw-path Tp dx dy))
         (send dc set-brush old-brush)
-        (send dc set-smoothing old-smoothing))
+        (send dc set-smoothing old-smoothing)
+        )
       w h))
 
 (define (curve->pict c)

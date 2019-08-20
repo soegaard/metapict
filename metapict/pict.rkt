@@ -34,7 +34,8 @@
  
  margin        ; inset with arguments swapped
  smoothed      ; use smoothing-mode 'smoothed
-
+ aligned       ; use smoothing-mode 'aligned
+ 
  pict-size     ; returns width and height
  
  (contract-out 
@@ -71,13 +72,13 @@
          (unless (pict? pict)
            (raise-arguments-error 'name "pict expected" "pict" pict))           
          (dc #,(syntax/loc stx
-                 (lambda (dc x y)
-                   (let ([old-pen (send dc get-pen)])
-                     (def new-pen (let () expr ...))
-                     (send dc set-pen new-pen)
-                     (draw-pict pict dc x y)
-                     (send dc set-pen old-pen))))
-             (pict-width pict) (pict-height pict)))]))
+                        (lambda (dc x y)
+                          (let ([old-pen (send dc get-pen)])
+                            (def new-pen (let () expr ...))
+                            (send dc set-pen new-pen)
+                            (draw-pict pict dc x y)
+                            (send dc set-pen old-pen))))
+                    (pict-width pict) (pict-height pict)))]))
 
 (define-penop pen (new-pen pict) b
   new-pen)
@@ -326,6 +327,27 @@
              #f
              (pict-last p)))
 
+;; aligned : pict -> pict
+;;  Produces a pict like `p`, but that always draws in 'aligned mode
+(define (aligned p)
+  ; (define draw-p (make-pict-drawer p))
+  (def p2
+    (dc (lambda (dc x y)
+          (def s (send dc get-smoothing))
+          (send dc set-smoothing 'aligned)
+          ; (draw-p dc x y)
+          (draw-pict p dc x y)
+          (send dc set-smoothing s))
+        (pict-width p)
+        (pict-height p)))
+  (make-pict (pict-draw p2)
+             (pict-width p)
+             (pict-height p)
+             (pict-ascent p)
+             (pict-descent p)
+             (list (make-child p 0 0 1 1 0 0))
+             #f
+             (pict-last p)))
 
 (define (save-pict filename pict [type 'png])
   (define (save-bitmap type)

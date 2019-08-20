@@ -1,4 +1,5 @@
 #lang racket
+
 (require metapict metapict/curve)
 
 (def /- '/-)
@@ -109,8 +110,8 @@
 (def SP  (rectangle-node ScrollablePanel    #:below BP))
 
 
-(current-edge-color "red")
-(current-arrow-color "red")
+;(current-edge-color "red")
+;(current-arrow-color "red")
 ; (current-arrow-head-color "blue")
 ; (current-arrow-head-outline-color "black")
 
@@ -123,11 +124,8 @@
           BL BTA BP
           STA SL SP
           ; edges from second layer to first
-          (my-draw-arrow (Curve (anchor L up) /- (anchor W left))
-                         #:head-color "blue")
-          (my-draw-arrow (Curve (anchor P up) /- (anchor W right))
-                         #:head-outline-color "black"
-                         #:head-color "white")
+          (my-draw-arrow (Curve (anchor L up) /- (anchor W left)))
+          (my-draw-arrow (Curve (anchor P up) /- (anchor W right)))
           (edge TA W)
           ; edges from third layer to second layer
           (edge BL L)
@@ -140,4 +138,5 @@
            (Curve (anchor STA left) --++ (vec -10 0) /-  (anchor TA left)))
           (my-draw-arrow
            (Curve (anchor SP right) --++ (vec 10 0)  /-  (anchor P right))))
+
 

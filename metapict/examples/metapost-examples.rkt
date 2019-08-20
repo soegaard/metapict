@@ -14,6 +14,7 @@
 (def todo-yellow (color "yellow" (fill (square #:side 2))))
 
 
+
 (def fig1 ; straight lines
   (let ([A (pt 0 0)] [B (pt 1 0)] [C (pt 0 1)])
     (draw (curve A -- B -- C))))
@@ -312,12 +313,55 @@
   (draw (curve (pt 0 1)    right      (tension 4)
                (unit -150) (dir  120) (tension 4)
                (unit -30)  (dir -120) (tension 4) cycle)))
-#;(def fig63 ; TODO: vec after last point
-  (with-window (window -.1 2.1 -.1 2.1)
+(def fig60
+  (let ()
+    (def u 0.25)
+    (def A (pt 0 0))
+    (def B (pt (- u) (* 2 u)))
+    (def C (pt (* 4 u) (* 3 u)))
+    (def D (pt (* 3 u) 0))
+    (draw (curve A (controls-and B C) D)
+          (curve B -- C)
+          (draw-arrow (curve A -- B))
+          (draw-arrow (curve D -- C)))))
+
+(def fig61
+  (let ()
+    (def u 0.25)
+    (def A (pt     0       0))
+    (def D (pt (*  2 u)    0))
+    (def B (pt (* -1 u) (* 2 u)))
+    (def C (pt (*  3 u) (* 3 u)))
+    
+    (def a1 A)
+    (def a2 B)
+    (def a3 C)
+    (def a4 D)
+    
+    (def a12   (med 1/2 a1   a2))
+    (def a23   (med 1/2 a2   a3))
+    (def a34   (med 1/2 a3   a4))
+    (def a123  (med 1/2 a12  a23))
+    (def a234  (med 1/2 a23  a34))
+    (def a1234 (med 1/2 a123 a234))
+
+    (draw (penscale 4 (draw A B C D))
+          (curve A (controls B C) D)
+          (penscale 4 (draw a1234)))))
+
+(def fig63 ; illustrates a direction specifier after the last point
+  (with-window (window -3.1 3.1 -3.1 3.1)
     (draw (curve (pt 0 0) up .. (pt 1 1/10) .. (pt 2 0) down))))
-#;(def fig64 ; ... todo: has negative tension,  not supported yet
+
+; figure 64
+;  draw (0,0){up} .. (1cm, 1mm) .. (2cm,0){down};
+;       p0=(0,0) {up (tension-and 1 1) #f} (pt 1 1/10) {#f (tension 1 1) #f} (pt 2 0) down)
+;                
+
+(def fig64 ; ... todo: has negative tension,  not supported yet
     (with-window (window -.1 2.1 -.1 2.1)
-      (draw (curve (pt 0 0) up ... (pt 1 1/10) ... (pt 2 0) down))))
+      (draw todo-red
+            (curve (pt 0 0) up ... (pt 1 1/10) ... (pt 2 0) down))))
 (def fig65
   (with-scaled-window 2
     (draw (curve (pt 0 0) (curl 0) .. (pt 0 1) .. (pt 1 0) .. (pt 1 1)))))
@@ -521,13 +565,13 @@
 (list "Figure  16- 20"     16 fig17   fig18  fig19  fig20)
 (list "Figure  21- 25"  fig21 fig22   fig23  fig24  fig25)
 (list "Figure  26- 30"  fig26 fig27   fig28  fig29  fig30)
-(list "Figure  31- 35"  fig31    32   fig33  fig34  fig35)
+(list "Figure  31- 35"  fig31 fig32   fig33  fig34  fig35)
 (list "Figure  36- 40"  fig36 fig37   fig38  fig39  fig40)
 (list "Figure  41- 45"  fig41 fig42   fig43  fig44  fig45)
 (list "Figure  46- 50"  fig46 fig47   fig48  fig49  fig50)
 (list "Figure  51- 55"  fig51 fig52   fig53  fig54  fig55)
-(list "Figure  56- 60"  fig56 fig57   fig58  fig59     60)
-(list "Figure  61- 65"     61    62   63 #;fig63     64  fig65)
+(list "Figure  56- 60"  fig56 fig57   fig58  fig59  fig60)
+(list "Figure  61- 65"  fig61    62   fig63  fig64  fig65)
 (list "Figure  71- 75"     71 fig72   fig73  fig74  fig75)
 (list "Figure  76- 80"  fig76    77   fig78     79     80)
 (list "Figure  91- 95"     91    92      93     94  #;fig95)
@@ -536,3 +580,4 @@
 #;((list "Figure 111-115"    111    112 fig113 fig114 fig115)
 (list "Figure 156-160" fig156    157    158    159    160)
 (list "Figure 161-165"    161    162    163 fig164    165))
+

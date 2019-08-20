@@ -1,9 +1,5 @@
 #lang racket/base
 (module+ test (require rackunit))
-
-;;; Fix: (curve (pt 0 0) .. (pt 0 0) .. cycle)
-;;;      Note: (curve (pt 0 0) .. (pt 0 0) .. (pt 0 0) .. cycle) works
-
 ;;; Curves
 
 ; A curve is represented as a list of Bezier curves and
@@ -22,7 +18,7 @@
 ; as a pattern in a match clause.
 
 (require math/matrix racket/match racket/list racket/math racket/function
-         racket/format
+         racket/format racket/pretty
          (for-syntax racket/base)
          "structs.rkt" "path.rkt" "def.rkt" "pt-vec.rkt" "angles.rkt" "bez.rkt")
 
@@ -59,8 +55,22 @@
  segment->bezs
  segments->bezs
  ; path operations
- -/ /- --++)
+ ;   - moved to "path-operations.rkt"
+ ; do-super-curve ; private
+ )
 
+;;;
+;;; Debugging
+;;;
+
+; The first option disables debugging and the second enables it.
+(require (for-syntax racket/base))
+(define-syntax (debugging stx) #'(begin))
+; (define-syntax (debugging stx) (syntax-case stx () [(_ . more) #'(let () . more)]))
+
+;;;
+;;; Curves
+;;;
 
 (define empty-curve (curve: #f '())) ; the empty curve
 
@@ -68,7 +78,7 @@
   (match xs
     [(list (? pt? p))   (curve: #t (list (bez p p p p)))]
     [(list (? path? p)) (resolve-path p)]
-    [(list* path-elms)  (resolve-path (path* (do-super-curve path-elms)))]))
+    [(list* path-elms)  (resolve-path (path* (do-super-curve (flatten path-elms))))]))
 
 (define-match-expander curve 
   (λ(stx) (syntax-case stx () [(_ e ...) (syntax/loc stx (curve: e ...))]))
@@ -112,7 +122,7 @@
 (define (curve-append2 c0 c1)
   (defm (curve ?0 bs0) c0)
   (defm (curve ?1 bs1) c1)
-  (curve: #f (append bs0 bs1)))   ; todo : look up details of curve appending in Metafont book
+  (curve: #f (append bs0 bs1)))
 
 (define (subcurve c t0 t1) ; See MetaFontBook p. 133
   (defm (curve cycle? bezs) c)
@@ -240,6 +250,8 @@
 ;;; Break down the process of determining control points of a path.
 
 (define (join-equal-consecutive-knots ks) ; 291
+  ; This is called by make-choices when the path is closed.
+  
   ; The list ks consists of knots (knot p p- p+ lt rt).
   ; The curve goes through the point p.
   ; If two consecutive points p and q are equal then the "after control point" p+ must be q.
@@ -351,6 +363,7 @@
      (def qrt* (and k+ (match qrt
                          [(given τ a) (given τ (reduce-angle/rad (- a (angle qr))))]
                          [_ #f])))
+     ; (unless (or qlt* qlt) (displayln (list 'add-info 'seg seg)))
      (knot/info q q- q+ (or qlt* qlt) (or qrt* qrt) ψ d- d+))))
 
 
@@ -419,11 +432,8 @@
     (match qlt ; non-cyclic
       [(given τ φn)     (def θn (- φn)) ; 297.
                         (list 0 1 0 θn)]
-      [(explicit)       (def θ (signed-angle2 p p+))
-                        #;(def θ (match (signed-angle2 (pt- p+ p) (pt- q p)) ; todo
-                                   [+nan.0 0] [θ θ]))
-                        ; (displayln (list 'last-equation θ))
-                        (error)
+      [(explicit)       (def θ (match (signed-angle2 (pt- p+ p) (pt- q p)) ; ??
+                                 [+nan.0 0] [θ θ]))
                         ; (def θ (signed-angle (pt- p+ p))) ; is this correct?
                         (list 0 1 0 θ)]
       [(tenscurl τ γ)
@@ -481,6 +491,7 @@
       (make-list n 0))) ; TODO: avoid this...  Solve point-point directly.
 
 (define (fill-in-angles seg closed?)
+  ; todo: see 282.
   ; Given a segment of knots with info, fill-in-angle will call solve-long-segment to compute θs. 
   ; The θs and the corresponding φs will replace the current left and right types (lt and rt). 
   (def θs (solve-long-segment seg closed?))  ; remove θ[-1]
@@ -496,9 +507,9 @@
       (defm (knot/info q q- q+  lt  rt ψ  d-  d+) k)
       (defv (lt* rt*)
         (match* (k- k k+)
-          [(#f k0 k+)          (values (endpoint)     (given (get-tension rt) θ))] ; first
+          [(#f k0 k+)          (values (endpoint)     (given (get-tension rt) θ))] ; first knot
           [(k- kn #f) 
-           (def φ (- (+ θ ψ))) (values (given (get-tension lt) φ) (endpoint))] ; last
+           (def φ (- (+ θ ψ))) (values (given (get-tension lt) φ) (endpoint))] ; last knot
           [(k- k  k+) 
            (def φ (- (+ θ ψ))) (values (given (get-tension lt) φ) (given (get-tension rt) θ))]))
       (knot/info q q- q+ lt* rt* ψ d- d+)))
@@ -517,15 +528,18 @@
     (let loop ([ks knots])     
       (match ks
         [(or '() (list _)) (0)]
+        
         [(list (knot/info p p- _  lt          (given τ0 θ)  ψ  d-  d+)
                (knot/info q _ q+ (given τ3 φ) qrt   qψ qd- qd+))
          (defv (p+ q-) (control-points p q θ φ τ0 τ3))
+         
          (list (knot/info p p- p+  lt          (given τ0 θ)  ψ  d-  d+)
                (knot/info q q- q+ (given τ3 φ) qrt   qψ qd- qd+))]
+
         [(list k k+ k.. ...)
          (defm (knot/info p p- _  lt  (given τ0 θ)  ψ  d-  d+) k)
          (defm (knot/info q _ q+ (given τ3 φ) qrt qψ qd- qd+) k+)
-         (defv (p+ q-) (control-points p q θ φ τ0 τ3))
+         (defv (p+ q-) (control-points p q θ φ τ0 τ3))         
          (cons (knot/info p p- p+ lt (given τ0 θ) ψ d- d+)
                (loop (cons (knot/info q q- q+ (given τ3 φ) qrt qψ qd- qd+) k..)))])))
   (segment filled))
@@ -535,15 +549,27 @@
   (def p ((if (closed-path? p1) closed-path open-path)
           (join-equal-consecutive-knots ks)))
   (def c (closed-path? p))
-  (for/list ([s (split-into-long-segments p)])
+  (def segs (split-into-long-segments p))
+  (debugging (displayln "make-choices: after splitting into long segments")
+             (pretty-print segs))
+  (for/list ([s segs])
+    ; For those segments that contains do not have explicit control points,
+    ; fill-in-angles will compute angles of leaving and entering points,
+    ; based on the knot information available.
     (match s
-      ; segments with equal consecutive knots are handled here
-      [(segment (list (knot (and p (? pt?)) _ (? pt?) _ _) (knot p (? pt?) _ _ _)))
-       s]
+      ; a segment with explicit control point in both ends is done
+      [(segment (list (knot _ _ _ _ (explicit))
+                      (knot _ _ _ (explicit) _)))
+       s]      
       ; now it is safe to call add-info (which computes turning angles)
       [_ (def seg/info (add-info s c))
-         ; todo: remove open at endpoints see 303.
+         (debugging (displayln "make-choices: after adding info to segment")
+                    (pretty-print seg/info))         
+         ; todo: remove open at breakpoints see 278 and 282.
          (def seg/angles (fill-in-angles seg/info c))
+         (debugging (displayln "make-choices: after filling in angles")
+                    (pretty-print seg/angles))
+
          (fill-in-control-points seg/angles c)])))
 
 (define (segments->bezs segs) (map segment->bezs segs))
@@ -566,17 +592,15 @@
 (define (resolve-path-to-bezs p) (flatten (segments->bezs (make-choices p))))
 
 (define (resolve-path p)
+  ; resolve-path takes a list of knots and turns them
+  ; into a list of bezs.
+  
+  ; (pretty-print (list 'resolve-path p))
   (def bezs (flatten (segments->bezs (make-choices p))))
   (match p
     [(? open-path?)   (curve: #f bezs)]
     [(? closed-path?) (curve: #t bezs)]))
 
-; two-knots->bez : knot knot -> bez
-;   
-(define (two-knots->bez k0 k1)
-  (defm (knot p _ p+ _ (given τ0 θ)) k0)
-  (defm (knot q q- _ (given τ3 φ) _) k1)
-  (bez/dirs+tensions p p+ q- q τ0 τ3))
 
 ;;;
 ;;; Transformation
@@ -633,10 +657,14 @@
 ; and   <join> is a join
 
 (define (do-super-curve specification)
+  ; do-super-curve rewrites a path-specification with possible
+  ; path-operations (such as /- -/ --++ etc) to one without
   (def loop do-super-curve)
   (def spec specification)
   (def ds?  direction-specifier?)
+  ; (displayln (list 'do-super-curve spec))
   (match spec
+    [(list) '()]
     [(list  (? pt? p))                                         spec]
     [(list  'cycle)                                            spec]
     ; note: the order of the rules are important
@@ -650,40 +678,5 @@
      (loop (handle spec))]    
     [else (error 'do-super-curve (~a "got: " spec))]))
 
-;;; A few handy path operations
-
-;;  /-
-;;  -/
-;;  --++
-
-(define (handle/- spec)
-  (match spec
-    [(list* (? pt? p0) /- (? pt? p1) more)
-     (defm (pt x0 _) p0)
-     (defm (pt _ y1) p1)
-     (list* p0 -- (pt x0 y1) -- p1 more)]
-    [_ (error 'handle/- (~a "error in specification" spec))]))
-
-(define (handle-/ spec)
-  (match spec
-    [(list* (? pt? p0) -/ (? pt? p1) more)
-     (defm (pt _ y0) p0)
-     (defm (pt x1 _) p1)
-     (list* p0 -- (pt x1 y0) -- p1 more)]
-    [_ (error 'handle-/ (~a "error in specification" spec))]))
-
-(define (handle--++ spec)
-  (match spec
-    [(list* (? pt? p0) --++ (or (? vec? v) (? pt v)) more)
-     (defm (pt x0 y0) p0)
-     (defm (or (pt x1 y1) (vec x1 y1)) v)
-     (list* p0 -- (pt+ p0 (vec x1 y1)) more)]
-    [_ (error 'handle-++- (~a "error in specification" spec))]))
-
-
-(define /-   (path-operation handle/-))
-(define -/   (path-operation handle-/))
-(define --++ (path-operation handle--++))
-
-
+;; See "path-operations.rkt" for the definitions of /- -/ --++ and friends.
 

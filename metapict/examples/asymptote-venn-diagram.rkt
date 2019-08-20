@@ -13,7 +13,8 @@
 (def m 3)
 
 (with-window (window -3 3 -3 3)
-  (def intersection (color (color+ col1 col2) (clipped (fill c1) c2)))
+  (def intersection (color (color+ col1 col2)
+                           (clipped c2 (fill c1))))
   (draw (color col1 (fill c1))
         (color col2 (fill c2))
         intersection

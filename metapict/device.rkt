@@ -13,6 +13,7 @@
          devpt)
 
 (require "def.rkt" "pict-lite.rkt" "pt-vec.rkt" "structs.rkt" "trans.rkt"
+         "parameters.rkt"
          (for-syntax syntax/parse racket/base)
          racket/list racket/math)
 
@@ -46,7 +47,10 @@
   (def yy (- (/ dh lh)))              ; scale from logical y to device y
   (def x0 (- (* (/ dw lw) minx)))     ; additional amount added to the device x
   (def y0    (* (/ dh lh) maxy))      ; additional amount added to the device y
-  (trans xx 0 0 yy x0 y0))
+  (define (post T)
+    (def P (or (current-device-post-transformation) identity))
+    (P T))
+  (post (trans xx 0 0 yy x0 y0)))
 
 (define stdtrans trans-logical-to-device)
 

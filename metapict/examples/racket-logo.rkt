@@ -141,22 +141,29 @@
 
 
 ; Here is a flat logo
-(set-curve-pict-size 200 200)
-(draw (color blue (fill blue-curve))
-      (color red  (fill red-left-curve))
-      (color red  (fill red-middle-curve)))
-
-; A version with a spotlight at (0.7, 0.7).
+(set-curve-pict-size 128 128)
 (def light (pt 0.7 0.7))
-(draw (brushcolor "white" (fill (rectangle (pt -1 -1) (pt 1 1))))
-      (brushgradient (radial-gradient light 0 light 2 blue-gradient)
-                     (draw (fill blue-curve)))
-      (color red (fill red-left-curve))
-      (color red (fill red-middle-curve)))
+(save-pict "racket-logo.png"
+(beside
+ (draw (color blue (fill blue-curve))
+       (color red  (fill red-left-curve))
+       (color red  (fill red-middle-curve)))
+ 
+ ; A version with a spotlight at (0.7, 0.7).
+ 
+ (freeze (draw ; (brushcolor "white" (fill (rectangle (pt -1 -1) (pt 1 1))))
+               (brushgradient (radial-gradient light 0 light 2 blue-gradient)
+                              (draw (fill blue-curve)))
+               (color red (fill red-left-curve))
+               (color red (fill red-middle-curve))))
+         
+         ; A Simple outline version
+ (pencolor "white"
+ (draw blue-curve red-left-curve red-middle-curve))
+ 
+ ; A simple black and white filled version
+ (brushcolor "white"
+           (fill blue-curve red-left-curve red-middle-curve))))
 
-; A Simple outline version
-(draw blue-curve red-left-curve red-middle-curve)
 
-; A simple black and white filled version
-(fill blue-curve red-left-curve red-middle-curve) 
 

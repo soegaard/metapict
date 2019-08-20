@@ -1,6 +1,9 @@
 #lang racket/base
+; TODO: different types of ticks (one sided, slantes etc)
+; TODO: tick labels need to use tick size to give a better placement
+
 (require racket/list racket/match racket/math racket/format
-         "metapict.rkt")
+         "metapict.rkt" "parameters.rkt")
 
 ; An axis consist of an origin (point where 0 is placed) and a unit-vector,
 ; which is a vector from the origo to the point where 1 is placed.
@@ -9,12 +12,28 @@
 ; An axis consist of an origin (point where 0 is placed) and a unit-vector,
 ; which is a vector from the origo to the point where 1 is placed.
 ; The coordinates of origin and unit-vector are logical coordinates.
-
 
 ; (struct axis   (origin unit-vector) #:transparent)
-; (struct system (x-axis y-axis)      #:transparent)
+; (struct system (axis1 axis2)        #:transparent)
 ; (struct point  (system pt)          #:transparent)
 
+
+
+(provide (all-defined-out))
+
+(provide axis          ; make new axis given position of origo and direction
+         axis-dir      ; direction vector (logical coordinates)
+         axis-origin   ; position of 0    (logical coordinates)
+         visible-range ; two values: start and end in axis ordinates
+         draw-axis
+         coordinate->pt ; axis and xa to logical pt
+         tick-center    ; given axis and x to position of tick center
+         tick           ; given axis and x to curve of a tick
+         ticks          ; produce list of tick curves in visible range
+         tick-label     ; axis x to label next to tick
+         tick-labels    ; 
+         unit-label)
+         
 
 (define (axis-dir a)
   (defm (axis o v) a)
@@ -69,6 +88,8 @@
   (parameterize ([ahlength (px 8)])
     (draw-arrow (curve (coord xmin) -- (coord xmax)))))
 
+(current-draw-axis draw-axis)
+
 (define (coordinate->pt a x)
   ; given an axis a and a coordinate x in axis units,
   ; return the corresponding point in logical units
@@ -86,7 +107,7 @@
 
 (define (ticks a      ; axis
                [d 1]  ; axis units between ticks
-               #:size   [s   (get current-tick-size)]
+               #:size   [ts   (get current-tick-size)]
                #:window [win (curve-pict-window)])
   
   (defm (axis o v) a)  
@@ -96,8 +117,8 @@
   (let ([s (snap s d)] [t (snap t d)])
     ; the first and last tick in the range is excluded
     ; due to collision with arrow head
-    (for/draw ([x (in-range (+ s d) t d)])
-              (tick a x))))
+    (for/list ([x (in-range (+ s d) t d)])
+      (tick a x #:size ts))))
 
 (define (tick-label a x)
   (def α (angle2 (axis-dir a) (vec 1 0)))
@@ -108,7 +129,7 @@
   (label-maker (~r x #:precision 4)
                (coordinate->pt a x)))
 
-(define (ticks-labels a      ; axis
+(define (tick-labels a       ; axis
                       [d 1]  ; axis units between ticks
                       #:window [win (curve-pict-window)])                      
   (defm (axis o v) a)  
@@ -118,17 +139,16 @@
   (for/draw ([x (in-range (+ s d) t d)])            
             (tick-label a x)))
   
-
 (define (unit-label a)
   (def α (angle2 (axis-dir a) (vec 1 0)))
   (def label-maker
     (cond
-      [(<= α α π/4) label-top]
-      [else         label-rt]))  
+      [(<= α α π/4) label-bot]
+      [else         label-lft]))  
   (label-maker "1" (coordinate->pt a 1)))
 
+
   
-(provide (all-defined-out))
 
 ; (require plot/private/common/axis-transform)
 
@@ -140,6 +160,14 @@
 ;  (let ()
 ;    (defm (invertible-function f g) T)
 ;    (λ (x)  (f x))))
+
+
+
+
+
+
+
+
 
 
 

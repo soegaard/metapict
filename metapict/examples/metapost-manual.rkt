@@ -15,7 +15,7 @@
          ((shifted 0 (* j 10)) p0))))
     (def p3 ((scaled 72) (shifted .5 .5) fullcircle))
     (draw (color "red" (draw p3))
-          (clipped waves p3))))
+          (clipped p3 waves))))
 
 #;(def fig-mpman-21
     (let ()

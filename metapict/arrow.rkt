@@ -221,7 +221,7 @@
                     (head-wrap    (λ () (draw-head the-tail head-col head-outline-col)))
                     (outline-wrap (λ () (draw-outline the-tail))))))))
 
-(def (draw-double-arrow c 
+(define (draw-double-arrow c 
                         #:length            [l #f] 
                         #:length-ratio      [r #f] 
                         #:head-angle        [α #f]  ; angle in degrees
@@ -248,9 +248,9 @@
                     #:stem-color         stem-col
                     #:head-color         head-col
                     #:head-outline-color head-outline-col
-                    #:draw-head         [draw-head    (or (current-draw-arrow-head) filldraw)]
-                    #:draw-stem         [draw-stem    (or (current-draw-arrow-stem) draw)]
-                    #:draw-outline      [draw-outline (or (current-draw-arrow-head-outline) draw)])
+                    #:draw-head         draw-head
+                    #:draw-stem         draw-stem
+                    #:draw-outline      draw-outline)
         (draw-arrow (curve-reverse c) 
                     #:length            l
                     #:length-ratio      r
@@ -261,9 +261,9 @@
                     #:stem-color         stem-col
                     #:head-color         head-col
                     #:head-outline-color head-outline-col
-                    #:draw-head         [draw-head    (or (current-draw-arrow-head) filldraw)]
-                    #:draw-stem         [draw-stem    (or (current-draw-arrow-stem) draw)]
-                    #:draw-outline      [draw-outline (or (current-draw-arrow-head-outline) draw)])))
+                    #:draw-head         draw-head
+                    #:draw-stem         draw-stem
+                    #:draw-outline      draw-outline)))
 
 (def (arrow-head-mp c) ; plain
   ; Old MetaPost Style - not too pretty
