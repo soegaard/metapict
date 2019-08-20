@@ -1,12 +1,4 @@
 #lang racket/base
-; TODO: TOP PRIORITY
-;  Handle direction after last point.
-
-; TODO: As an direction specifier (vec 0 0) counts as #f. Sigh.
-;       Handle this in ... somewhere. 
-
-; TODO: (curve (pt@ 1 0) (dir  90) .. (pt@ 1 (rad  90)) (dir 180))
-;       The problem is the vec *after* the last point.
 (module+ test (require rackunit))
 
 ;;;
@@ -52,7 +44,21 @@
  display-path)
 
 (require "def.rkt" "structs.rkt" "angles.rkt" "pt-vec.rkt"
-         racket/format racket/match racket/list)
+         racket/format racket/match racket/list racket/pretty)
+
+;;;
+;;; Debugging
+;;;
+
+; The first option disables debugging and the second enables it.
+(require (for-syntax racket/base))
+(define-syntax (debugging stx) #'(begin))
+; (define-syntax (debugging stx) (syntax-case stx () [(_ . more) #'(let () . more)]))
+
+
+;;;
+;;; PATHS
+;;;
 
 (define tension
   (case-lambda
@@ -112,72 +118,119 @@
 
 (define (path* descr) (apply path: (flatten descr)))
 
-#;(define (path: . descr)
-  ; (displayln descr)
-  (point/full-join-list->knots
-   (replace-empty-direction-specifiers
-    (override-direction-specifier-at-controls-and
-     (introduce-explict-full-joins 
-      descr)))))
+; Note: When debugging invoke with, say:
+;   (apply path: (list (pt 0 1) -- (pt 2 3)))
+(define (path: . descr)
+  (def d descr)
+  (debugging (displayln (list 'path: 'spec)) (pretty-print d))
 
-(define (introduce-explict-full-joins descr)
+  (def d1 (introduce-explicit-full-joins                d))
+  (debugging (displayln "After introducing explicit full joins")
+            (pretty-print d1))
+
+  (def d2 (join-consecutive-equal-points-with-controls-and d1))
+  (debugging (displayln "After joining consecutive equal points with controls-and")
+             (pretty-print d2))
+
+  (def d3 (override-direction-specifier-at-controls-and d2))
+  (debugging (displayln "After overriding direction specifiers at controls-and")
+             (pretty-print d3))
+
+  (def d4 (replace-empty-direction-specifiers           d3))
+  (debugging (displayln "After replacing empty direction specifiers")
+             (pretty-print d4))
+
+  (def d5 (point/full-join-list->knots                  d4))
+  (debugging (displayln "Conversion to knots")
+             (pretty-print d5))
+  d5)
+
+(define (introduce-explicit-full-joins descr)
   ; Rewrite descr to the form p0 fj0 p1 fj1 ... pn,
   ; where the fji are full-joins: (full-join ds- j ds+),
   ; where ds- and ds+ are direction specifiers 
   ; and j is a basic join: one of (curl γ), (vec x y) or #f.
+  ; Note: If a direction specifier is (vec 0 0) then this counts as #f.
+  ;       I.e. the direction specifier (vec 0 0) is treated as if the specifier was missing.
   (defv (j? fj? ds?) (values join? full-join? direction-specifier?)) ; basic join
+  (define (c ds) (if (and (vec? ds) (vec~ ds (vec 0 0))) #f ds))
   (define (loop d)
     (match d
       [(list (? pt? pn)) d]
-      [(list cycle)      d]
-      [(list _) (error 'introduce-explict-full-joins (~a "expected pt or cycle, got: " d))]
-      [(list* p            (? fj? fj)            d) (list* p fj (loop d))]
-      [(list* p (? ds? ds-) (? j? j) (? ds? ds+) d) (list* p (full-join ds- j ds+) (loop d))]
-      [(list* p (? ds? ds-) (? j? j)             d) (list* p (full-join ds- j #f)  (loop d))]
-      [(list* p             (? j? j) (? ds? ds+) d) (list* p (full-join #f  j ds+) (loop d))]
-      [(list* p             (? j? j)             d) (list* p (full-join #f  j #f)  (loop d))]
+      [(list 'cycle)     d]
+      [(list _) (error 'introduce-explicit-full-joins (~a "expected pt or cycle, got: " d))]
+      [(list* p             (? fj? fj)           d) (list* p fj (loop d))]
+      [(list* p (? ds? ds-) (? j? j) (? ds? ds+) d) (list* p (full-join (c ds-) j (c ds+)) (loop d))]
+      [(list* p (? ds? ds-) (? j? j)             d) (list* p (full-join (c ds-) j #f)      (loop d))]
+      [(list* p             (? j? j) (? ds? ds+) d) (list* p (full-join #f      j (c ds+)) (loop d))]
+      [(list* p             (? j? j)             d) (list* p (full-join #f      j #f)      (loop d))]
+      ; the following clause handles a direction after the last point,
+      ; see fig63 in "metapost-examples.rkt"     
+      [(list  p (? ds? d))                          (if (c d) (list p d) (list p))]
       [_ (error 'path: (~a "expected a path description, got: " d))]))
   (loop descr))
 
 (module+ test
-  (def iefj introduce-explict-full-joins)
+  (def iefj introduce-explicit-full-joins)
   (let () (def fj full-join) (def γ (curl 2)) (def v (vec 3 4)) 
     (defv (p0 p1) (values (pt 1 2) (pt 3 4)))
     (check-equal? (iefj (list p0))                (list p0))
     (check-equal? (iefj (list p0 .. cycle))       (list p0 (fj #f .. #f) cycle))
     (check-equal? (iefj (list p0 .. p1))          (list p0 (fj #f .. #f) p1))
-    (check-equal? (iefj (list p0 γ .. p1))        (list p0 (fj γ .. #f) p1))
-    (check-equal? (iefj (list p0 .. γ p1))        (list p0 (fj #f .. γ) p1))
-    (check-equal? (iefj (list p0 v .. γ p1))      (list p0 (fj v .. γ) p1))
-    (check-equal? (iefj (list p0 (fj v .. γ) p1)) (list p0 (fj v .. γ) p1))))
+    (check-equal? (iefj (list p0 γ .. p1))        (list p0 (fj  γ .. #f) p1))
+    (check-equal? (iefj (list p0 .. γ p1))        (list p0 (fj #f ..  γ) p1))
+    (check-equal? (iefj (list p0 v .. γ p1))      (list p0 (fj  v ..  γ) p1))
+    (check-equal? (iefj (list p0 (fj v .. γ) p1)) (list p0 (fj  v ..  γ) p1))))
 
-(define (override-direction-specifier-at-controls-and dp)
+(define (join-consecutive-equal-points-with-controls-and dp) ; 271.
+  (def ds? direction-specifier?)
+  (define (rewrite p- fj p+)
+    (if (pt~ p- p+)        
+        (full-join #f (controls-and p- p+) #f)
+        fj))
+  (def p0 (first dp))
+  (define (loop dp)
+    (match dp
+      [(list p- fj 'cycle)      (list  p- (rewrite p- fj p0) cycle)]
+      [(list p- (? ds? ds))     (list  p- ds)]
+      [(list p- fj p+ ...)      (list* p- (rewrite p- fj (first p+)) (loop p+))]
+      [_ dp]))
+  (loop dp))
+
+(define (override-direction-specifier-at-controls-and dp)  
+  ; R3a when u<>z then .. z ..controls u and v..  is treated as  ..{u − z}z  .. controls u and v ..
+  ; R3b when u =z then .. z ..controls u and v..  is treated as  ..{curl 1}z .. controls u and v ..
+  ; R3c when v<>z then ..controls u and v.. z ..  is treated as  ..controls u and v.. z{z-v} ..
+  ; R3d when v =z then ..controls u and v.. z ..  is treated as  ..controls u and v.. z{curl 1} ..
   (def γ1 (curl 1))
   (define (replace p- fj? p+)
     (match fj?
       [(full-join d- (controls-and p q) d+)
-       (full-join (if (pt~ p- p) γ1 (pt- p p-))
+       (full-join (if (pt~ p- p)
+                      γ1            ; R3b
+                      (pt- p p-))   ; R3a
                   (controls-and p q)
-                  (if (pt~ p+ q) γ1 (pt- p+ q)))]
+                  (if (pt~ p+ q)
+                      γ1            ; R3d
+                      (pt- p+ q)))] ; R3c
       [_ fj?]))
   (def p0 (first dp))
   (define (loop dp)
     (match dp
-      [(list p- fj 'cycle)
-       (list p- (replace p- fj p0) cycle)]
-      [(list p- fj p+ fj+ ...)
-       (list* p- (replace p- fj p+) (loop (list* p+ fj+)))]
+      [(list p- fj 'cycle)      (list  p- (replace p- fj p0) cycle)]
+      [(list p- fj p+ fj+ ...)  (list* p- (replace p- fj p+) (loop (list* p+ fj+)))]
       [_ dp]))
   (loop dp))
 
 (module+ test
-  (define (oi dp) (override-direction-specifier-at-controls-and (introduce-explict-full-joins dp)))  
+  (define (oi dp) (override-direction-specifier-at-controls-and (introduce-explicit-full-joins dp)))  
   (let () (def fj full-join) (defv (p0 p1 p2 p3) (values (pt 1 2) (pt 3 4) (pt 5 6) (pt 7 8)))
     (check-equal? (oi (list p0 (fj #f (controls-and p1 p2) #f) p3))
                   (list p0 (fj (pt- p1 p0) (controls-and p1 p2) (pt- p3 p2)) p3))))
 
 (define (replace-empty-direction-specifiers dp)
-  ; dp has the form p0 fj0 p1 fj1 ... pn   (pn might be cycle)
+  ; dp has the form p0 fj0 p1 fj1 ... pn dsn?  (pn might be cycle)
+  ; where dsn? is an optional direction specifier after the last point pn (unusual)
   ; Goal: Replace as many empty direction speciers as possible.
   ;       Only keep empty direction specifiers around an "open" point.
   ; Unless explicit overriding the incoming and outgoing tangent
@@ -194,7 +247,8 @@
   ; For an open curve the start (and end point) only has an outgoing (ingoing)
   ; direction, so no duplication is needed. If the directions specifier is
   ; empty, then the default direction specifier is (curl 1).
-  (def γ1 (curl 1))
+  (def ds? direction-specifier?)
+  (def γ1 (curl 1))  
   (define (middle dp) ; dp = fj- p fj+ 
     (match dp
       [(list (full-join d1- j1 #f) p1 (full-join #f j2 d2+)) 
@@ -226,6 +280,18 @@
        [(list p0 fj p1) ;  n=1 => no middle (one join)
         (defm (full-join d- j d+) fj)
         (list p0 (full-join (or d- γ1) j (or d+ γ1)) p1)]
+       [(list p0 fj p1 (? ds? ds)) ;  n=1 => no middle (one join), with ds at the end
+        (defm (full-join d- j d+) fj)
+        (list p0 (full-join (or d- γ1) j (or d+ ds)) p1)]
+       ; direction specifier at the end
+       [(list p0 middle ... pn (? ds? dsn))
+        (defm (list fj0 p1* ... fjn-) (middle-loop middle))
+        (defm (full-join d0- j0 d0+)  fj0)
+        (defm (full-join dn- jn- dn+) fjn-)
+        (list* p0 (full-join (or d0- γ1) j0 d0+) ; empty ds after p0 => curl=1
+               (append p1* 
+                       (list (full-join dn- jn- (or dn+ dsn)) pn)))]
+       ; normal case, no direction specifier at the end
        [(list p0 middle ... pn)
         (defm (list fj0 p1* ... fjn-) (middle-loop middle))
         (defm (full-join d0- j0 d0+)  fj0)
@@ -243,7 +309,7 @@
      (append p0* (list (full-join dn- j dn+) cycle))]))
 
 (module+ test
-  (define (di dp) (replace-empty-direction-specifiers (introduce-explict-full-joins dp)))
+  (define (di dp) (replace-empty-direction-specifiers (introduce-explicit-full-joins dp)))
   (def fj full-join) (def γ1 (curl 1)) (def v1 (vec 3 4)) (def v2 (vec 5 6))
   (def fj1 (fj #f .. #f))
   (let () (defv (p0 p1 p2 p3) (values (pt 1 2) (pt 3 4) (pt 5 6) (pt 7 8))) (def v (vec 1 2))
@@ -279,10 +345,13 @@
       [(full-join _ (tension-and _ τ) (? vec? v))   (values (given τ (sangle v)) #f)]
       [(full-join _ (tension-and _ τ) #f)           (error 'categorize-left "internal error")] ; (*)
       [(full-join _ (controls-and _ c) (? vec? v))  (values (explicit) c)]
+      [(full-join _ (controls-and _ c) (curl 1))    (values (explicit) c)]
       [(full-join _ (controls-and _ c) _)           (error 'categorize-left "internal error")] ; (**)
       [_ (error 'categorize-left "internal error")]
       ; (*)  A single #f should not be possible - replace-empty-direction-specifiers has removed them
       ; (**) override-direction-specifier-at-controls-and ought to have introduced a vec here
+      ;      except when there are two equal consecutive points, in which case (curl 1)
+      ;      has been introduced.     
       ))
   (define (categorize-right fj)
     (match fj
@@ -290,10 +359,13 @@
       [(full-join (? vec? v) (tension-and τ _) _)   (values (given τ (sangle v)) #f)]
       [(full-join #f         (tension-and τ _) _)   (error 'categorize-right "internal error")] ; (*)
       [(full-join (? vec? v) (controls-and c _) _)  (values (explicit) c)]
+      [(full-join (curl 1)   (controls-and c _) _)  (values (explicit) c)]
       [(full-join _          (controls-and c _) _)  (error 'categorize-right "internal error")] ; (**)
       [_ (error 'categorize-right "internal error")]
       ; (*)  A single #f should not be possible - replace-empty-direction-specifiers has removed them
-      ; (**) override-direction-specifier-at-controls-and ought to have introduced a vec here
+      ; (**) override-direction-specifier-at-controls-and ought to have introduced a vec here.
+      ;      except when there are two equal consecutive points, in which case (curl 1)
+      ;      has been introduced.
       ))
   (define (middle fj- p fj+)
     ; categorize the left and right type of each knot
@@ -349,60 +421,6 @@
      (def k0 (first ks))
      (closed-path (append ks (list k0)))]))
 
-(define (path: . descr)  ; ; TODO handle controls-and
-  ; (displayln (path-descr->point/join-list descr))
-  (define  (fix-endpoints ks) ; copy information from k0.rt to kn.rt and from kn.lt to k0.lt.
-    (defm (list k0 k ... kn) ks)
-    (defm (knot p p- p+  lt rt) k0)
-    (defm (knot q q- q+ qlt qrt) kn)
-    (def lt* (if (and (open? qlt) (not (open? rt))) rt qlt)) ; rule R1 !    
-    `(,(knot p p- p+ lt* rt) ,@k ,(knot q q- q+ lt* rt)))
-  ; path-descr->point/join-list expands full joins... 
-  (defv (pjs closed?) (path-descr->point/join-list descr))
-  (def (sangle v) (reduce-angle/rad (angle v)))
-  (def knots
-    (let loop ([pjs pjs])
-      (define (next k m) (cons k (loop m)))
-      (match pjs
-        ; first knot
-        [(list* (? pt? p0) (and (full-join (curl γ) (tension-and τ- τ+) _) j1) m)
-         (cons (knot p0 #f #f (endpoint) (tenscurl τ+ γ)) (loop (cons j1 m)))]
-        [(list* (? pt? p0) (and (full-join (? vec? v) (tension-and τ- τ+) _) j1) m)
-         (cons (knot p0 #f #f (endpoint) (given τ+ (sangle v))) (loop (cons j1 m)))]
-        [(list* (? pt? p0) (and (full-join #f (tension-and τ- τ+) _) j1) m) ; beginning of cycle
-         (cond [closed? (cons (knot p0 #f #f (endpoint) (open τ+)) (loop (cons j1 m)))] ; todo is this right
-               [else    (error)])] ; never happens ?
-        ; last knot
-        [(list (full-join _ (tension-and τ- τ+) (curl γ)) pn)
-         (list (knot pn #f #f (tenscurl τ+ γ) (endpoint)))]
-        [(list (full-join _ (tension-and τ- τ+) (? vec? v)) pn)
-         (list (knot pn #f #f (given τ+ (sangle v)) (endpoint)))]
-        [(list (full-join _ (tension-and τ- τ+) #f) pn)
-         (cond [closed? (list (knot pn #f #f (open τ-) (open τ+)))]
-               [else    (list (knot pn #f #f (open τ-) (endpoint)))])]
-        ; TODO handle controls-and
-        ; middle knots
-        [(list* (full-join _(tension-and _ τ-)(curl γ-)) p (and (full-join(curl γ+)(tension-and τ+ _)_ ) j) m)
-         (next (knot p #f #f (tenscurl τ- γ-) (tenscurl τ+ γ+)) (cons j m))]
-        [(list* (full-join _(tension-and _ τ-)(? vec? v)) p (and (full-join(curl γ+)(tension-and τ+ _)_ ) j) m)
-         (next (knot p #f #f (given τ- (sangle v)) (tenscurl τ+ γ+)) (cons j m))]
-        [(list* (full-join _(tension-and _ τ-)(curl γ-)) p (and (full-join(? vec? v)(tension-and τ+ _)_ ) j) m)
-         (next (knot p #f #f (tenscurl τ- γ-) (given τ+ (sangle v)) ) (cons j m))]
-        [(list* (full-join _(tension-and _ τ-)(? vec? v-)) p (and (full-join(? vec? v+)(tension-and τ+ _)_ ) j) m)
-         (next (knot p #f #f (given τ- (sangle v-)) (given τ+ (sangle v+)) ) (cons j m))]
-        [(list* (full-join _(tension-and _ τ-) #f)       p (and (full-join #f (tension-and τ+ _)_ ) j) m)
-         (next (knot p #f #f (open τ-) (open τ+) ) (cons j m))]
-        [(list* (full-join _(tension-and _ τ-) (? vec? v)) p (and (full-join #f (tension-and τ+ _)_ ) j) m) ; XXX!
-         (next (knot p #f #f (given τ- (sangle v)) (given τ+ (sangle v))) (cons j m))]
-        [(list* (full-join _(tension-and _ τ-) #f)       p (and (full-join (? vec? v) (tension-and τ+ _)_ ) j) m)
-         (next (knot p #f #f (given τ- (sangle v)) (given τ+ (sangle v))) (cons j m))]
-        [(list* (full-join _(tension-and _ τ-) (curl γ)) p (and (full-join #f (tension-and τ+ _)_ ) j) m)
-         (next (knot p #f #f (tenscurl τ- γ) (tenscurl τ+ γ)) (cons j m))]
-        [(list* (full-join _(tension-and _ τ-) #f)       p (and (full-join (curl γ) (tension-and τ+ _)_ ) j) m)
-         (next (knot p #f #f (tenscurl τ- γ) (tenscurl τ+ γ)) (cons j m))]
-        )))
-  (cond [closed? (closed-path (fix-endpoints knots))]
-        [else    (open-path knots)]))
 
 (module+ test
   (defv (p0 p1 p2 p3 p4) (values (pt 0 0) (pt 1 1) (pt 2 0) (pt 3 0) (pt 4 1)))
@@ -420,7 +438,7 @@
   #;(check-equal? (path: p0 .. p1 & c .. p4) (path: p0 .. p1 (curl 1) & c .. p4))
   #;(check-equal? (path: c & p4)             (path: c (curl 1) .. p4))
   ; PHASE 4
-  ; In the middle of a path: empty direction specifers are replaced with direction specifier
+  ; In the middle of a path: empty direction specifiers are replaced with direction specifier
   ; in the other side of the point.
   (defv (d1 d2) (values (vec 1 2) (curl 3)))
   (for ([d (list (vec 1 2) (curl 3))])
@@ -455,14 +473,13 @@
                     (path: p0 (controls u v)  p1 (pt- p1 v) .. p2))
       (check-equal? (path: p0 (controls u p1) p1          .. p2)     ; v=p1
                     (path: p0 (controls u p1) p1 (curl 1) .. p2)))
-  ; EQUAL CONSECUTIVE POINTS
-  #;(check-equal? (path: p0 .. p0)             (path: p0 (controls-and p0 p0) p0))
+  ; EQUAL CONSECUTIVE POINTS (271.)
+  (check-equal? (path: p0 .. p0)             (path: p0 (controls-and p0 p0) p0))
   #;(check-equal? (path: p0 .. p0 .. cycle)    (path: p0 (controls-and p0 p0) p0 .. cycle))
   #;(check-equal? (path: p1 .. p0 .. p0 .. p2) (path: p1 .. p0 (controls-and p0 p0) p0 .. p2))
   #;(check-equal? (path: p1 .. p0 .. p0 .. p2 .. cycle) 
                   (path: p1 .. p0 (controls-and p0 p0) p0 .. p2 .. cycle))
   )
-
 
 (define (path-descr->point/join-list descr)
   (def closed? (member 'cycle descr))
@@ -492,16 +509,7 @@
   ; R3b when u =z then .. z ..controls u and v..  is treated as  ..{curl 1}z .. controls u and v ..
   ; R3c when v<>z then ..controls u and v.. z ..  is treated as  ..controls u and v.. z{z-v} ..
   ; R3d when v =z then ..controls u and v.. z ..  is treated as  ..controls u and v.. z{curl 1} ..
-  (def expansion (expand-full-joins descr))
-  (defm (list* p0 more)
-    (match expansion
-      [(list (pt x0 y0) (tension-and τ- τ+) (pt x1 y1) (tension-and τ1- τ1+) 'cycle)
-       ; TODO: This special cases the two point cycle ...  This really ought to go...  !!!
-       (defv (p0 p1) (values (pt x0 y0) (pt x1 y1)))       
-       (list (pt x0 y0) (rot-90 (pt- p1 p0)) (tension-and 1 1) 
-             (pt x1 y1) (rot90  (pt- p1 p0))   (tension-and 1 1) 'cycle)]
-      [_ expansion]))
-  
+  (defm (list* p0 more) (expand-full-joins descr))
   (unless (pt? p0) 
     (error 'path: (~a "First element of a path must be a point (i.e. a pt structure). Got " p0)))
   (def pjs
@@ -517,23 +525,24 @@
           (define (next fj p m) (cons fj (cons p (loop m))))
           (match more
             ; last knot
-            [(list             (? join? j)            (? pt? p)) (list (full-join #f j c1) p)] ; R1
-            [(list  (? ds? d1) (? join? j)            (? pt? p)) (list (full-join d1 j c1) p)] ; R1
-            [(list  (? ds? d1) (? join? j) (? ds? d2) (? pt? p)) (list (full-join d1 j d2) p)]
-            [(list             (? join? j) (? ds? d2) (? pt? p)) (list (full-join #f j d2) p)] 
+            [(list             (? join? j)            (? pt? p))  (list (full-join #f j c1) p)] ; R1
+            [(list  (? ds? d1) (? join? j)            (? pt? p))  (list (full-join d1 j c1) p)] ; R1
+            [(list  (? ds? d1) (? join? j) (? ds? d2) (? pt? p))  (list (full-join d1 j d2) p)]
+            [(list             (? join? j) (? ds? d2) (? pt? p))  (list (full-join #f j d2) p)] 
             ; last "knot" is cycle
-            [(list             (? join? j)            'cycle) (list (full-join #f j #f) p0)] 
-            [(list  (? ds? d1) (? join? j)            'cycle) (list (full-join d1 j #f) p0)]
-            [(list  (? ds? d1) (? join? j) (? ds? d2) 'cycle) (list (full-join d1 j d2) p0)]
-            [(list             (? join? j) (? ds? d2) 'cycle) (list (full-join #f j d2) p0)] 
+            [(list             (? join? j)            'cycle)     (list (full-join #f j #f) p0)] 
+            [(list  (? ds? d1) (? join? j)            'cycle)     (list (full-join d1 j #f) p0)]
+            [(list  (? ds? d1) (? join? j) (? ds? d2) 'cycle)     (list (full-join d1 j d2) p0)]
+            [(list             (? join? j) (? ds? d2) 'cycle)     (list (full-join #f j d2) p0)] 
             ; middle knots
-            [(list* (? ds? d1) (? join? j)            (? pt? p) (? ds? d2) m) (next (full-join d1 j d2) p (cons d2 m))] ; ?         
-            [(list*            (? join? j)            (? pt? p) (? ds? d2) m) (next (full-join #f j d2) p (cons d2 m))]
+            ; rules R3abcd are implemented in (override-direction-specifier-at-controls-and dp)
+            [(list* (? ds? d1) (? join? j)            (? pt? p) (? ds? d2) m)   (next (full-join d1 j d2) p (cons d2 m))] ; ?
+            [(list*            (? join? j)            (? pt? p) (? ds? d2) m)   (next (full-join #f j d2) p (cons d2 m))]
             ; - 
-            [(list* (? ds? d1) (? join? j) (? ds? d2) (? pt? p) m) (next (full-join d1 j d2) p m)]
-            [(list* (? ds? d1) (? join? j)            (? pt? p) m) (next (full-join d1 j #f) p m)] ; ?
-            [(list*            (? join? j) (? ds? d2) (? pt? p) m) (next (full-join #f j d2) p m)] ; (not R2) !! xx
-            [(list*            (? join? j)            (? pt? p) m) (next (full-join #f j #f) p m)]
+            [(list* (? ds? d1) (? join? j) (? ds? d2) (? pt? p) m)              (next (full-join d1 j d2) p m)]
+            [(list* (? ds? d1) (? join? j)            (? pt? p) m)              (next (full-join d1 j #f) p m)] ; ?
+            [(list*            (? join? j) (? ds? d2) (? pt? p) m)              (next (full-join #f j d2) p m)] ; (not R2) !! xx
+            [(list*            (? join? j)            (? pt? p) m)              (next (full-join #f j #f) p m)]
             ; dir spec after last point
             [(list (? ds? d)) (set! last-dir d) '()] 
             [_ (error 'path: (~a "problem parsing the path " more))])))]))

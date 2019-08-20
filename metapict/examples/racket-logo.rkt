@@ -1,5 +1,5 @@
 #lang racket
-(require metapict)
+(require "../metapict.rkt")
 
 ;;;
 ;;; Racket Logo
