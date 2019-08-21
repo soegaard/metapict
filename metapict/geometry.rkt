@@ -92,6 +92,7 @@
 ; new-line : point point boolean boolean -> line
 (define (new-line p q [extend-p #t] [extend-q #t])
   (when (equal? p q) (error 'new-line "the points need to be different"))
+  (unless (and (pt? p) (pt? q)) (error 'new-line (~a "expected two points, got: " p " and " q)))
   (line: p q extend-p extend-q))
 
 (define (line . args)
@@ -99,7 +100,7 @@
   (match args
     [(list (? pt? p) (? pt? q))          (line: p q #t #t)]
     [(list (? pt? p) (? vec? v))         (line: p (pt+ p v) #t #t)]
-    [(list (? n? a) (? n? b))            (line: (pt 0 b) (vec 1 a))]  ; y = ax+b
+    [(list (? n? a) (? n? b))            (line: (pt 0 b) (pt 1 (+ b a)))]  ; y = ax+b
     [(list (? n? a) (? n? b) (? n? c))   (line-from-abc a b c)]       ; ax + by + c = 0
     [_ (error 'line
               (~a "expected either: two pts, a pt and a vec, two or three numbers; got: "
@@ -247,8 +248,8 @@
   ; for x=0 we have: by + c = 0  =>  y=-c/b
   ; for y=0 we have: ax + c = 0  =>  x=-c/a
   (cond
-    [(not (zero? b))  (new-line (pt 0 (- (/ c b))) (rot90 (vec a b)))]
-    [(not (zero? a))  (new-line (pt (- (/ c a)) 0) (rot90 (vec a b)))]
+    [(not (zero? b))  (line (pt 0 (- (/ c b))) (rot90 (vec a b)))]
+    [(not (zero? a))  (line (pt (- (/ c a)) 0) (rot90 (vec a b)))]
     [else (error 'line-from-abc
                  (~a "expected non-null normal vector (a,b); got: "
                      (vec a b)))]))
@@ -621,14 +622,15 @@
   (defm (parameterization ac a b bc closed? f) p)
   (def w (- b a))
   (def Δ (/ w n))
-  (def ε (min 0.00001 Δ))
+  (def ε (min 0.000001 Δ))
   (def a0 (if ac a (+ a ε)))
   (def b0 (if bc b (- b ε)))
   (def pts (append (list (f a0))
                    (for/list ([x (in-range (+ a Δ) b Δ)])
                      (f x))
                    (list (f b0))))
-  (curve* (add-between pts ..)))
+  ; (displayln pts)
+  (curve* (add-between pts --)))
 
 (define (draw-parameterization p)
   (draw (parameterization->curve p)))
@@ -657,6 +659,13 @@
 (define (hyperbola? x) (and (conic? x) (>   (eccentricity x) 1)))
 (define (ellipse? x)   (and (conic? x) (< 0 (eccentricity x) 1)))
 (define (parabola? x)  (and (conic? x) (=   (eccentricity x) 1)))
+
+(define (conic-type c)
+  (cond
+    [(hyperbola? c) 'hyperbola]
+    [(ellipse? c)   'ellipse]
+    [(parabola? c)  'parabola]
+    [else           (error 'conic-type (~a "expected a conic, got: " c))]))
 
 (define (directrix p)
   (defm (conic: f v e) p)
@@ -713,7 +722,14 @@
      (def D (distance F d))
      (def θ0 (angle2 (vec 1 0) (line-normal-vector d)))
      (def eD (* e D))
-     (parameterization #f 0 2π #f ; ]0;2π[
+     (parameterization #f (- θ0 π) (+ θ0 π) #f ; ]_;_[
+                       #f         ; not closed
+                       (λ (θ)
+                         (let ([θ (- θ θ0)])
+                           (def r (/ eD
+                                     (- 1 (* e (cos θ)))))
+                           (shifted F (pt@ r (+ θ θ0))))))
+     #;(parameterization #f 0 2π #f ; ]0;2π[
                        #f         ; not closed
                        (λ (θ)
                          (let ([θ (- θ θ0)])
@@ -919,9 +935,9 @@
   (midpoint (focus c) (ellipse-other-focus c)))
 
 (define (ellipse . args)
-  (def r real?)
+  (def R real?)
   (match args
-    [(list (? pt? focus) (? pt? vertex) (? r eccentricity))
+    [(list (? pt? focus) (? pt? vertex) (? R eccentricity))
      (conic: focus vertex eccentricity)]
     [(list (? pt? focus) (? line:? directrix))
      
@@ -1106,6 +1122,4 @@
 ;;       The angle interval doesn't take in considerations
 ;;       that the focus-focus axis is rotated.
 ;;       Also: one or two branches for parabolas and hyperbolas?
-
-
 

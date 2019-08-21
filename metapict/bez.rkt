@@ -208,6 +208,8 @@
   ; the Bezier curve from p0 to p3 that leaves p0 in angle θ
   ; and arrives in p3 in the angle φ with tensions t0 and t3 respectively.
   ; TODO: Minimum tension of 3/4 ?
+  ; This is not enough to handle negative tensions, see 300.
+  ; 
   (set! τ0 (abs τ0)) ; todo: is this the correct place to handle negative
   (set! τ3 (abs τ3)) ;       tension? (tension -t means at least t)
   

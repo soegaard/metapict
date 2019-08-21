@@ -81,7 +81,7 @@
               #:via       [via      #f]  ; #f, pt or a list of pt
               ; the arrow heads used to draw arrow heads (#f means none)
               #:from-head [from-head #f]
-              #:to-head   [to-head   arrow-head]
+              #:to-head   [to-head   (or (current-edge-arrow-head) arrow-head)]
               ; instead of setting from-head and to-head one use #:arrow
               ; with one of these symbols: - -> <-> <-
               ; If used it overrids from-head and to-head
@@ -98,14 +98,21 @@
     (when (pt? via)
       (set! via (list via))))
   ; handle arrow head shortcuts
+  (def error-msg (~a "expected an arrow shortcut (one of - -> <-> ->), got " arrow))
+  (def head-count 1)
+  (def ah (or (current-edge-arrow-head) arrow-head))
   (when arrow
-    (set!-values (from-head to-head) 
-    (match arrow
-      ['-   (values #f #f)]
-      ['->  (values #f arrow-head)]
-      ['<-> (values arrow-head arrow-head)]
-      ['<-  (values arrow-head #f)]
-      [_ (error 'edge (~a "expected an arrow shortcut (one of - -> <-> ->), got " arrow))])))
+    (set!-values (from-head to-head head-count) 
+                 (match (~a arrow) ; both symbols and strings will work
+                   ["-"    (values #f #f 1)]
+                   ["->"   (values #f ah 1)]
+                   ["<->"  (values ah ah 1)]
+                   ["<-"   (values ah #f 1)]
+                   ["(->"  (values hook-head ah 1)]
+                   ["<-)"  (values ah hook-head 1)]
+                   ["->>"  (values #f arrow-head/no-fill 2)]
+                   ["(->>" (values hook-head arrow-head/no-fill 2)]
+                   [_ (error 'edge error-msg)])))
 
   (def n1 from)
   (def n2 to)
@@ -238,9 +245,9 @@
      (λ ()
       (match* (from-head to-head)
         [(#f #f) (draw c l)]
-        [(fh #f) (draw (draw-arrow c #:head #f #:tail fh) l)]
-        [(fh th) (draw (draw-arrow c #:head th #:tail fh) l)]
-        [(#f th) (draw (draw-arrow c #:head th #:tail #f) l)]))))
+        [(fh #f) (draw (draw-arrow c #:head #f #:tail fh #:head-count head-count) l)]
+        [(fh th) (draw (draw-arrow c #:head th #:tail fh #:head-count head-count) l)]
+        [(#f th) (draw (draw-arrow c #:head th #:tail #f #:head-count head-count) l)]))))
   ; 
   (make-edge convert c from to
              d1 d2

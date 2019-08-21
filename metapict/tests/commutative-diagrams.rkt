@@ -9,9 +9,12 @@
 (current-label-gap 0.1)
 (ahlength 0.1)
 
+; Use unfilled arrow heads for the first example
+(current-edge-arrow-head arrow-head/no-fill)
 
 (let ()
   ; A simple commutative diagram
+  ; The diagram is silly, and just demonstrates the arrow types.
   (def A (text-node "A"))
   (def B (text-node "B" #:right-of A))
   (def C (text-node "C" #:below B))
@@ -22,10 +25,13 @@
            (draw ; (color "gray" (grid (pt -3 -3) (pt 3 3)))
             A B C D
             (edge A B #:label "f")
-            (edge A C #:label "g○f")
-            (edge B C #:label "g"   #:arrow '-)
-            (edge B D #:label "h○g" #:arrow '<-) 
-            (edge C D #:label "h"   #:arrow '<->)))))
+            (edge A C #:label "g○f" #:arrow "(->")     ; injective
+            (edge B C #:label "g"   #:arrow "-")
+            (edge D B #:label "h○g" #:arrow "->>")      ; surjective
+            (edge C D #:label "h"   #:arrow "<->")))))
+
+; Back to the default, filled arrow heads
+(current-edge-arrow-head arrow-head)
 
 ;;; Example: A simple cycle
 

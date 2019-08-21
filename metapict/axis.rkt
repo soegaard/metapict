@@ -99,7 +99,8 @@
 (define (tick-center a x)
   (coordinate->pt a x))
 
-(define (tick axis x #:size [s (get current-tick-size)])
+(define (tick axis x
+              #:size [s (get current-tick-size)])
   (def p (tick-center axis x))
   (def v (vec* s (rot90 (axis-dir axis))))
   (curve (pt+ p v) -- (pt- p v)))

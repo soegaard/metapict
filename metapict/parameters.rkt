@@ -52,6 +52,9 @@
 (def current-arrow-head-color         (make-parameter #f))
 (def current-arrow-head-outline-color (make-parameter #f))
 
+(def current-arrow-head               (make-parameter #f))  ; #f means arrow-head
+(def current-arrow-tail               (make-parameter #f))  ; #f means none
+
 ; The stem and heads curves are normally drawn by draw and filldraw respectively.
 ; These parameters can be used to override this.
 (def current-draw-arrow-stem          (make-parameter #f)) ; #f = draw
@@ -102,6 +105,8 @@
 (def current-edge-color         (make-parameter #f))  ; #f means use current pen and brush
 
 (def current-test-value (make-parameter #f))
+
+(def current-edge-arrow-head (make-parameter #f)) ; #f means arrow-head
 
 ;;;
 ;;; Domains
