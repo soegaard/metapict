@@ -265,7 +265,7 @@
 ;   [Asymptote: line-u]
 (define (line-direction-vector l) 
   (match-define (line: p q _ _) l)
-  (unit (pt- q p)))
+  (unit-vec (pt- q p)))
 
 ; line-normal-vector : line -> vec
 ;   unit vector ortogonal to the line l 
@@ -905,7 +905,7 @@
   (def a (/ d (- e 1)))
   (def c (+ a d))
   (def fv (pt- f v))
-  (pt- f (vec* (* 2 c) (unit fv))))
+  (pt- f (vec* (* 2 c) (unit-vec fv))))
 
 (define (covertex conic)
   ; ellipse expected
@@ -913,7 +913,7 @@
   (def v (vertex conic))
   (def cv (pt- v c))
   (def b (* 0.5 (minor-axis conic)))
-  (pt+ c (rot90 (vec* b (unit cv)))))
+  (pt+ c (rot90 (vec* b (unit-vec cv)))))
 
 (define (other-covertex conic)
   ; ellipse expected
@@ -921,7 +921,7 @@
   (def v (vertex conic))
   (def cv (pt- v c))
   (def b (* 0.5 (minor-axis conic)))
-  (pt- c (rot90 (vec* b (unit cv)))))
+  (pt- c (rot90 (vec* b (unit-vec cv)))))
 
 (define (other-directrix conic)
   (def c (ellipse-center conic))
@@ -992,7 +992,7 @@
 (define (hyperbola-other-focus conic)
   (defm (conic: f v e) conic)
   (def c+d (center-to-focus-distance conic))
-  (pt+ f (vec* c+d (unit (pt- v f)))))
+  (pt+ f (vec* c+d (unit-vec (pt- v f)))))
 
 (define (hyperbola-center c)
   (midpoint (focus c) (hyperbola-other-focus c)))

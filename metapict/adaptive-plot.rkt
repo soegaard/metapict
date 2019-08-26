@@ -115,8 +115,8 @@
       ; don't refine
       (begin
         ; (when (not (= d 0)) (displayln "!"))
-      (list (vector a fa) (vector a1 fa1) (vector b fb) 
-            (vector b1 fb1) (vector c fc)))
+        (list (vector a fa) (vector a1 fa1) (vector b fb) 
+              (vector b1 fb1) (vector c fc)))
       ; refine
       (let* ([eps2 (* 2.0 eps)]
              [left  (adaptive f a a1 b fa fa1 fb (- d 1) eps2)]
@@ -144,6 +144,13 @@
                                   (loop more (list x2) (cons (reverse (cons x1 ys)) xss))
                                   (loop (cons x2 more) (cons x1 ys) xss))])))
 
+(define (split-at-false xs)
+  (match xs
+    ['()                        '()]
+    [(list* (vector _ #f) more) (split-at-false more)]
+    [(list* xs)                 (defv (ys zs) (splitf-at xs (λ (v) (vector-ref v 1))))
+                                (cons ys (split-at-false zs))]))
+
 (define (cons-if bool x xs)
   (if bool (cons x xs) xs))
 
@@ -168,12 +175,12 @@
     (filter (λ (p) (number? (vector-ref p 1))) ps))
   ; 29 is a good value according to plot.lisp
   (define number-of-regions 29) 
-  ; region widh
+  ; region width
   (define delta (/ (- x-max x-min) number-of-regions))
   ; generate points by dividing the interval
   ; from x-min to x-max into number-of-regions regions,
   ; and calling region, which calls adaptive.
-  (define points
+  (define points  ; list of (vector x y) where y might be #f
     (append*
      (for/list ([i number-of-regions])
        (define a (+ x-min (* delta i)))
@@ -185,17 +192,23 @@
            ; otherwise remove the first point (which is 
            ; present as the end point of the preceding region)
            (rest (region f a c))))))
+
+  
   ; Split the point list into groups. Split between two points 
   ; if they are on different sides of y-min and y-max.
   ; All connected points will be drawn with (lines ...).
   (define connected-points
-    (split-between clipped-to-different-sides? points))
+    (append*
+     (map (λ (points) (split-between clipped-to-different-sides? points))
+          (split-at-false points))))
+    
   ; Display both the adaptive plot and the original plot
   ; for visual comparision.
   (define (vector->pt v) (pt (vector-ref v 0) (vector-ref v 1)))
   (define (vectors->list vs) (map vector->pt vs))
   
   ; (displayln (map vectors->list connected-points))
+  
   (map curve*
        (map (λ (ps) (add-between ps --))
             (map vectors->list connected-points)))

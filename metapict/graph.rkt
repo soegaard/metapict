@@ -1,14 +1,17 @@
-#lang racket
+#lang racket/base
+;;;
+;;; Graph of Function
+;;;
+
+(require racket/math racket/draw metapict)
+
 ; use at least 512Mb memory limit for this file
-(require racket/draw)
 
 ;;; This draws simple graphs. 
 ;;; Use the plot library for more advanced graphs.
 
-(provide graph ; draw the graph of a function 
-         )
-
-(require metapict ) 
+(provide graph) ; draw the graph of a function 
+         
 
 (define graph-join --)
 
@@ -123,6 +126,7 @@
                                                 (cut-between G x0 x1))))
             (color "red"    (draw F (label-rt "f(x) = x^2"    (pt 1.1 (f 1)))))
             (color "orange" (draw G (label-rt "g(x) = sin(x)" (pt 1.1 (g 1))))))))
+
   
   (let ()
     (def l 3) (def -l (- l))
@@ -147,6 +151,6 @@
       p))
   
   (with-window (window -10 10 -10 10)
-    (beside (clip (draw (graph    (λ(x) (tan (* x x))) -10 10 #:samples 4000)))
-            (clip (draw (bezgraph (λ(x) (tan (* x x))) -10 10 #:samples 4000)))))
+    (beside (clip (draw (time (graph    (λ(x) (tan (* x x))) -10 10 #:samples 4000))))
+            (clip (draw (time (bezgraph (λ(x) (tan (* x x))) -10 10 #:samples 4000))))))
   )

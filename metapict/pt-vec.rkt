@@ -1,12 +1,25 @@
 #lang racket/base
+;;;
+;;; Logical Coordinates (pt)
+;;;
+
+; A pt representes a point with logical coordinates,
+; A vec representes a vector with logival coordinates.
+; Logical coordinates refers to current window.
+
+; Note: 
+
 (provide (all-defined-out))
 (require "structs.rkt" "def.rkt" "trig.rkt" racket/match racket/list racket/math)
 (module+ test (require rackunit))
 
+
 ; Predefined points and vectors
 (def origo (pt 0 0))
+
 (defv (north south west east) (values (vec 0 1) (vec 0 -1) (vec -1 0) (vec 1 0)))
 (defv (up down left right) (values north south west east))
+
 (def north-east (vec  1  1))
 (def north-west (vec -1  1))
 (def south-east (vec  1 -1))
@@ -81,9 +94,10 @@
   (if (pt? x) (@ (pos x)) (values (len x) (angle x)))) ; to polar
 (define (proj u v) ; project u on v
   (vec* (/ (dot u v) (sqr (norm v))) v))
-; unit : vec -> vec
+; unitvec : vec -> vec
 ;   return unit vector with same direction as v
-(define (unit v) 
+; Note: the name unit clashes with #lang racket
+(define (unit-vec v) 
   (vec/ v (len v)))
 
 (define (rot90 v)  

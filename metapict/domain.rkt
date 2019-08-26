@@ -41,10 +41,13 @@
  interval
  open
  closed
+ open-closed
+ closed-open
  ; operators
  domain-member?
  domain-interval-union
  domain-union
+ domain-union*
  ;
  format-domain)
 
@@ -215,6 +218,16 @@
   (defm (domain js) d2)
   (domain (merge-domain-intervals is js)))
 
+(define (domain-union* ds)
+  (match ds
+    ['()              an-empty-domain-interval]
+    [(list d1)        d1]
+    [(list d1 d2)     (domain-union d1 d2)]
+    [(list* d1 d2 ds) (domain-union* (cons (domain-union d1 d2) ds))]
+    [_ (error 'domain-union* (~a "expected a list of domains, got: " ds))]))
+
+
+
 (define (interval a b [ac #f] [bc #f])
   (unless (<= a b)
     (error 'interval (~a "expected a<=b, got: " a " and " b)))
@@ -296,6 +309,9 @@
         (cut-after (cut-before c sA) sB)
         ((make-draw end) sB)))
 
+
+#;(
+
 (attach-circles (curve (pt 0 0) -- (pt 1/2 1/2))
                 'open 'closed)
 
@@ -312,6 +328,4 @@
 
 (draw-domain (domain-union (open-closed -1 0)
                            (open-closed  0.3  1/2)))
-
-
-
+)
