@@ -31,6 +31,8 @@
  text-color    ; use the color as the text foreground color
  text-background-color ; use the color as background color when text mode is solid
  text-mode     ; use the mode 'solid or 'transparent
+ text-scale    ; SYNTAX (text-scale k pict-expr)
+ text-size     ; SYNTAX (text-size  k pict-expr)
  
  margin        ; inset with arguments swapped
  smoothed      ; use smoothing-mode 'smoothed
@@ -276,6 +278,30 @@
             (draw-pict p dc x y)
             (send dc set-text-foreground old-color)))
       (pict-width p) (pict-height p)))
+
+; Note: fonts aren't stored in the drawing context, so
+;       this needs to be a macro.
+(define-syntax (text-scale stx)
+  (syntax-parse stx
+    [(_text-scale k:expr pict-expr:expr)
+     (syntax/loc stx
+       (let ()
+         (def f (current-font))
+         (with-font-change (#:size (* k (send f get-size)))
+           pict-expr)))]))
+
+; Note: fonts aren't stored in the drawing context, so
+;       this needs to be a macro.
+(define-syntax (text-size stx)
+  (syntax-parse stx
+    [(_text-size k:expr pict-expr:expr)
+     (syntax/loc stx
+       (let ()
+         (def f (current-font))
+         (with-font-change (#:size k)
+           pict-expr)))]))
+
+
 
 ;; text-background-color : color pict -> pict
 ;;   Produces a pict like p, but using the color c as the text background color.
