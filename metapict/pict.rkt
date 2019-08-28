@@ -37,6 +37,7 @@
  margin        ; inset with arguments swapped
  smoothed      ; use smoothing-mode 'smoothed
  aligned       ; use smoothing-mode 'aligned
+ unsmoothed    ; use smoothing-mode 'unsmoothed
  
  pict-size     ; returns width and height
  
@@ -339,6 +340,28 @@
     (dc (lambda (dc x y)
           (def s (send dc get-smoothing))
           (send dc set-smoothing 'smoothed)
+          ; (draw-p dc x y)
+          (draw-pict p dc x y)
+          (send dc set-smoothing s))
+        (pict-width p)
+        (pict-height p)))
+  (make-pict (pict-draw p2)
+             (pict-width p)
+             (pict-height p)
+             (pict-ascent p)
+             (pict-descent p)
+             (list (make-child p 0 0 1 1 0 0))
+             #f
+             (pict-last p)))
+
+;; unsmoothed : pict -> pict
+;;  Produces a pict like `p`, but that always draws in 'unsmoothed mode
+(define (unsmoothed p)
+  ; (define draw-p (make-pict-drawer p))
+  (def p2
+    (dc (lambda (dc x y)
+          (def s (send dc get-smoothing))
+          (send dc set-smoothing 'unsmoothed)
           ; (draw-p dc x y)
           (draw-pict p dc x y)
           (send dc set-smoothing s))
