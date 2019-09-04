@@ -30,6 +30,7 @@
          tick-center    ; given axis and x to position of tick center
          tick           ; given axis and x to curve of a tick
          ticks          ; produce list of tick curves in visible range
+         tick-ordinates ; produce list of ordinates of the ticks
          tick-label     ; axis x to label next to tick
          tick-labels    ; 
          unit-label)
@@ -108,8 +109,24 @@
 
 (define (ticks a      ; axis
                [d 1]  ; axis units between ticks
-               #:size   [ts   (get current-tick-size)]
-               #:window [win (curve-pict-window)])
+               #:size       [ts  (get current-tick-size)]
+               #:window     [win (curve-pict-window)]
+               #:last-tick? [last? #f])
+  ; An arrow head makes the last tick look odd,
+  ; the default is to omit it.  
+  (defm (axis o v) a)  
+  (defv (s t) (visible-range a win))
+  (define (snap x d) (exact-round (* d (floor (/ x d)))))
+  (def xs (tick-ordinates a d #:window win #:last-tick? last?))  
+  (for/list ([x (in-list xs)])
+    (tick a x #:size ts)))
+
+(define (tick-ordinates a      ; axis
+                        [d 1]  ; axis units between ticks
+                        #:window [win (curve-pict-window)]
+                        #:last-tick? [last? #f])
+  ; An arrow head makes the last tick look odd,
+  ; the default is to omit it.  
   
   (defm (axis o v) a)  
   (defv (s t) (visible-range a win))
@@ -118,8 +135,11 @@
   (let ([s (snap s d)] [t (snap t d)])
     ; the first and last tick in the range is excluded
     ; due to collision with arrow head
-    (for/list ([x (in-range (+ s d) t d)])
-      (tick a x #:size ts))))
+    (def xs (for/list ([x (in-range (+ s d) (+ t d) d)])
+              x))
+    (if last?
+        xs
+        (reverse (rest (reverse xs))))))
 
 (define (tick-label a x)
   (def α (angle2 (axis-dir a) (vec 1 0)))
