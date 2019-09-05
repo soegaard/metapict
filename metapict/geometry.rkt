@@ -100,7 +100,7 @@
   (match args
     [(list (? pt? p) (? pt? q))          (line: p q #t #t)]
     [(list (? pt? p) (? vec? v))         (line: p (pt+ p v) #t #t)]
-    [(list (? n? a) (? n? b))            (line: (pt 0 b) (pt 1 (+ b a)))]  ; y = ax+b
+    [(list (? n? a) (? n? b))            (line: (pt 0 b) (pt 1 (+ b a)) #t #t)]  ; y = ax+b
     [(list (? n? a) (? n? b) (? n? c))   (line-from-abc a b c)]       ; ax + by + c = 0
     [_ (error 'line
               (~a "expected either: two pts, a pt and a vec, two or three numbers; got: "
@@ -1061,6 +1061,9 @@
   (define (draw-mark) (fill (circle p (px size))))
   (if c (color c (draw-mark)) (draw-mark)))
 
+
+#;(examples
+
 (let ()
   (set-curve-pict-size 800 400)
   (with-window (window -10 10 -5 5)
@@ -1123,3 +1126,4 @@
 ;;       that the focus-focus axis is rotated.
 ;;       Also: one or two branches for parabolas and hyperbolas?
 
+)

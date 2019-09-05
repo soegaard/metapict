@@ -154,7 +154,10 @@
 (define (cons-if bool x xs)
   (if bool (cons x xs) xs))
 
-(define (plot2d unwrapped-f [x-min -5] [x-max 5] [y-min -5] [y-max 5] [excluded? #f] [axes? #t])
+(define (plot2d unwrapped-f
+                [x-min -5] [x-max 5] [y-min -5] [y-max 5]
+                [excluded? #f] [axes? #t]
+                #:regions [number-of-regions 5])
   ; wrap the function to be drawn, s.t. it 
   ; returns #f in error situations
   (define (excluded-from-domain? x)
@@ -174,7 +177,8 @@
   (define (remove-non-numbers ps)
     (filter (λ (p) (number? (vector-ref p 1))) ps))
   ; 29 is a good value according to plot.lisp
-  (define number-of-regions 29) 
+  ; (define number-of-regions 29)
+  ; (define number-of-regions 5)
   ; region width
   (define delta (/ (- x-max x-min) number-of-regions))
   ; generate points by dividing the interval
@@ -208,8 +212,10 @@
   (define (vectors->list vs) (map vector->pt vs))
   
   ; (displayln (map vectors->list connected-points))
+
+  connected-points
   
-  (map curve*
+  #;(map curve*
        (map (λ (ps) (add-between ps --))
             (map vectors->list connected-points)))
   

@@ -49,7 +49,8 @@
  domain-union
  domain-union*
  ;
- format-domain)
+ format-domain
+ attach-circles)
 
 (define/contract (empty-domain-interval? I)
   (-> domain-interval? boolean?)
