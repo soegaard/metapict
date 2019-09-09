@@ -53,7 +53,7 @@
   (def unit (cond [(number? d) (dir/rad d)]
                   [(vec? d)    (vec* (/ (len d)) d)]))
   (def A (pt+ origo (vec* R unit)))
-  (path*
+  (curve*
    (cons A
          (let loop ([i q])
            (def B ((rotated (* i (/ 2π p))) A))
