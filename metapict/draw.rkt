@@ -82,29 +82,38 @@
 (define (curve->pict c)
   (curves->pict (list c)))
 
-(define (clipped c p)
-  ; clip the picture p using a region given by the curve c
-  (def w (curve-pict-width))
-  (def h (curve-pict-height))
-  (def T (stdtrans (curve-pict-window) w h))
-  (dc (λ (dc dx dy) 
-        (def old-smoothing (send dc get-smoothing))
-        (send dc set-smoothing 'smoothed)
-        (def old-region (send dc get-clipping-region))
-        (def reg (new region% [dc dc]))
-        (defm (curve closed? bs) c)
-        (def Tp (bezs->dc-path (map T bs)))
-        (send reg set-path Tp dx dy)
-        (when old-region
-          (send reg intersect old-region))
-        (send dc set-clipping-region reg)
-        (draw-pict p dc dx dy)
-        
-        (send dc set-clipping-region old-region)
-        (send dc set-smoothing old-smoothing))
-      w h))
+(define (clipped . cs+p)
+  (match cs+p
+    [(list (? curve:? cs) ... (? pict? p))     
+     ; clip the picture p using a region given by the curves cs
+     (def w (curve-pict-width))
+     (def h (curve-pict-height))
+     (def T (stdtrans (curve-pict-window) w h))
+     (dc (λ (dc dx dy) 
+           (def old-smoothing (send dc get-smoothing))
+           (send dc set-smoothing 'smoothed)
+           (def old-region (send dc get-clipping-region))
+           (def reg (new region% [dc dc]))
+           (def clipping-path (new dc-path%))
+           (for ([c cs])
+             (defm (curve closed? bs) c)
+             (def Tp (bezs->dc-path (map T bs)))
+             (send clipping-path append Tp))
+           (send reg set-path clipping-path dx dy)
+           (when old-region
+             (send reg intersect old-region))
+           (send dc set-clipping-region reg)
+           (draw-pict p dc dx dy)
+           
+           (send dc set-clipping-region old-region)
+           (send dc set-smoothing old-smoothing))
+         w h)]
+    [_ (error 'clipped
+              (~a "expected a number of curves followed by a pict , got: "
+                  cs+p))]))
 
-(def black-solid-brush (send the-brush-list find-or-create-brush "black" 'solid))
+(def black-solid-brush
+  (send the-brush-list find-or-create-brush "black" 'solid))
 (define (set-transparent-pen dc) (send dc set-pen "black" 1 'transparent))
 
 (define (curve->filled-pict c #:draw-border? [draw-border? #f])
