@@ -9,7 +9,7 @@
 ; gradient parallel with the outer edge.
 (with-window (window -1 1 -1 1) 
   (def (tri P Q . colors)
-    (brushgradient P Q colors 
+    (brushgradient (linear-gradient P Q colors)
       (fill (curve P -- Q -- O -- cycle))))
   (draw (tri A B "yellow" "red")
         (tri B C "red"    "blue")
@@ -19,7 +19,9 @@
 ; at the corner. The direction is perpendicular to the side.
 (with-window (window -1 1 -1 1)
   (def ABC (curve A -- B -- C -- cycle))
-  (def (tri P Q c) (brushgradient P Q (list c (change-alpha c 0)) (fill ABC)))
+  (def (tri P Q c)
+    (def g (linear-gradient P Q (list c (change-alpha c 0))))
+    (brushgradient g (fill ABC)))
   (draw (tri A (pt@d 1/2 (+  90 180)) "red")
         (tri B (pt@d 1/2 (+ 210 180)) "green")
         (tri C (pt@d 1/2 (- 330 180)) "blue")))
