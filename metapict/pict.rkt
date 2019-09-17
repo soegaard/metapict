@@ -1,6 +1,7 @@
 #lang racket/base
 (require racket/contract/base racket/match
-         "save-pdf.rkt" "font.rkt" "text.rkt" "gradient.rkt" "pt-vec.rkt")
+         "save-pdf.rkt" "save-svg.rkt"
+         "font.rkt" "text.rkt" "gradient.rkt" "pt-vec.rkt")
 ;;;
 ;;; IMPORTANT NOTE
 ;;;   Remember that to set the smoothing mode to 'smoothed if you implement
@@ -404,6 +405,7 @@
   (case type
     [(png jpeg xbm xpm bmp) (save-bitmap type)]
     ;[(jpg)                  (save-bitmap 'jpeg)] ; jpeg not supported as alpha appears as black in jpg.
+    [(svg)                  (save-pict-as-svg pict filename)]
     [(pdf)                  (save-pict-as-pdf pict filename)]
     [else (error 'save-pict (~a "expected one of: png pdf xbm xpm bmp, got: " type))]))
 
