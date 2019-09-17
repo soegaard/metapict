@@ -143,7 +143,7 @@
 ; Here is a flat logo
 (set-curve-pict-size 128 128)
 (def light (pt 0.7 0.7))
-(save-pict "racket-logo.png"
+#;(save-pict "racket-logo.png"
 (beside
  (draw (color blue (fill blue-curve))
        (color red  (fill red-left-curve))
@@ -164,6 +164,29 @@
  ; A simple black and white filled version
  (brushcolor "white"
            (fill blue-curve red-left-curve red-middle-curve))))
+
+
+(save-pict "racket-logo.png"
+           
+           (draw (color "white" (fill blue-curve))
+                 (color "white" (fill red-left-curve))
+                 (color "white" (fill red-middle-curve))
+                 ))
+
+(save-pict "racket-sticker.svg" 
+           (with-font (make-similar-font (new-font)
+                                         #:face "Cooper Hewitt"
+                                         #:size 100)
+             (beside  (draw (color blue (fill blue-curve))
+                            (color red  (fill red-left-curve))
+                            (color red  (fill red-middle-curve)))
+                      (blank 15 1)
+                      (above (blank 1 30)
+                             (text "Racket"))))
+           'svg)
+
+
+
 
 
 
