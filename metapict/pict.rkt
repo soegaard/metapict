@@ -41,6 +41,7 @@
  unsmoothed    ; use smoothing-mode 'unsmoothed
  
  pict-size     ; returns width and height
+ cropped
  
  (contract-out 
   [scale (-> number? pict? pict?)]) ; pict:scale with arguments swapped
@@ -398,6 +399,12 @@
              (list (make-child p 0 0 1 1 0 0))
              #f
              (pict-last p)))
+
+
+(define (cropped p width height [x0 0] [y0 0] #:ascent [ascent height] #:descent [descent 0])
+  (define (draw-it dc x y) (draw-pict p dc (- x x0) (- y y0)))
+  (dc draw-it width height ascent descent))
+
 
 (define (save-pict filename pict [type 'png])
   (define (save-bitmap type)
