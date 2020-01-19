@@ -1,9 +1,29 @@
 #lang racket
+;;;
+;;;  Graphviz
+;;;
+
+;; This file contains a quick implementation of drawing graphs.
+;; The package  graph  can produce a graphviz string.
+;; Graphviz can then layout the graph and produce a json file
+;; containg nodes and edges.
+;; This file shows how to go from a graph to a pict.
+
+;; The types used in the json file are described here :
+;;     https://graphviz.gitlab.io/_pages/doc/info/attrs.html#k:splineType
+;; The json output format is described here:
+;;     https://graphviz.gitlab.io/_pages/doc/info/output.html#d:dot_json
+
+;; TODO: draw labels next to edges
+
+
+;; TODO: Provide a way to style nodes and edges in the pict.
+;; TODO: Provide a way to get information of node placements, so it
+;;       is possible draw extra information using MetaPict.
+
 (require graph metapict json)
 
 (define ref hash-ref)
-
-;(define scale 20)  ; 72 ?
 
 ;;;
 ;;; Required properties
@@ -27,6 +47,8 @@
 (define (edges l)   (hash-ref l 'edges))
 (define (objects l) (hash-ref l 'objects))
 
+; convert-objects : json -> hash-table
+;   return a hash-table from node-ids to (metapict) nodes
 (define (convert-objects l)
   (define objects-ht (make-hash))
   (define (add-object! i obj)
@@ -39,8 +61,10 @@
   (convert-nodes nodes)
   objects-ht)
 
+; convert-node : json adder -> void
+;   insert a metapict node in the objects hashtable
+;   corresponding to the node described by the input json
 (define (convert-node node add!)
-  ; todo: use width and height
   (define scale 72) ; 72 points in an inch
   (define gvid   (ref node '_gvid))
   (define height (* scale (string->number (ref node 'height))))
@@ -52,11 +76,7 @@
   ; (define n (rectangle-node label
   ;  #:at pos
   ;   #:width width #:height height))
-  #;(define n (circle-node (if (equal? label "") " " label)
-                           #:at pos
-                           #:min-width  (min width height)
-                           #:min-height (min width height)))
-  (define n (ellipse-node (if (equal? label "") " " label)
+  (define n (ellipse-node (text label) #;(if (equal? label "") " " label)
                           #:at pos
                           #:min-width  width
                           #:min-height height))
@@ -64,7 +84,7 @@
 
 
 
-
+; parse-points : string -> list-of-pt
 (define (parse-points s)
   (define coords (parse-number-string s))
   (let loop ([cs coords])
@@ -73,6 +93,8 @@
        (cons (pt x y) (loop more))]
       [_ '()])))
 
+; parse-number-string : string -> list-of-pt
+;   could be prettier ...
 (define (parse-number-string s)
   ; > (parse-number-string "10,20,30")
   ; (10 20 30)
@@ -92,6 +114,17 @@
           [else            (displayln n)
                            (error 'parse-number-from-string
                                   (~a "unexpected input: " n))])))))
+
+; splineType
+;   spline ( ';' spline )*
+;   where spline	=	(endp)? (startp)? point (triple)+
+;   and triple	=	point point point
+;   and endp	=	"e,%f,%f"
+;   and startp	=	"s,%f,%f"
+; If a spline has points p1 p2 p3 ... pn, (n = 1 (mod 3)), the points correspond to
+; the control points of a cubic B-spline from p1 to pn. If startp is given, it touches
+; one node of the edge, and the arrowhead goes from p1 to startp. If startp is not
+; given, p1 touches a node. Similarly for pn and endp.
 
 (define (parse-spline-type s)
   (define end-point   #f)
@@ -153,18 +186,6 @@
               partial-edge))))
       
              
-; splineType
-;   spline ( ';' spline )*
-;   where spline	=	(endp)? (startp)? point (triple)+
-;   and triple	=	point point point
-;   and endp	=	"e,%f,%f"
-;   and startp	=	"s,%f,%f"
-; If a spline has points p1 p2 p3 ... pn, (n = 1 (mod 3)), the points correspond to
-; the control points of a cubic B-spline from p1 to pn. If startp is given, it touches
-; one node of the edge, and the arrowhead goes from p1 to startp. If startp is not
-; given, p1 touches a node. Similarly for pn and endp.
-
-
 (define (draw-objects-ht ht)
   (for/draw ([(id obj) (in-hash ht)])
             (draw obj)))
@@ -206,12 +227,12 @@
 ;;;
 
 ; 1. Create graph
-;(define g (unweighted-graph/directed '((a b) (c d) (a c) (f e) (f a) (a f))))
+(define g (unweighted-graph/directed '((a b) (c d) (a c) (f e) (f a) (a f))))
 ; (define g (unweighted-graph/directed '((a b))))
 ; (define g (unweighted-graph/undirected '((a b) (c d) (a c) (f e) (f a) (a f))))
 ; (define g (weighted-graph/undirected '((10 a b) (20 b c))))
 ; (define g (weighted-graph/directed '((10 a b) (20 b c))))
-(define g (matrix-graph [[0 3 8 #f -4]
+#;(define g (matrix-graph [[0 3 8 #f -4]
                          [#f 0 #f 1 7]
                          [#f 4 0 #f #f]
                          [2 #f -5 0 #f]
@@ -243,12 +264,8 @@
 (define label-gap 6) ; used for directed graphs
 (ahlength 10)
 (margin 5
-         (font-italic
-          (scale 4
-                 (draw (draw-objects-ht ht)
-                       (draw-edges layout ht)))))
-
-
-
-
-               
+        (scale 4
+               (font-italic                
+                (draw ; (text "foo")
+                      (draw-objects-ht ht)
+                      (draw-edges layout ht)))))

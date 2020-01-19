@@ -1,6 +1,6 @@
 #lang scribble/manual
 @(require (for-label metapict racket/draw
-                     (except-in racket angle box open path? identity ...))
+                     (except-in racket angle box open path? unit identity ...))
           scribble/extract scribble/eval scribble/base scribble/manual scribble/core
           "utils.rkt" (only-in pict blank))
 @(define eval (make-metapict-eval))

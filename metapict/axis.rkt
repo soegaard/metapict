@@ -13,15 +13,16 @@
 ; which is a vector from the origo to the point where 1 is placed.
 ; The coordinates of origin and unit-vector are logical coordinates.
 
-; (struct axis   (origin unit-vector) #:transparent)
-; (struct system (axis1 axis2)        #:transparent)
-; (struct point  (system pt)          #:transparent)
+; (struct axis   (origin unit-vector label) #:transparent)
+; (struct system (axis1 axis2)              #:transparent)
+; (struct point  (system pt)                #:transparent)
 
 
 
 (provide (all-defined-out))
 
 (provide axis          ; make new axis given position of origo and direction
+         new-axis      ; 
          axis-dir      ; direction vector (logical coordinates)
          axis-origin   ; position of 0    (logical coordinates)
          visible-range ; two values: start and end in axis ordinates
@@ -34,17 +35,19 @@
          tick-label     ; axis x to label next to tick
          tick-labels    ; 
          unit-label)
-         
+
+(define (new-axis origin unit-vector [label #f])
+  (axis origin unit-vector label))
 
 (define (axis-dir a)
-  (defm (axis o v) a)
+  (defm (axis o v l) a)
   v)
 
 (define (coordinate a p)
   ; given a point p along the axis a, return the coordinate of p
   ; p is given in logical coordinates
   
-  (defm (axis o v) a)
+  (defm (axis o v l) a)
   ; axis unit size (in logical units)
   (def u (norm v))
   ; number of units 
@@ -54,9 +57,9 @@
       (- c)))
 
 (define (visible-range a win)
-  ; return the start and end (in axis coordinate)
+  ; return the start and end (in logical coordinates i.e. not axis coordinates)
   ; of range in which the axis is visible
-  (defm (axis o v) a)
+  (defm (axis o v _) a)
   (defm (window minx maxx miny maxy) win)
     
   ; clipping box
@@ -87,14 +90,20 @@
   (defv (xmin xmax) (visible-range a win))
   (define (coord x) (coordinate->pt a x))
   (parameterize ([ahlength (px 8)])
-    (draw-arrow (curve (coord xmin) -- (coord xmax)))))
+    (def from (coord xmin))
+    (def to   (coord xmax))
+    (def r    (unit-vec (pt- to from)))
+    (def L    (pt+ to (vec* (* 1.30 (ahlength)) (rotatedd -110 r))))
+    (draw (draw-arrow (curve from -- to))
+          (and (axis-label a)
+               (fill-label "white" (label-cnt (axis-label a) L)) ))))
 
 (current-draw-axis draw-axis)
 
 (define (coordinate->pt a x)
   ; given an axis a and a coordinate x in axis units,
   ; return the corresponding point in logical units
-  (defm (axis o v) a)
+  (defm (axis o v l) a)
   (pt+ o (vec* x v)))
 
 (define (tick-center a x)
@@ -114,7 +123,7 @@
                #:last-tick? [last? #f])
   ; An arrow head makes the last tick look odd,
   ; the default is to omit it.  
-  (defm (axis o v) a)  
+  (defm (axis o v l) a)  
   (defv (s t) (visible-range a win))
   (define (snap x d) (exact-round (* d (floor (/ x d)))))
   (def xs (tick-ordinates a d #:window win #:last-tick? last?))  
@@ -128,7 +137,7 @@
   ; An arrow head makes the last tick look odd,
   ; the default is to omit it.  
   
-  (defm (axis o v) a)  
+  (defm (axis o v l) a)  
   (defv (s t) (visible-range a win))
   (define (snap x d) (exact-round (* d (floor (/ x d)))))
 
@@ -141,19 +150,20 @@
         xs
         (reverse (rest (reverse xs))))))
 
-(define (tick-label a x)
+(define (tick-label a x [opposite #f])
   (def α (angle2 (axis-dir a) (vec 1 0)))
-  (def label-maker
-    (cond
-      [(<= α α π/4) label-top]
-      [else         label-rt]))
-  (label-maker (~r x #:precision 4)
-               (coordinate->pt a x)))
+  (def label-maker     (cond [(<= α α π/4) label-top]
+                         [else         label-rt]))
+  (def opp-label-maker (cond [(<= α α π/4) label-bot]
+                             [else         label-lft]))
+  (def maker (if opposite opp-label-maker label-maker))
+  (maker (~r x #:precision 4)
+         (coordinate->pt a x)))
 
 (define (tick-labels a       ; axis
                       [d 1]  ; axis units between ticks
                       #:window [win (curve-pict-window)])                      
-  (defm (axis o v) a)  
+  (defm (axis o v l) a)  
   (defv (s t) (visible-range a win))
   ; the first and last tick in the range is excluded
   ; due to collision with arrow head

@@ -24,7 +24,11 @@
  point->pt
  ; fomatters
  format-point
- system-grid
+ ; drawers
+ system-grid 
+ unit-labels
+ system-ticks
+ draw-point
  )
 
 (require racket/format racket/list
@@ -37,10 +41,10 @@
 
 ;; CONSTRUCTORS
 
-(define (system origin basis1 basis2)
+(define (system origin basis1 basis2 [label1 #f] [label2 #f])
   ; origin and basis basis vectors are in logical coordinates
-  (def axis1 (axis origin basis1))
-  (def axis2 (axis origin basis2))
+  (def axis1 (axis origin basis1 label1))
+  (def axis2 (axis origin basis2 label2))
   (system: origin axis1 axis2))
 
 (define point
@@ -65,8 +69,8 @@
   (defm (point: s p) point)
   (defm (pt x y) p)
   (defm (system: o a1 a2) s)
-  (defm (axis _ i) a1)
-  (defm (axis _ j) a2)
+  (defm (axis _ i _) a1)
+  (defm (axis _ j _) a2)
   (pt+ (pt+ o (vec* x i))
        (vec* y j)))
 
@@ -74,7 +78,7 @@
 
 (define (pt->point s p)
   (defm (pt x y) p)
-  (defm (system: o (axis _ i) (axis _ j)) s)
+  (defm (system: o (axis _ i _) (axis _ j _)) s)
   (defm (vec i1 i2) i)
   (defm (vec j1 j2) j)
   ; X i + Y j = p
@@ -102,6 +106,17 @@
 
 (current-draw-point draw-point)
 
+(define (unit-labels s)
+  (defm (system: o a1 a2) s)
+  (draw (unit-label a1)
+        (unit-label a2)))
+
+(define (system-ticks s #:size [size 0.1] #:size1 [size1 #f] #:size2 [size2 #f])
+  (defm (system: o a1 a2) s)
+  (def s1 (or size1 size))
+  (def s2 (or size2 size))
+  (draw (ticks a1 #:size s1)
+        (ticks a2 #:size s2)))
 
 
 ;;; EXAMPLE

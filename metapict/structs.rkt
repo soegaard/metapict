@@ -227,8 +227,10 @@
 ;; An axis consist of an origin (point where 0 is placed) and a unit-vector,
 ;; which is a vector from the origo to the point where 1 is placed.
 ;; The coordinates of origin and unit-vector are logical coordinates.
+;; If label is a pict, it will be drawn at the end of the axis.
+;; If label is #f it will be unlabelled.
 
-(struct axis (origin unit-vector)
+(struct axis (origin unit-vector label)
   #:property prop:drawable (λ (a) ((current-draw-axis) a))
   #:transparent)
 (provide-structs axis)

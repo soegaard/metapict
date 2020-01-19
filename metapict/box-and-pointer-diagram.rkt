@@ -1,7 +1,9 @@
 #lang racket
 (require metapict compatibility/mlist)
 
+;;;
 ;;; Box and Pointer Diagrams
+;;;
 
 ; This shows how to draw classical box and pointer diagrams 
 ; in SICP style. The call (draw-box-and-pointer-diagram v)
@@ -10,8 +12,8 @@
 
 ; Note: Also check out http://docs.racket-lang.org/sdraw/
 
-; As is the code doesn't compute the extent of the drawing,
-; so you need to modify the x- and y-range if your 
+; As this code doesn't compute the extent of the drawing,
+; you need to modify the x- and y-range if your 
 ; data structure gets too large:
 
 (defv (xmin xmax ymin ymax) (values -10 10 -10 10))
@@ -20,9 +22,6 @@
 
 ; The size of the arrow heads:
 (ahlength (px 8))
-; NB: Due to a (temporary) bug in the drawing of arrow heads,
-;     make sure the size of the x-range and the y-range
-;     are of equal size (otherwise the arrows get distorted).
 
 (define (depth v)
   (def seen-pairs (make-hasheq))

@@ -175,7 +175,9 @@
   (let loop ([us (sort (filter values ps) pt<)])
     (match us
       [(list* u u  us)         (loop (cons u us))]
-      [(list* u u1 us) (cons u (loop (cons u1 us)))]
+      [(list* u u1 us) (if (pt~ u u1)
+                           (loop (cons u1 us))
+                           (cons u (loop (cons u1 us))))]
       [(list u)        us]
       [(list)          '()]
       [_ (error 'uniqify-pts (~a "got: " ps))])))

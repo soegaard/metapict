@@ -13,11 +13,12 @@
          (prefix-in adaptive- "adaptive-plot.rkt"))
 
 
-(define (fun-graph s win the-fun #:excluded [excluded #f] #:regions [regions 2])
+(define (fun-graph s win the-fun #:excluded [excluded #f] #:regions [regions 9])
   ; window is in axis coordinates
   (defm (system: _ a1 a2) s)
   (defv (xmin xmax) (visible-range a1 win))
   (defv (ymin ymax) (visible-range a2 win))
+  ; (displayln (list 'fun-graph 'x-range xmin xmax 'y-range ymin ymax))
   
   (define (vec->point v)  (defm (vector x y) v) (point s x y))
   (define (component vs start-symbol end-symbol)

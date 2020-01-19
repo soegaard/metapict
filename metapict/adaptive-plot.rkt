@@ -72,8 +72,10 @@
        ;    f(x)-min{fa, fa1,fb, fb1,fc}
        ; If the two approximations agree, 
        ; the function is smooth.
-       (<= (- (abs (/ (+ fa (* -5. fa1) (* 9. fb) (* -7. fb1) (* 2. fc)) 24.))
-              (* eps (- (+ (* 5. fb) (* 8. fb1) (- fc))
+       (<= (- (abs (/ (+ fa (* -5. fa1) (* 9. fb) (* -7. fb1) (* 2. fc))
+                      24.))
+              (* eps (- (/ (+ (* 5. fb) (* 8. fb1) (- fc))
+                           12.)
                         (min fa fa1 fb fb1 fc))))
            ; this handles rounding problems 
            ; see plot.list source says (* 10 ...)
@@ -157,7 +159,8 @@
 (define (plot2d unwrapped-f
                 [x-min -5] [x-max 5] [y-min -5] [y-max 5]
                 [excluded? #f] [axes? #t]
-                #:regions [number-of-regions 5])
+                #:regions [number-of-regions 29])
+  ; xxx (displayln (list 'xmin x-min 'xmax x-max))
   ; wrap the function to be drawn, s.t. it 
   ; returns #f in error situations
   (define (excluded-from-domain? x)

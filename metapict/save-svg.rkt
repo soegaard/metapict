@@ -21,8 +21,10 @@
   ;; (send (current-ps-setup) set-editor-margin 0 0)
   ; (define dc (new pdf-dc% [interactive #f] [parent #f] [use-paper-bbox #t] [as-eps #f] [output #f]))
   (def dc (new svg-dc%  
-               [width w] [height h]
-               [output filename]))
+               [width  w] 
+               [height h]
+               [output filename]
+               [exists 'replace]))
   (send dc set-smoothing 'smoothed) ; important!
   dc)
 
