@@ -29,6 +29,9 @@
  unit-labels
  system-ticks
  draw-point
+ ; readings
+ show-value-reading-x
+ show-value-reading-y
  )
 
 (require racket/format racket/list
@@ -123,22 +126,24 @@
 
 (define (show-value-reading-x p
                               #:show-value [show? #t]
+                              #:label      [label #f]
                               #:color      [col   "black"]
                               #:penscale   [ps 1])
   (defm (point: s (pt x y)) p)
   (def px (point s (pt x 0)))  
   (draw (penscale ps (color col (dashed (draw (curve (point->pt p) -- (point->pt px))))))
-        (and show? (label-bot (~a x) (point->pt px)))))
+        (and show? (label-bot (or label (~a x)) (point->pt px)))))
 
 (define (show-value-reading-y p
                               #:show-value [show? #t]
+                              #:label      [label #f]
                               #:color      [col   "black"]
                               #:penscale   [ps 1])
   (defm (point: s (pt x y)) p)
   (def py (point s (pt 0 y)))  
   (draw (penscale ps
           (color col (dashed (draw (curve (point->pt p) -- (point->pt py))))))
-   (and show? (label-lft (~a y) (point->pt py)))))
+   (and show? (label-lft (or label (~a y)) (point->pt py)))))
 
 
 (define (system-grid s #:last-tick? [ts? #t])

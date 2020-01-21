@@ -20,7 +20,7 @@
 (require math/matrix racket/match racket/list racket/math racket/function
          racket/format racket/pretty
          (for-syntax racket/base)
-         "structs.rkt" "path.rkt" "def.rkt" "pt-vec.rkt" "angles.rkt" "bez.rkt")
+         "parameters.rkt" "structs.rkt" "path.rkt" "def.rkt" "pt-vec.rkt" "angles.rkt" "bez.rkt")
 
 (provide 
  ; high level constructors
@@ -74,8 +74,12 @@
 
 (define empty-curve (curve: #f '())) ; the empty curve
 
+
 (define (make-curve . xs)
-  (match xs
+  ; convert any `point` values to `pt` 
+  (def point->pt (current-point-to-pt-converter))
+  (define (prepare x) (if (point:? x) (point->pt x) x))
+  (match (map prepare xs)
     [(list (? pt? p))   (curve: #t (list (bez p p p p)))]
     [(list (? path? p)) (resolve-path p)]
     [(list* path-elms)  (resolve-path (path* (do-super-curve (flatten path-elms))))]))
