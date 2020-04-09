@@ -16,11 +16,12 @@
                "plot-gui-lib"
                "plot-lib"
                "rackunit-lib"
+
                "unstable-latent-contract-lib"
                "unstable-parameter-group-lib"
                "at-exp-lib" "rackunit-lib"))
 
 
-(define build-deps '( "scribble-lib"
-                     "racket-doc" "draw-doc" "pict-doc"))
+(define build-deps '( "scribble-lib" "racket-doc" "draw-doc" "pict-doc"
+                                     "racket-poppler"))
 
