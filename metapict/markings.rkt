@@ -1,6 +1,10 @@
 #lang racket/base
-(require metapict metapict/mat)
-(require racket/class)
+(require metapict metapict/mat
+         racket/class
+         (for-syntax racket/syntax syntax/parse racket/base)
+         (only-in "system.rkt" point->pt))
+         
+
 (provide
  ; Configuration
  angle-radius
@@ -141,6 +145,11 @@
     ; draw
     (draw-angle-curve p q r #:marks m #:marker marker)))
 
+(define-syntax (convert-points stx)
+  (syntax-parse stx
+    [(_convert-points x:id ...)
+     #'(begin (set! x (if (point:? x) (point->pt x) x)) ...)]))
+
 ; mark-angle : point point point [keyword-arguments ...] -> pict
 ;   The points A, B and C make and angle at B.
 ;   The angle arcs are drawn in the positive orientation.
@@ -158,6 +167,7 @@
                     #:radius           [radius  (angle-radius)]
                     #:draw-angle-curve [draw-angle-curve marked-arc]
                     #:fill?            [fill? #f])
+  (convert-points a b c)
   ; Center of arc
   (def p b) 
   ; Draw n arcs

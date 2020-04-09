@@ -132,7 +132,8 @@
   (defm (point: s (pt x y)) p)
   (def px (point s (pt x 0)))  
   (draw (penscale ps (color col (dashed (draw (curve (point->pt p) -- (point->pt px))))))
-        (and show? (label-bot (or label (~a x)) (point->pt px)))))
+        (and (or label show?)
+             (label-bot (or label (~a x)) (point->pt px)))))
 
 (define (show-value-reading-y p
                               #:show-value [show? #t]
@@ -143,7 +144,8 @@
   (def py (point s (pt 0 y)))  
   (draw (penscale ps
           (color col (dashed (draw (curve (point->pt p) -- (point->pt py))))))
-   (and show? (label-lft (or label (~a y)) (point->pt py)))))
+        (and (or show? label)
+             (label-lft (or label (~a y)) (point->pt py)))))
 
 
 (define (system-grid s #:last-tick? [ts? #t])
