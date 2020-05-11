@@ -152,11 +152,19 @@
   (dc draw-it width height ascent descent))
 
 
-(define (crop/inked p)
+(define (crop/inked p
+                    #:padding-bottom [bot   0.]
+                    #:padding-top    [top   0.]
+                    #:padding-left   [left  0.]
+                    #:padding-right  [right 0.])
   (define cr-dc (new cairo-record-dc% [x0 0.0] [y0 0.0] [width 1000.] [height 1000.]))
   (draw-pict p cr-dc 0 0)
   (define-values (x y w h) (send cr-dc get-inked-extents))
-  (crop p w h x y))
+  (crop p
+        (+ w left right)
+        (+ h top  bot)
+        (- x left)
+        (- y top)))
 
 ;; (require pict)
 ;; (crop/inked (disk 20 #:border-width 20))
