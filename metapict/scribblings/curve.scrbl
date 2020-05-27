@@ -154,7 +154,7 @@ we will look at is intersections between two curves.
 @defproc[(intersection-times [c1 curve?] [c2 curve?]) (or #f number?)]{
 If the two curves @racket[c1] and @racket[c2] have an intersection point,
 the function will return times (parameter values) @math{t} and @math{u} such that
-@math{c1(t)=c2(t)}. If no intersection point is found @racket[#f] is returned.
+@math{c1(t)=c2(u)}. If no intersection point is found @racket[#f] is returned.
 @interaction[#:eval eval
   (let ()
     (def c1 (curve (pt 0 0) .. (pt 2 3)))
