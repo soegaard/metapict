@@ -285,7 +285,7 @@
   ; side a, angle β, side c
   (def A (pt 0 0))
   (def B (pt c 0)) ; |AB|=c
-  (def C (pt+ B (pt@d a β)))
+  (def C (pt+ B (pt@d a (- 180 β))))
   (draw (line A B)
         (line A C)
         (line B C)))
