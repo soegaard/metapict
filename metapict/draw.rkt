@@ -223,15 +223,16 @@
         (def -ε (- ε))
         (defm (vec Δx Δy)
           (match placement
-            [(rt)   (vec+ (vec 0    -h/2) (vec  ε  0))]
-            [(lft)  (vec+ (vec -w   -h/2) (vec -ε  0))]
-            [(bot)  (vec+ (vec -w/2  0)   (vec  0  ε))]
-            [(top)  (vec+ (vec -w/2 -h)   (vec  0 -ε))]
-            [(cnt)  (vec+ (vec -w/2 -h/2) (vec  0  0))]            
-            [(lrt)  (vec+ (vec  0    0)   (vec  ε  ε))]   ; lft is +
-            [(ulft) (vec+ (vec -w   -h)   (vec -ε -ε))]            
-            [(llft) (vec+ (vec -w    0)   (vec -ε  ε))]
-            [(urt)  (vec+ (vec  0   -h)   (vec  ε -ε))]                        
+            [(rt)       (vec+ (vec 0    -h/2) (vec  ε  0))]
+            [(lft)      (vec+ (vec -w   -h/2) (vec -ε  0))]
+            [(bot)      (vec+ (vec -w/2  0)   (vec  0  ε))]
+            [(top)      (vec+ (vec -w/2 -h)   (vec  0 -ε))]
+            [(cnt)      (vec+ (vec -w/2 -h/2) (vec  0  0))]            
+            [(lrt)      (vec+ (vec  0    0)   (vec  ε  ε))]   ; lft is +
+            [(ulft)     (vec+ (vec -w   -h)   (vec -ε -ε))]            
+            [(llft)     (vec+ (vec -w    0)   (vec -ε  ε))]
+            [(urt)      (vec+ (vec  0   -h)   (vec  ε -ε))]
+            [(? vec? v) (vec  (vec-x v) (- (vec-y v)))]
             [else   (error 'label->pict (~a "internal error, expected a placement:" placement))]))
         (draw-pict p dc (+ x0 Δx dx) (+ y0 Δy dy))
         (send dc set-smoothing s))

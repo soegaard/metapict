@@ -41,6 +41,12 @@
 (define-label-plc label-lrt  lrt)
 (define-label-plc label-cnt  cnt)
 
+(define (label/offset text/pict pos vec)
+  (define t text/pict)
+  (label (if (string? t) (text t) t)
+         pos vec))
+
+
 (define-syntax (define-dot-label-plc stx)
   (syntax-parse stx
     [(_ name plc)
@@ -62,22 +68,23 @@
   (defm (label p? pos placement) l)
   (defm (pt x0 y0) pos)
   (def p (if (pict? p?) p? (with-font (current-label-font) (text p?))))
-  (defv (w h) (values (pict-width p) (pict-height p)))
-  (defv (-w -h) (values (- w) (- h)))
+  (defv ( w    h)   (values (pict-width p) (pict-height p)))
+  (defv (-w   -h)   (values (- w) (- h)))
   (defv (-w/2 -h/2) (values (/ -w 2) (/ -h 2)))
-  (def ε (label-offset)) ; in pixels
+  (def  ε (label-offset)) ; in pixels
   (def -ε (- ε))
   (defm (vec Δx Δy) ; upper left corner
     (match placement
-      [(rt)   (vec+ (vec 0    -h/2) (vec  ε  0))]
-      [(lft)  (vec+ (vec -w   -h/2) (vec -ε  0))]
-      [(bot)  (vec+ (vec -w/2  0)   (vec  0  ε))]
-      [(top)  (vec+ (vec -w/2 -h)   (vec  0 -ε))]
-      [(cnt)  (vec+ (vec -w/2 -h/2) (vec  0  0))]            
-      [(lrt)  (vec+ (vec  0    0)   (vec  ε  ε))]   ; lft is +
-      [(ulft) (vec+ (vec -w   -h)   (vec -ε -ε))]            
-      [(llft) (vec+ (vec -w    0)   (vec -ε  ε))]
-      [(urt)  (vec+ (vec  0   -h)   (vec  ε -ε))]  ; *
+      [(rt)       (vec+ (vec 0    -h/2) (vec  ε  0))]
+      [(lft)      (vec+ (vec -w   -h/2) (vec -ε  0))]
+      [(bot)      (vec+ (vec -w/2  0)   (vec  0  ε))]
+      [(top)      (vec+ (vec -w/2 -h)   (vec  0 -ε))]
+      [(cnt)      (vec+ (vec -w/2 -h/2) (vec  0  0))]            
+      [(lrt)      (vec+ (vec  0    0)   (vec  ε  ε))]   ; lft is +
+      [(ulft)     (vec+ (vec -w   -h)   (vec -ε -ε))]            
+      [(llft)     (vec+ (vec -w    0)   (vec -ε  ε))]
+      [(urt)      (vec+ (vec  0   -h)   (vec  ε -ε))]  ; *
+      [(? vec? v) (vec  (vec-x v) (- (vec-y v)))]                  
       [else   (error 'label->pict (~a "internal error, expected a placement:" placement))]))
   (def T (current-curve-transformation))
   ; convert from screen coordinates to logical coordinates
