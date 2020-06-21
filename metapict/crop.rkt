@@ -153,13 +153,18 @@
 
 
 (define (crop/inked p
-                    #:padding-bottom [bot   0.]
-                    #:padding-top    [top   0.]
-                    #:padding-left   [left  0.]
-                    #:padding-right  [right 0.])
+                    #:padding-bottom [bot   #f] ; false means use default padding
+                    #:padding-top    [top   #f]
+                    #:padding-left   [left  #f]
+                    #:padding-right  [right #f]
+                    #:padding        [pad   '(0. 0.)])
   (define cr-dc (new cairo-record-dc% [x0 0.0] [y0 0.0] [width 1000.] [height 1000.]))
   (draw-pict p cr-dc 0 0)
   (define-values (x y w h) (send cr-dc get-inked-extents))
+  (set! left  (or left  (car  pad)))
+  (set! right (or right (car  pad)))
+  (set! bot   (or bot   (cadr pad)))
+  (set! top   (or top   (cadr pad)))
   (crop p
         (+ w left right)
         (+ h top  bot)
