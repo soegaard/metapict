@@ -18,6 +18,7 @@
  mark-angle
  mark-curve-angle
  mark-curve
+ mark-right-angle
  mark-interval
  marked-arc)
  
