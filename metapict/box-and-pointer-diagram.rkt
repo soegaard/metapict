@@ -18,7 +18,8 @@
 
 (defv (xmin xmax ymin ymax) (values -10 10 -10 10))
 
-; Patches that automatically compute the ranges are welcome.
+; TODO: Use  crop/inked to automatically crop these diagrams.
+
 
 ; The size of the arrow heads:
 (ahlength (px 8))
@@ -32,6 +33,7 @@
           [else      (seen! v)
                      (match v
                        [(or (cons a d) (mcons a d)) (+ (recur a) (recur d))]
+                       [(? vector?)                 (for/sum ([x v]) (recur x))]
                        [(list) 1]
                        [_      2])]))
   (recur v))
@@ -109,8 +111,23 @@
     [(or (cons a d) (mcons a d))
      (draw (rectangle ul             (pt+ ul dr))
            (rectangle (pt+ ul right) (pt+ ul right dr))
-           (draw-cdr ul d recur)
+           (draw-cdr ul d           recur)
            (draw-car ul a (depth d) recur))]))
+
+(define (draw-vector upper-left v recur)
+  (def ul upper-left)
+  (match v
+    [(vector xs ...)
+     (define n (vector-length v))
+     (define w1 (vec-x dr))
+     (define w (* w1 n))
+     (define h (vec-y dr))     
+     (draw (rectangle ul (pt+ ul (vec w h)))
+           (for/draw ([i (in-range 1 n)])
+             (curve (pt+ ul (vec (* i w1) 0)) -- (pt+ ul (vec (* i w1) h))))
+           (for/draw ([i n] [x xs])
+             (draw-car (pt+ ul (vec (* i w1) 0))
+                       x 0 recur)))]))
 
 (define (draw-label ul v labels)
   ; Labels is a hash table from that maps cons cells to be labelled into 
@@ -125,23 +142,37 @@
 
 (define (draw-box-and-pointer-diagram 
          v #:upper-left [upper-left (pt+ (pt xmin ymax) right down)]
-           #:labels     [labels (hash)])
+           #:labels     [labels (make-hasheq)])
   ; pairs already seen will not be drawn again
   (def seen-pairs (make-hasheq))
   (define (seen! p ul) (hash-set! seen-pairs p ul))
-  (define (seen? p) (hash-ref  seen-pairs p #f))
-  (define (recur ul v)
-    ; draw the value v, the upper-left is at the position ul
-    (cond
-      [(seen? v) (hash-ref seen-pairs v)]
-      [else  
-       (unless (atomic-value? v) ; only share compound values (to avoid clutter)
-         (seen! v ul))
-       (draw (draw-label ul v labels)
-             (match v
-               [(list)                      (draw-null-box ul)]
-               [(or (cons a d) (mcons a d)) (draw-cons-cell ul v recur)]
-               [_ (label-cnt (~a v) (pt+ ul dr/2))]))]))
+  (define (seen? p)    (hash-ref  seen-pairs p #f))
+  (define recur
+    (let ()
+      ; in rare cases we will be asked to draw two different values at the same
+      ; position - in that case we move downwards
+      (define used-poitions-ht (make-hash))
+      (define (use ul v) (hash-set! used-poitions-ht ul v))
+      (define (used? ul) (hash-ref  used-poitions-ht ul #f))
+      (λ (ul v)
+      ; draw the value v, the upper-left is at the position ul
+      (cond
+        [(seen? v)
+         ; since the value was seen previously, we don't draw it again
+         (hash-ref seen-pairs v)]
+        [(used? ul)
+         ; this position has been used (by another value), move down
+         (recur (pt+ ul (vec 0 (* (+ 1 (depth (used? ul))) (vec-y dr)))) v)]
+        [else
+         (use ul v)
+         (unless (atomic-value? v) ; only share compound values (to avoid clutter)
+           (seen! v ul))
+         (draw (draw-label ul v labels)
+               (match v
+                 [(list)                      (draw-null-box ul)]
+                 [(or (cons a d) (mcons a d)) (draw-cons-cell ul v recur)]
+                 [(? vector?)                 (draw-vector ul v recur)]
+                 [_                           (label-cnt (~a v) (pt+ ul dr/2))]))]))))
   (recur upper-left v))
                
 (set-curve-pict-size 400 400)
@@ -155,6 +186,10 @@
 (draw gray-grid
       (draw-box-and-pointer-diagram 
        (list 2 (list 1) (list 3 (list 4 5) 6) 7)))
+
+(draw gray-grid
+      (draw-box-and-pointer-diagram 
+       (list 2 (vector 1) (list 3 (vector 4 5) 6) 7)))
 
 (draw gray-grid
       (shared ([a (cons 1 a)]) 
@@ -182,6 +217,9 @@
 
 
 ; todo: this last example draws a and c ontop of each other - why?
+; should the depth of c be increased?
+(set!-values (xmin xmax ymin ymax) (values -5 10 -10 10))
+
 (margin 
    5 (draw (shared ([a (cons 1 a)]
                     [b (cons c a)]
