@@ -160,8 +160,8 @@ The inspiration was Paul Gaborit's
 
 (set-curve-pict-size 200 100)
 (with-window (window -6 6 -4 2)
-  (draw (clipped (draw-rings r5 r4 r3 r2 r1) (rectangle (pt -6  2)   (pt 6 -1.0)))
-        (clipped (draw-rings r1 r2 r3 r4 r5) (rectangle (pt -6 -0.8) (pt 6 -3.8)))))]
+  (draw (clipped (rectangle (pt -6  2)   (pt 6 -1.0)) (draw-rings r5 r4 r3 r2 r1))
+        (clipped (rectangle (pt -6 -0.8) (pt 6 -3.8)) (draw-rings r1 r2 r3 r4 r5))))]
 
 @section[#:tag "example-cuboid" #:style svg-picts]{Cuboid}
 A cuboid drawn with a two-point vanishing perspective.
