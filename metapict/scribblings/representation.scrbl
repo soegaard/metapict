@@ -12,6 +12,8 @@
 @; ----------------------------------------
 
 This section describes the representation of the MetaPict concepts.
+The structures have already been described in this manual. The intent
+is to give an overview of the data structures used in a single place.
 
 @defstruct[pt ([x real?] [y real?])]{
 The @racket[pt] structure represents a point with coordinates
