@@ -167,7 +167,7 @@ Adjust the brush to use the stipple @racket[s], then draw the pict @racket[p].}
 
 @interaction[#:eval eval 
 (set-curve-pict-size 256 256)
-(define stipple (bitmap "texture.png"))
+(define stipple (bitmap "texture.jpeg"))
 (with-window (window -1 1 -1 1)
   (beside stipple (blank 64 64)
           (brushstipple (pict->bitmap stipple) 
