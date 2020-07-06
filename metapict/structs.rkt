@@ -108,18 +108,19 @@
 
 
 ;;; Labels
-(struct label (string-or-pict pos plc) #:transparent)
+(struct label (string-or-pict pos plc/vec) #:transparent)
+; plc/vec is either a placment or a vector
 ;;; Label placements
 (struct placement ())
-(struct lft  placement()) ; left
-(struct rt   placement()) ; right
-(struct top  placement()) ; top
-(struct bot  placement()) ; bottom
-(struct ulft placement()) ; upper left
-(struct urt  placement()) ; upper right
-(struct llft placement()) ; lower left
-(struct lrt  placement()) ; lower right
-(struct cnt  placement()) ; center
+(struct lft    placement ())    ; left
+(struct rt     placement ())    ; right
+(struct top    placement ())    ; top
+(struct bot    placement ())    ; bottom
+(struct ulft   placement ())    ; upper left
+(struct urt    placement ())    ; upper right
+(struct llft   placement ())    ; lower left
+(struct lrt    placement ())    ; lower right
+(struct cnt    placement ())    ; center
 
 ;;; Nodes and Edges
 

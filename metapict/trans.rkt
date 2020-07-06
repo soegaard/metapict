@@ -13,10 +13,12 @@
          identity rotated90 rotated180 rotated270 flipx flipy 
          pair ; match expander that matches pt, vec, list or vector
          ; TODO easy: make contracts for these:
-         rotated rotatedd rotated-about rotated-aboutd trans?
+         reflected
+         rotated rotatedd rotated-about rotatedd-about trans?
          compose-trans
          transformation->trans
          trans->transformation
+         trans~
          (contract-out [inverse (-> trans? trans?)]     ; inverse transformation
                        [trans->vector (-> trans? vector?)] ; convert to vector
                        ))
@@ -26,9 +28,9 @@
          racket/match racket/format racket/list racket/math)
 
 (define (constructor o)
-  (cond [(vec? o)  vec] 
-        [(pt? o)   pt]
-        [(list? o) list]
+  (cond [(vec? o)    vec] 
+        [(pt? o)     pt]
+        [(list? o)   list]
         [(vector? o) vector]
         [else (error)]))
 
@@ -40,18 +42,20 @@
     (defm (trans xx yx xy yy x0 y0) t)
     (define (f v)
       (defm (or (vec x y) (pt x y) (list x y) (vector x y)) v)
-      (defv (xnew ynew) (values (+ (* xx x) (* xy y) x0) (+ (* yx x) (* yy y) y0)))
+      (defv (xnew ynew) (values (+ (* xx x) (* xy y) x0)
+                                (+ (* yx x) (* yy y) y0)))
       (apply (constructor v) (list xnew ynew)))
     (let loop ([vs (reverse vs)])
       (match vs
         [(list v) (match v
-                    [(bez p0 p1 p2 p3)    (bez (f p0) (f p1) (f p2) (f p3))]
-                    [(curve: c? bs)       (curve: c? (map t bs))]
+                    [(bez p0 p1 p2 p3)   (bez (f p0) (f p1) (f p2) (f p3))]
+                    [(curve: c? bs)      (curve: c? (map t bs))]
                     [(or (? vec?) (? pt?) (list _ _) (vector _ _)) (f v)]
                     [(? trans? v)         (compose-trans t v)]
                     ; [(? open-path? v)     (transform-path t v f)]
                     ; [(? closed-path? v)   (transform-path t v f)] ; XXX
-                    [_ (error 'trans (~a "Can't transform the value: " v))])]
+                    [_ (error 'trans 
+                              (~a "Can't transform the value: " v))])]
         [(list vn vn- v ...) (loop (cons (vn- vn) v))]))))
 
 
@@ -118,10 +122,18 @@
   (defm (pt x y) p)
   (def t ((shifted x y) (rotated θ) (shifted (- x) (- y))))
   (if (empty? args) t (apply t args)))
-(define (rotated-aboutd θ p . args) (apply rotated-about (rad θ) p args))
-; (define (reflectedabout p q) (trans ...)) ; todo
-; (define (rotatedaround p θ)  (trans ...)) ; todo
-
+(define (rotatedd-about θ p . args) (apply rotated-about (rad θ) p args))
+(define reflecty (trans 1 0 0 -1 0 0))
+(define (reflected p q . args) ; reflect around the line through p and q
+  (def pq (pt- q p))
+  (defm (vec x y) pq)
+  (def θ  (acos (/ x (sqrt (+ (sqr x) (sqr y))))))
+  (apply ((shifted x y)
+          (rotated θ)
+          reflecty
+          (rotated (- θ))
+          (shifted (- x) (- y)))
+         args))
 
 (define (det T) 
   (match T
