@@ -27,10 +27,11 @@ In MetaPict a transformation can be applied to instances of @racket[curve], @rac
 @interaction-eval[#:eval eval (set-curve-pict-size 100 100)]
 @interaction[#:eval eval
   (def c (curve (pt -1/2 1/2) -- (pt -1/2 0) -- (pt 1/2 0)))
-  (draw (color "black" (draw ((shifted 1/2 1/2) c)))
-        (color "red"   (draw ((shifted 1/2 1/2) c)))
-        (color "blue"  (draw ((rotated (/ π 2)) c)))
-        (color "green" (draw (((shifted 0 -0.1) flipy) c))))]
+  (penwidth 4
+            (draw (color "black" (penwidth 8 (draw c)))
+                  (color "red"   (draw ((shifted 1/2 1/2) c)))
+                  (color "blue"  (draw ((rotated (/ π 2)) c)))
+                  (color "green" (draw (((shifted 0 -0.1) flipy) c)))))]
 
 Mathematically an affine transformation transforms a point @math{(x,y)} into the point
 
