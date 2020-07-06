@@ -254,7 +254,7 @@ degrees around @math{(0,0)}.
 
 @defproc[(rotated-about [θ real?] [p pt?]) 
          trans?]{
-The transformation @racket[(rotated θ)] is a rotation of θ 
+The transformation @racket[(rotated-about θ)] is a rotation of θ 
 radian around the point @math{p}.
 
 @interaction[#:eval eval
