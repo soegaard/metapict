@@ -5,7 +5,7 @@
 @interaction-eval[#:eval eval (require metapict)]
 @(define math-style tt)
 
-@title[#:tag "ref-bez"]{Transformations}
+@title[#:tag "ref-trans"]{Transformations}
 
 @defmodule[metapict/trans]
 
