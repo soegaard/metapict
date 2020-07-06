@@ -70,7 +70,7 @@ so @racket[trans] is seldom used directly.
 @defthing[identity trans? #:value (trans 1 0 0 1 0 0)]{
   The identity transformation.}
 
-@defthing[rotated90 trans? #:value (trans 0 1 -1 1 0 0)]{
+@defthing[rotated90 trans? #:value (trans 0 1 -1 0 0 0)]{
   Rotate 90 degrees counterclockwise. }
 
 @defthing[rotated180 trans? #:value (trans -1 0 0 -1 0 0)]{
