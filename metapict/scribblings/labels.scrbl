@@ -6,13 +6,11 @@
 @interaction-eval[#:eval eval (require metapict)]
 @(define math-style tt)
 
-@title[#:tag "labels"]{Labels}
+@title[#:tag "ref-labels"]{Labels}
 
 @defmodule[metapict/label]
 
 @; ----------------------------------------
-
-@section[#:tag "ref-labels"]{Labels}
 
 @defstruct*[label ([string-or-pict string-or-pict?] 
                    [pos            pt?]

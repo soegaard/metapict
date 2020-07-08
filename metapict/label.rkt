@@ -11,12 +11,20 @@
 ; label-bbox ; curve given by the bounding box of the label
 ; fill-label ; use the color c to fill the box of the label, then draw l
 
-(provide (all-defined-out)) ; todo
+(provide (all-defined-out) ; todo
+         (all-from-out "structs.rkt") ; for documentation
+         ) 
 
 (require (for-syntax racket/base) racket/match racket/format
          "pict-lite.rkt"
          "def.rkt" "device.rkt" "draw.rkt"  "pt-vec.rkt" "structs.rkt" 
          "pict.rkt" "parameters.rkt" "curve.rkt" "path.rkt" "color.rkt")
+
+(define (placement-or-vec? x)
+  (or (placement? x) (vec? x)))
+
+(define (string-or-pict? x)
+  (or (string? x) (pict? x)))
 
 (require (for-syntax syntax/parse))
 (define-syntax (define-label-plc stx)

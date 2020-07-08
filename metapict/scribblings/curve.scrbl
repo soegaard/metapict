@@ -317,7 +317,7 @@ In the most basic form, a call to @racket[curve] has one of these forms (but see
 
 @centered[@racket[(curve p0 j0 p1 j1 ... pn)]]
 @centered[@racket[(curve p0 j0 p1 j1 ... pn jn)]]
-@centered[@racket[(curve p0 j0 p1 j1 ... pn jn 'cycle)]]
+@centered[@racket[(curve p0 j0 p1 j1 ... pn jn cycle)]]
 
 Here @racket[p0], @racket[p1], ... are points and @racket[j0], @racket[j0], ...
 are @emph{path joins}. A path join describes how the two points on either
@@ -368,6 +368,10 @@ The standard path joins are @racket[..] and  @racket[--].
   (@defthing[.. tension-and? #:value (tension-and 1 1)]
    @defthing[-- full-join? #:value (full-join (curl 1) .. (curl 1))])]{
      Use @racket[..] to get "medium bendiness" and @racket[--] to get a straight line.}
+
+@defthing[cycle 'cycle]{
+The value used to indicate a closed curve is @racket['cycle].}
+
 
 @deftogether[
   (@defstruct*[join                 ()]

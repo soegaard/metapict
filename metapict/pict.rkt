@@ -42,6 +42,11 @@
  
  pict-size     ; returns width and height
  cropped
+
+ above
+ above*
+ beside
+ beside*
  
  (contract-out 
   [scale (-> number? pict? pict?)]) ; pict:scale with arguments swapped
@@ -56,6 +61,11 @@
 
 (define (dashed p) (penstyle 'long-dash p))
 (define (dotted p) (penstyle 'dot p))
+
+(define above  vc-append)
+(define beside hc-append)
+(define (beside* ps) (apply beside ps))
+(define (above* ps)  (apply above ps))
 
 ; color is stored in colorizer due to the match-expander in color.rkt
 (colorizer (case-lambda [(  c p) (pencolor c (brushcolor c p))]

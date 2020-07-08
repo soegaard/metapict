@@ -12,7 +12,7 @@
 
 
 @; ----------------------------------------
-@section[#:tag "ref-draw-and-fill"]{Drawing and Filling}
+@; section[#:tag "ref-draw-and-fill"]{Drawing and Filling}
 
 A @racket[curve] represents the path of a curve. Use @racket[draw]
 and @racket[fill] to create a picture in the form of a @racket[pict].
@@ -51,6 +51,16 @@ This table shows how the drawable objects are converted:
          (pt 0 0)
          (bez (pt -1/2 0) (pt -1/2 1) (pt 1/2 1) (pt 1/2 0))
          (label-bot "Origo" (pt 0 0)))]
+
+@defproc[(draw* [ds list?]) pict?]{
+Draw using @racket[draw] the non-false values in the list @racket[ds] 
+on the same pict.
+@interaction[#:eval eval 
+  (penwidth 4 
+    (draw* (for/list ([n (in-range -5 6 )])
+             (and (even? n) 
+                  (pt (/ n 5) (/ n 5))))))]
+}
 
 @defproc[(fill [c curve?] ...) pict?]{
 Creates a pict that uses the current brush to fill either a single curve 
@@ -106,4 +116,32 @@ And for these:
 @interaction[#:eval eval 
 (beside (fill c1 r2 c3 r4)
         (fill r1 c2 r3 c4))]
-                                      
+
+@defproc[(eofill [c curve?] ...) pict?]{
+Like @racket[fill] but uses the even-odd rule instead of the winding rule
+to determine where to fill.
+}
+
+@defproc[(filldraw [c curve?] [fill-color color? #f] [draw-color color? #f]) pict?]{
+Fill the curve with @racket[fill-color], then draw the outline with the color @racket[draw-color].
+If @racket[fill-color] is @racket[#f], then use the brush to fill.
+@interaction[#:eval eval 
+(penwidth 4 (filldraw unitcircle "darkblue" "purple"))]
+}
+
+
+
+@defform[(for/draw (for-clause ...) body-or-break ... body)]{ 
+Iterates like @racket[for], but the last expression in the @racket[body]s must
+produce a single drawable value, and the result of the @racket[for/draw]
+expression is a pict in which all values are drawn.
+@interaction[#:eval eval 
+(penwidth 4
+  (for/draw ([angle (in-range 0 190 10)])
+    (pt@d 1 angle)))]
+}
+
+@defform[(for*/draw (for-clause ...) body-or-break ... body)]{ 
+Iterates like @racket[for*], but the last expression in the @racket[body]s must
+produce a single drawable value, and the result of the @racket[for/draw]
+expression is a pict in which all values are drawn.}
