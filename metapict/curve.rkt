@@ -54,6 +54,11 @@
  resolve-path-to-bezs
  segment->bezs
  segments->bezs
+ ; (struct-out curve:)
+ ; The documentation in curve.scrbl needs curve:, join, .. etc to be
+ ; exported from curve.rkt. Otherwise these needs to be documented in
+ ; a separate section.
+ .. -- tension (except-out (all-from-out "structs.rkt") open domain) 
  ; path operations
  ;   - moved to "path-operations.rkt"
  ; do-super-curve ; private

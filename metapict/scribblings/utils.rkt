@@ -27,8 +27,7 @@
 (define svg-picts 
   (make-style "svg-picts" (list (render-convertible-as '(svg-bytes png-bytes)))))
 
-(define png-picts
-  
+(define png-picts  
   (make-style "svg-picts" (list (render-convertible-as '(png-bytes svg-bytes)))))
 
 (define (sub a i)

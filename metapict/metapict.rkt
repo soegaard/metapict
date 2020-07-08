@@ -13,24 +13,18 @@
           "pict-lite.rkt"
           "bitmap.rkt" "def.rkt" "dc.rkt" "bez.rkt" "font.rkt" "text.rkt" "window.rkt"
           "path.rkt" "curve.rkt"
-          "structs.rkt" "trig.rkt" "pt-vec.rkt"  "angles.rkt" "trans.rkt"
+           "trig.rkt" "pt-vec.rkt"  "angles.rkt" "trans.rkt"
           "color.rkt" "pict.rkt" "device.rkt" "arrow.rkt" "shapes.rkt"
           "pen-and-brush.rkt" "shade.rkt" "text-path.rkt"
           "draw.rkt" "label.rkt" "shapes.rkt" "node.rkt" "parameters.rkt" "arrow.rkt"
-          "grid.rkt" "gradient.rkt")
+          "grid.rkt" "gradient.rkt" "structs.rkt")
          ; macros from draw.rkt
          for/draw for*/draw
          ; macros from window.rkt
          with-window
          with-scaled-window
-         above  above*
-         beside beside*
          ~vec)
 
-(define above  vc-append)
-(define beside hc-append)
-(define (beside* ps) (apply beside ps))
-(define (above* ps)  (apply above ps))
 
 (define (~vec v) 
   (define (t x) (text (~a x)))
