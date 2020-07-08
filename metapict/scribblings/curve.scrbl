@@ -1,12 +1,13 @@
 #lang scribble/manual
 @(require (for-label metapict (except-in racket angle box open path? unit identity ...))
-          (for-label metapict/curve metapict/path metapict/path-operations metapict/structs)
+          #;(for-label metapict/path metapict/path-operations )
           scribble/extract scribble/eval scribble/base scribble/manual "utils.rkt")
+@(require (only-in metapict .. --))
 @(define eval (make-metapict-eval))
 @interaction-eval[#:eval eval (require metapict)]
 @(define math-style tt)
 
-@title[#:tag "ref-curve"]{Curves}
+@title[#:tag "curve"]{Curves}
 
 @defmodule[metapict/curve]
 
@@ -31,14 +32,14 @@ The @racket[curve] constructor is intended to cover all use cases. The construct
 can be used to construct both curved as well as straight lines.
 
 The syntax of @racket[curve] will be detailed later, but let's look at some examples.
-First when mulitple points separated by @racket[..] are given, a smooth curve through
+First when multiple points separated by @racket[..] are given, a smooth curve through
 the points will be constructed: @racket[(curve p0 .. p1 .. p2 .. p3 .. p4)].
 
 As a concrete example, let's look at the points
   @math{(0,0) (60,40) (40,90) (10,70) (30,50)}.
 
 @interaction[#:eval eval
-  (def p0 (pt 0 0))
+  (def p0 (pt 0   0))
   (def p1 (pt 60 40))
   (def p2 (pt 40 90))
   (def p3 (pt 10 70))
@@ -320,11 +321,8 @@ In the most basic form, a call to @racket[curve] has one of these forms (but see
 
 Here @racket[p0], @racket[p1], ... are points and @racket[j0], @racket[j0], ...
 are @emph{path joins}. A path join describes how the two points on either
-side of the path join are to be connected. For some path joins @racket[curve]
-can handle direction specifiers @racket[ds] before and after a join 
-(see @racket[full-join]).
-
-The most common path joins have convenient names: @racket[..], and  @racket[--].
+side of the path join are to be connected. The most common path joins are 
+@racket[..], and  @racket[--].
 
 @interaction[#:eval eval
   (defv (A B C D) (values (pt -0.3 -0.3) (pt 0.3 -0.3) (pt 0.3 0.3) (pt -0.3 0.3)))
@@ -335,25 +333,50 @@ The most common path joins have convenient names: @racket[..], and  @racket[--].
            (draw (curve A ..  B ..  C ..  D .. cycle))
            (draw (curve A --  B --  C --  D .. cycle)))))]
 
+The function @racket[curve] is a smart constructor, so it accepts a wider range
+of inputs and rewrites the given path specification into a basic one as the
+step of computing the list of Bezier curves. In particular you can optionally use
+direction specifiers before and/or after a point, to control the direction the
+curve will enter and leave a point.
+
+@centered[@racket[...  j- ds- p ds+ j+ ...]]
+
+Here the @racket[-] and @racket[+] indicates "before" and "after" the point.
+
+Finally @racket[curve] supports @emph{path operations}. A path operation @racket[f]
+can be placed after a point @racket[p]:
+
+    @centered[@racket[... p f more ...]]
+
+In order to process a path specification, @racket[curve] will make a first pass
+to remove path operations. When @racket[... p f more ...] is encountered,
+the path operation (a function) @racket[f] will be called with
+@racket[(list p f more ...)] as input. The output is a new path specification
+where @racket[f] has been removed.
+
+A few path operations such as @racket[/-], @racket[-/], @racket[--++], 
+@racket[-arc], @racket[-rectangle] are builtin. A user can define his
+own path operations.
+
 Given two points and a path join (and some extra pieces of information), @racket[curve]
 must compute the two control points between the two points. 
 }
 
-The standard path joins @racket[..] and  @racket[--] are defined as:
+The standard path joins are @racket[..] and  @racket[--].
 
-@defthing[.. tension-and?]{
-The default tension 1 to both sides: @racket[(tension-and 1 1)].}
+@deftogether[
+  (@defthing[.. tension-and? #:value (tension-and 1 1)]
+   @defthing[-- full-join? #:value (full-join (curl 1) .. (curl 1))])]{
+     Use @racket[..] to get "medium bendiness" and @racket[--] to get a straight line.}
 
-@defthing[-- full-join?]{
-Still default tension, but fixes curl to 1.
-It is the value: @racket[(full-join (curl 1) .. (curl 1))].}
-
-@defstruct*[join                 ()]
-
-@deftogether[(
-              @defstruct*[(controls-and join)  ([c- pt?]   [c+ pt?])]
-              @defstruct*[(tension-and  join)  ([τ- real?] [τ+ real?])]              
-              @defstruct*[(full-join    join)  ([ds- direction-specifier?] [j join?] [ds+ direction-specifier?])])]{}
+@deftogether[
+  (@defstruct*[join                 ()]
+   @defstruct*[(controls-and join)  ([c- pt?] [c+ pt?])]   
+   @defstruct*[(tension-and  join)  ([τ- real?] [τ+ real?])]              
+   @defstruct*[(full-join    join)  ([ds- direction-specifier?] [j join?] [ds+ direction-specifier?])]
+   @defproc[(tension [τ real?]) tension-and?])]{
+These path joins represent the most basic joins. They are not meant to be used
+directly (although @racket[controls-and] are occasionally useful), but are used internally.}
 
 The "tension" controls how "stiff/bendable" the curve is.
 
@@ -415,11 +438,11 @@ will be rewritten as @racket[(full-join ds0+ j0 ds1-)].
     (define points (penwidth 4 (color "red" (draw A B C))))
     (define (fj v1 v2) (full-join v1 .. v2))
     (beside* 
-     (list (draw (curve A ..  B (fj (vec 0 1)  (vec 1 0)) C) points)
-           (draw (curve A ..  B (fj (vec 0 1)  (vec 0 1)) C) points)
+     (list (draw (curve A ..  B (fj (vec  0 1) (vec 1 0)) C) points)
+           (draw (curve A ..  B (fj (vec  0 1) (vec 0 1)) C) points)
            (draw (curve A ..  B (fj (vec -1 0) (vec 0 1)) C) points)
            (draw (curve A ..  B (fj (vec -1 0) (vec 1 0)) C) points)
-           (draw (curve A ..  B (fj (vec 1 1)  (vec 1 1)) C) points))))]
+           (draw (curve A ..  B (fj (vec  1 1) (vec 1 1)) C) points))))]
 
 @interaction[#:eval eval
   (defv (A B C) (values (pt -0.3 -0.3) (pt -0.3 0.0) (pt 0.3 0.3)))

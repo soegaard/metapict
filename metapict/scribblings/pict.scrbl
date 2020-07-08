@@ -1,5 +1,5 @@
 #lang scribble/manual
-@(require (for-label metapict racket/draw
+@(require (for-label racket/draw metapict
                      (except-in racket angle box open path? unit identity ...))
           scribble/extract scribble/eval scribble/base scribble/manual "utils.rkt")
 @(define eval (make-metapict-eval))
@@ -183,3 +183,33 @@ JPEG is not included.
 
 @defproc[(margin [r real?] [p pict?]) pict?]{
 Equivalent to @racket[(inset p r)].}
+
+
+@; ----------------------------------------
+@subsection{Pict Combiners}
+
+@defproc[(above [p pict?] ...) pict?]{
+Draw the picts @racket[p ...] above each other.
+If the picts are of different widths, center them.
+
+Same as @racket[vc-append]}
+
+@defproc[(beside [p pict?] ...) pict?]{
+Draw the picts @racket[p ...] beside each other.
+If the picts are of different heights, center them.
+
+Same as @racket[hc-append]}
+
+
+@defproc[(above* [ps list?]) pict?]{
+Draw the picts in the list @racket[ps] above each other.
+The first element is on top. If the picts are of different widths, center them.
+
+Same as @racket[(apply vc-append ps)]}
+
+@defproc[(beside* [ps list?]) pict?]{
+Draw the picts in the list @racket[ps] beside each other.
+The first element is on the left If the picts are of different heights, center them.
+
+Same as @racket[(apply hc-append ps)]}
+
