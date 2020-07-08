@@ -10,5 +10,6 @@
 @include-section["trans.scrbl"]
 @include-section["device.scrbl"]
 @include-section["draw-and-fill.scrbl"]
+@include-section["labels.scrbl"]
 @include-section["representation.scrbl"]
 
