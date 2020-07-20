@@ -8,6 +8,6 @@
 
 (require (only-in pict text))
 
-(define (plain-text str)
-  (text str (current-font)))
+(define (plain-text str [font (current-font)])
+  (text str font))
 
