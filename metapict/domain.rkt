@@ -49,7 +49,9 @@
  domain-union
  domain-union*
  ;
+ domain-length
  format-domain
+ draw-domain
  attach-circles)
 
 (define/contract (empty-domain-interval? I)
@@ -87,6 +89,13 @@
        (not (domain-member? 3 (domain
                                (list (domain-interval #f 1 3 #f)
                                      (domain-interval #f 3 5 #f)))))))
+
+(define/contract (domain-length I)
+  (-> domain-interval? number?)
+  (defm (domain-interval ac a b bc) I)
+  (if (or (infinite? a) (infinite? b))
+      +inf.0
+      (- b a)))
 
 (define/contract (domain-interval-overlap? I1 I2)
   (-> domain-interval? domain-interval?   boolean?)
