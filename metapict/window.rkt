@@ -15,6 +15,9 @@
  inside-window?
  outside-window?
  transform-window  ; apply trans on window
+
+ device-window      ; return window with device coordinates (y-axis up)
+ with-device-window ; evaluate expressions using the device window as curve-pict-window
  (contract-out
   [window-overlap? (-> window? window?  boolean?)] ; do the windows overlap?
   [window-center   (-> window?          pt?)]      ; return pt in center
@@ -119,3 +122,18 @@
 
 (define-syntax (with-scaled-window stx)
   (syntax-parse stx [(_ k e ...) #'(with-window (scale-window k (curve-pict-window)) e ...)]))
+
+
+;;; Device Windows
+
+; Create window that matches the device size
+(define (device-window)
+  (window 0 (curve-pict-width) 
+          0 (curve-pict-height)))
+
+(define-syntax (with-device-window stx)
+  (syntax-parse stx
+    [(_with-device-window e ...)
+     (syntax/loc stx
+       (parameterize ([curve-pict-window (device-window)])
+         e ...))]))
