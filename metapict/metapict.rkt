@@ -23,6 +23,8 @@
          ; macros from window.rkt
          with-window
          with-scaled-window
+         with-device-window
+         device-window
          ~vec)
 
 
