@@ -2,12 +2,8 @@
 ; TODO: different types of ticks (one sided, slantes etc)
 ; TODO: tick labels need to use tick size to give a better placement
 
-(require racket/list racket/match racket/math racket/format
+(require racket/list racket/match racket/math racket/format         
          "metapict.rkt" "parameters.rkt")
-
-; An axis consist of an origin (point where 0 is placed) and a unit-vector,
-; which is a vector from the origo to the point where 1 is placed.
-; The coordinates of origin and unit-vector are logical coordinates.
 
 ; An axis consist of an origin (point where 0 is placed) and a unit-vector,
 ; which is a vector from the origo to the point where 1 is placed.
@@ -16,8 +12,7 @@
 ; (struct axis   (origin unit-vector label) #:transparent)
 ; (struct system (axis1 axis2)              #:transparent)
 ; (struct point  (system pt)                #:transparent)
-
-
+; (struct axis-tick (axis x size up? down?) #:transparent)
 
 (provide (all-defined-out))
 
@@ -68,7 +63,7 @@
   (def lower-border (curve (pt minx miny) -- (pt maxx miny)))
   (def upper-border (curve (pt minx maxy) -- (pt maxx maxy)))
   ; find intersection points of axis and clipping box
-  (define (line p v) (curve (pt+ p (vec* 10000 v)) -- (pt+ p (vec* -10000 v))))
+  (define (line p v) (curve (pt+ p (vec* 1000000 v)) -- (pt+ p (vec* -1000000 v))))
   (def l (line o v))
   (def p (first (append (intersection-points l left-border)
                         (intersection-points l lower-border)
@@ -89,14 +84,15 @@
 (define (draw-axis a #:window [win (curve-pict-window)])
   (defv (xmin xmax) (visible-range a win))
   (define (coord x) (coordinate->pt a x))
-  (parameterize ([ahlength (px 8)])
-    (def from (coord xmin))
-    (def to   (coord xmax))
-    (def r    (unit-vec (pt- to from)))
-    (def L    (pt+ to (vec* (* 1.30 (ahlength)) (rotatedd -110 r))))
-    (draw (draw-arrow (curve from -- to))
-          (and (axis-label a)
-               (fill-label "white" (label-cnt (axis-label a) L)) ))))
+  (def from ((current-curve-transformation) (coord xmin)))
+  (def to   ((current-curve-transformation) (coord xmax)))
+  (def r    (unit-vec (pt- to from)))
+  (def L    (pt+ to (vec* (* 1.30 (ahlength)) (rotatedd -110 r))))
+  (draw (with-device-window
+          (parameterize ([ahlength (ypx 8)])              
+            (draw-arrow (curve from -- to))))
+        (and (axis-label a)
+             (fill-label "white" (label-cnt (axis-label a) L)) )))
 
 (current-draw-axis draw-axis)
 
@@ -109,12 +105,46 @@
 (define (tick-center a x)
   (coordinate->pt a x))
 
-(define (tick axis x
-              #:size [s (get current-tick-size)])
-  (def p (tick-center axis x))
-  (def v (vec* s (rot90 (axis-dir axis))))
-  (curve (pt+ p v) -- (pt- p v)))
 
+;; (define (tick axis x
+;;               #:size [s (get current-tick-size)])
+;;   (def p (tick-center axis x))
+;;   (def v (vec* s (unit-vec (rot90 (axis-dir axis)))))  
+;;   (curve (pt+ p v) -- (pt- p v)))
+
+(define (tick axis x #:size [s #f] #:up? [up? #t] #:down? [down? #t])
+  (axis-tick axis x s up? down?))
+
+(define (draw-axis-tick at)
+  (defm (axis-tick a x s up? down?) at)
+  ;; Get current tick size, if needed.
+  (unless s (set! s (current-tick-size)))
+  ; The start end points are in logical coordinates,
+  ; but we need to work in the device window to get the right size.
+
+  ;; First, find the relevant locations in logical coordinates.
+  (def p (tick-center a x))      
+  (def q (pt+ p (axis-dir a))) ; now vector pq is parallel to the axis
+
+  ;; Second, convert to device coordinates.
+  (define (coord x) (coordinate->pt a x))
+  (def T (current-curve-transformation))
+  (def P (T p))                  ; on axis
+  (def Q (T q))
+
+  ;; Third, new points in device coordinates
+  (def V (unit-vec (pt- Q P)))
+  (def U (pt+ P (vec*    s  (rot90 V)))) ; above axis
+  (def D (pt+ P (vec* (- s) (rot90 V)))) ; below axis
+  ;; Fourth, draw
+  (with-device-window
+    (draw (match (list up? down?)
+            [(list #t #t)  (curve U -- D)]
+            [(list #f #t)  (curve P -- D)]
+            [(list #t #f)  (curve U -- P)]
+            [(list #f #f)  (curve P -- P)]))))
+
+(current-draw-axis-tick draw-axis-tick)
 
 (define (ticks a      ; axis
                [d 1]  ; axis units between ticks
@@ -126,7 +156,7 @@
   (defm (axis o v l) a)  
   (defv (s t) (visible-range a win))
   (define (snap x d) (exact-round (* d (floor (/ x d)))))
-  (def xs (tick-ordinates a d #:window win #:last-tick? last?))  
+  (def xs (tick-ordinates a d #:window win #:last-tick? last?))
   (for/list ([x (in-list xs)])
     (tick a x #:size ts)))
 
@@ -142,13 +172,16 @@
   (define (snap x d) (exact-round (* d (floor (/ x d)))))
 
   (let ([s (snap s d)] [t (snap t d)])
+    (when (= s t) (set! t (+ s (* 10 d))))
+    (displayln (list 'snaps s t))
     ; the first and last tick in the range is excluded
     ; due to collision with arrow head
     (def xs (for/list ([x (in-range (+ s d) (+ t d) d)])
               x))
-    (if last?
-        xs
-        (reverse (rest (reverse xs))))))
+    (cond
+      [last?       xs]
+      [(empty? xs) '()]
+      [else (reverse (rest (reverse xs)))])))
 
 (define (tick-label a x [opposite #f])
   (def α (angle2 (axis-dir a) (vec 1 0)))
@@ -191,15 +224,3 @@
 ;  (let ()
 ;    (defm (invertible-function f g) T)
 ;    (λ (x)  (f x))))
-
-
-
-
-
-
-
-
-
-
-
-

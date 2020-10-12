@@ -255,6 +255,20 @@
   #:transparent)
 (provide-structs point:)
 
+;;;
+;;; Axis Tick
+;;;
+
+; An axis tick represents a marked location on a number axis.
+; The x value is an axis coordinate.
+; The size is an device size - if false, current-tick-size will be called
+; The up? and down? flags indicates which sides the ticks is drawn.
+(struct axis-tick (axis x size up? down?)
+  #:property prop:drawable (λ (at) ((current-draw-axis-tick) at))
+  #:transparent)
+(provide-structs axis-tick)
+
+
 
 ;;;
 ;;; Geometry
