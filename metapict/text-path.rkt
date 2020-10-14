@@ -15,9 +15,9 @@
 
 
 ; the position pos is the top left of the text in logical coordinates
-(define (text-outline font text              [pos (pt 0 0)] ; logical
+(define (text-outline font text              [pos      (pt 0 0)] ; logical
                       #:kerning?             [kerning? #f]
-                      #:return-bounding-box? [bbox? #f])
+                      #:return-bounding-box? [bbox?    #f])
   (def T (current-curve-transformation)) ; logical -> device
   (def S (inverse T))                    ; device  -> logical
   (defm (pt x y) (T pos)) ; dev

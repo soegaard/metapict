@@ -29,7 +29,11 @@
          tick-ordinates ; produce list of ordinates of the ticks
          tick-label     ; axis x to label next to tick
          tick-labels    ; 
-         unit-label)
+         unit-label
+         
+         horizontal-axis-range ; axis win, returns range in axis coordinates
+         vertical-axis-range   ; axis win, returns range in axis coordinates
+         )
 
 (define (new-axis origin unit-vector [label #f])
   (axis origin unit-vector label))
@@ -51,9 +55,10 @@
       c
       (- c)))
 
-(define (visible-range a win)
+(define (visible-range a win)  
   ; return the start and end (in logical coordinates i.e. not axis coordinates)
-  ; of range in which the axis is visible
+  ; of range in which the axis is visible.
+  ; Note: If you see #f #f it means the axis is entirely outside the window.  
   (defm (axis o v _) a)
   (defm (window minx maxx miny maxy) win)
     
@@ -75,6 +80,44 @@
     [(#f #f)  (values #f #f)]  ; not visible
     [(p q)    (values (coordinate a p)
                       (coordinate a q))]))
+
+(define (horizontal-axis? a)
+  (defm (axis o  v _) a)
+  (defm (vec  vx vy)  v)
+  (zero? vy))
+
+(define (vertical-axis? a)
+  (defm (axis o  v _) a)
+  (defm (vec  vx vy)  v)
+  (zero? vx))
+
+(define (horizontal-axis-range a win)  
+  ; Given a horizontal axis a, compute the range in which the window falls.
+  ; Note: This returns values even if the axis doesn't intersecti the axis.
+  (defm (window minx maxx miny maxy) win)
+  (defm (axis o  v _) a)
+  (defm (pt   ox oy)  o)
+  (defm (vec  vx vy)  v)
+
+  ; The windows has an x-range from minx to maxx in logical coordinates.
+  ; We need to translate this into axis coordinates.
+  (def from (/ (- minx ox) vx))
+  (def to   (/ (- maxx ox) vx))
+  (values from to))
+
+(define (vertical-axis-range a win)  
+  ; Given a vertical axis a, compute the range in which the window falls.
+  ; Note: This returns values even if the axis doesn't intersecti the axis.
+  (defm (window minx maxx miny maxy) win)
+  (defm (axis o  v _) a)
+  (defm (pt   ox oy)  o)
+  (defm (vec  vx vy)  v)
+
+  ; The windows has an y-range from miny to maxy in logical coordinates.
+  ; We need to translate this into axis coordinates.
+  (def from (/ (- miny oy) vy))
+  (def to   (/ (- maxy oy) vy))
+  (values from to))
   
 
 ; The axis is drawn as a line ending in an arrow.
@@ -150,15 +193,14 @@
                [d 1]  ; axis units between ticks
                #:size       [ts  (get current-tick-size)]
                #:window     [win (curve-pict-window)]
-               #:last-tick? [last? #f])
+               #:last-tick? [last? #f]
+               #:up?        [up? #t]
+               #:down?      [down? #t])
   ; An arrow head makes the last tick look odd,
   ; the default is to omit it.  
-  (defm (axis o v l) a)  
-  (defv (s t) (visible-range a win))
-  (define (snap x d) (exact-round (* d (floor (/ x d)))))
   (def xs (tick-ordinates a d #:window win #:last-tick? last?))
   (for/list ([x (in-list xs)])
-    (tick a x #:size ts)))
+    (tick a x #:size ts #:up? up? #:down? down?)))
 
 (define (tick-ordinates a      ; axis
                         [d 1]  ; axis units between ticks
@@ -168,12 +210,17 @@
   ; the default is to omit it.  
   
   (defm (axis o v l) a)  
-  (defv (s t) (visible-range a win))
-  (define (snap x d) (exact-round (* d (floor (/ x d)))))
+  (defv (s t)
+    ; Note: If the axis is outside the window, visible-range returns #f #f.
+    ;       We therefore special case the horizontal and vertical case.
+    (cond [(horizontal-axis? a) (horizontal-axis-range a win)]
+          [(vertical-axis?   a) (vertical-axis-range   a win)]
+          [else                 (visible-range         a win)]))
+  (define (snap x d)
+    (exact-round (* d (floor (/ x d)))))
 
   (let ([s (snap s d)] [t (snap t d)])
     (when (= s t) (set! t (+ s (* 10 d))))
-    (displayln (list 'snaps s t))
     ; the first and last tick in the range is excluded
     ; due to collision with arrow head
     (def xs (for/list ([x (in-range (+ s d) (+ t d) d)])
@@ -181,7 +228,7 @@
     (cond
       [last?       xs]
       [(empty? xs) '()]
-      [else (reverse (rest (reverse xs)))])))
+      [else        (reverse (rest (reverse xs)))])))
 
 (define (tick-label a x [opposite #f])
   (def α (angle2 (axis-dir a) (vec 1 0)))

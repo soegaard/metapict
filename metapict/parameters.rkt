@@ -118,10 +118,11 @@
 ;;; Axis and Ticks
 ;;;
 
-(def current-tick-size (make-parameter (λ() 1))) ; 
+(def current-tick-size (make-parameter (λ() 4))) ; 
 
 (def current-draw-axis (make-parameter #f))
 
+(def current-draw-axis-tick (make-parameter #f))
 
 ;;;
 ;;; Coordinate System 

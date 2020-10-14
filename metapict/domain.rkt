@@ -26,7 +26,8 @@
  empty-domain-interval?
  domain-interval-member?
  domain-interval-overlap?
- domain-interval<         
+ domain-interval<
+ domain-interval-length
  ; constructors
  open-domain-interval
  closed-domain-interval
@@ -90,12 +91,18 @@
                                (list (domain-interval #f 1 3 #f)
                                      (domain-interval #f 3 5 #f)))))))
 
-(define/contract (domain-length I)
+(define/contract (domain-interval-length I)
   (-> domain-interval? number?)
   (defm (domain-interval ac a b bc) I)
   (if (or (infinite? a) (infinite? b))
       +inf.0
       (- b a)))
+
+(define/contract (domain-length D)
+  (-> domain? number?)
+  (for/sum ([I (domain-intervals D)])
+    (domain-interval-length I)))
+
 
 (define/contract (domain-interval-overlap? I1 I2)
   (-> domain-interval? domain-interval?   boolean?)

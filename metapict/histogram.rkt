@@ -178,13 +178,15 @@
   (set-curve-pict-size pict-size-x pict-size-y)
   (define-values (xmin xmax) (values (- min-bound (* 2 min-gap))
                                      (+ max-bound (* 2 min-gap))))
-  (define-values (ymin ymax) (values -5 (* 100 (/ min-gap max-weight ))))
+  (define max-logical-y (+ 0.01 (/ max-weight min-gap)))
+  (define below-logical-size  (* max-logical-y (/ 20 pict-size-y)))
+  (define-values (ymin ymax) (values (- below-logical-size) max-logical-y))
   (def win (window xmin xmax ymin ymax))
 
   ;; 4. Draw axis, histogram and block
 
   (with-window win
-    (def s  (system (pt 0 0) (vec 1 0) (vec 0  (* (- ymax 1) (/ min-gap max-weight )))))
+    (def s  (system (pt 0 0) (vec 1 0) (vec 0 1)))
     (def a1 (first-axis  s))
     (def a2 (second-axis s))
     ; the horizontal gridlines have the block-height as distance
@@ -197,7 +199,7 @@
             (with-window (window (- xmin x0) (- xmax x0) ymin ymax)
               (for/draw ([y (in-range 0 1 block-height)])
                 (def A (point->pt (point s 0    y)))
-                (def B (point->pt (point s xmax y)))
+                (def B (point->pt (point s (* xmax) y)))
                 (dashed (pencolor "gray" (draw (curve A -- B))))))))
      
      ;; Second Axis
@@ -208,7 +210,7 @@
             (def x0 (- min-bound min-gap))
             (draw ; a2
                 (with-window (window (- xmin x0) (- xmax x0) ymin ymax)
-                  (draw (ticks a2 .1   #:size (xpx 3))             
+                  (draw ; (ticks a2 .1 #:size 3)             
                         (for/draw ([y (in-range 0.1 1.0 0.1)])
                           (tick-label a2 y #t)))))))
                     
@@ -217,7 +219,10 @@
      (simple-histogram s bounds weights #:y-scale y-scale)
 
      ;; First Axis
-     a1 (ticks a1 1  #:size (ypx 3))
+     a1
+     ;; Ticks
+     (for/draw ([x bounds])
+       (tick a1 x #:size 3))
 
      ; Labels of bounds
      (for/draw ([x bounds])

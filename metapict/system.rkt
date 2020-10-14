@@ -17,9 +17,12 @@
 ; (struct point: (system p)      #:transparent)
 
 (provide
+ ; selectors
+ first-axis
+ second-axis
  ; constructors
  system ; given origin and two basis vectors construct a coordinate system
- point
+ point 
  ; conversion
  point->pt
  ; fomatters

@@ -162,6 +162,8 @@
          (hash-ref seen-pairs v)]
         [(used? ul)
          ; this position has been used (by another value), move down
+         ; todo: depth is the wrong thing to use here ... we need to
+         ;       know how much space is used below the element instead
          (recur (pt+ ul (vec 0 (* (+ 1 (depth (used? ul))) (vec-y dr)))) v)]
         [else
          (use ul v)

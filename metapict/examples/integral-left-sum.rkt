@@ -96,7 +96,7 @@
         (draw-arrow y-axis)        
         ; (draw g-xmin-to-a g-a-to-b g-b-to-xmax)
         (draw* (for/list ([r (left-rectangles rs)]) 
-                 (draw (color "gray" (fill r)) 
+                 (draw (color (change-alpha "gray" 0.5) (fill r)) 
                        r)))
         (curve xA -- A)
         (curve xB -- B)

@@ -129,7 +129,7 @@
 ; Create window that matches the device size
 (define (device-window)
   (window 0 (curve-pict-width) 
-          0 (curve-pict-height)))
+          (curve-pict-height) 0))
 
 (define-syntax (with-device-window stx)
   (syntax-parse stx

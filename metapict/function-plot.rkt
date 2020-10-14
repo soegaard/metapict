@@ -86,6 +86,8 @@
 ;;; Examples
 
 
+;; (require "draw.rkt" "window.rkt" "curve.rkt" "path.rkt" "device.rkt")
+;; (set-curve-pict-size 400 400)
 ;; (def f (fun "f" (closed 2 4) (λ (x) (* x x))))
 ;; (procedure? f)
 
@@ -104,5 +106,8 @@
 ;;         (cond-fun
 ;;          (list (list /                      (open -4 0))
 ;;                (list (λ(x) (+ (* .5 x) -3)) (closed-open  3 5))
-;;                (list sqrt                   (closed-open  0 3))))))
+;;                (list sqrt                   (closed-open  0 3)))))
+
+;;       (fun-graph s w
+;;                  (fun "sin" (open -inf.0 +inf.0) sin)))
 

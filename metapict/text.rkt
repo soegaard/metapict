@@ -8,6 +8,8 @@
 
 (require (only-in pict text))
 
-(define (plain-text str [font (current-font)])
-  (text str font))
+(define (plain-text str [font (current-font)] #:text-color [text-color #f])
+  (if text-color
+      (text str (cons (make-color* text-color) font))
+      (text str font)))
 
