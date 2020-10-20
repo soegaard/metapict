@@ -311,20 +311,23 @@
 (require "shapes.rkt")
 
 (define (attach-circles c start end
-                        #:size [size (px 3)])
+                        #:size [size 3])
+  ; Note: The size of the cirkles are in device coordinates.  
   (define (shape x pos) (if x (circle pos size) (curve pos)))
   (define (make-draw x)
     (case x
       [(open)   draw]
       [(closed) fill]
-      [else     (λ x #f)]))        
+      [else     (λ x #f)]))
   (def A (start-point c))
-  (def B (end-point c))
-  (def sA (shape start A))
-  (def sB (shape end   B))
-  (draw ((make-draw start) sA)
-        (cut-after (cut-before c sA) sB)
-        ((make-draw end) sB)))
+  (def B (end-point   c))
+  (def T (current-curve-transformation))
+  (def sA (shape start (T A)))
+  (def sB (shape end   (T B)))
+  (with-device-window
+    (draw ((make-draw start) sA)
+          (cut-after (cut-before (T c) sA) sB)
+          ((make-draw end)   sB))))
 
 
 #;(

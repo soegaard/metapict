@@ -24,6 +24,7 @@
                        ))
 
 (require "def.rkt" "structs.rkt" "trig.rkt" "mat.rkt" "pt-vec.rkt"
+         "parameters.rkt"
          (for-syntax racket/base)
          racket/match racket/format racket/list racket/math)
 
@@ -45,13 +46,17 @@
       (defv (xnew ynew) (values (+ (* xx x) (* xy y) x0)
                                 (+ (* yx x) (* yy y) y0)))
       (apply (constructor v) (list xnew ynew)))
+    (define point->pt #f)
     (let loop ([vs (reverse vs)])
       (match vs
         [(list v) (match v
                     [(bez p0 p1 p2 p3)   (bez (f p0) (f p1) (f p2) (f p3))]
                     [(curve: c? bs)      (curve: c? (map t bs))]
                     [(or (? vec?) (? pt?) (list _ _) (vector _ _)) (f v)]
-                    [(? trans? v)         (compose-trans t v)]
+                    [(? trans? v)        (compose-trans t v)]
+                    [(? point:? v)       (unless point->pt
+                                           (set! point->pt (current-point-to-pt-converter)))
+                                         (f (point->pt v))]
                     ; [(? open-path? v)     (transform-path t v f)]
                     ; [(? closed-path? v)   (transform-path t v f)] ; XXX
                     [_ (error 'trans 
