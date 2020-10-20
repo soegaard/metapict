@@ -124,18 +124,17 @@
 ; The axis is conceptually infinite, so we need a logical window
 ; so we can find the placement of the arrow.
 
-(define (draw-axis a #:window [win (curve-pict-window)])
+(define (draw-axis a #:window [win (curve-pict-window)] #:fill-label [fill #f])
   (defv (xmin xmax) (visible-range a win))
   (define (coord x) (coordinate->pt a x))
-  (def from ((current-curve-transformation) (coord xmin)))
-  (def to   ((current-curve-transformation) (coord xmax)))
-  (def r    (unit-vec (pt- to from)))
-  (def L    (pt+ to (vec* (* 1.30 (ahlength)) (rotatedd -110 r))))
+  (def T    (current-curve-transformation))
+  (def from (T (coord xmin)))
+  (def to   (T (coord xmax)))
   (draw (with-device-window
-          (parameterize ([ahlength (ypx 8)])              
+          (parameterize ([ahlength (ypx 8)])
             (draw-arrow (curve from -- to))))
         (and (axis-label a)
-             (fill-label "white" (label-cnt (axis-label a) L)) )))
+             (draw-axis-label a xmax #f #:text (axis-label a) #:fill fill #:offset -8))))
 
 (current-draw-axis draw-axis)
 
@@ -161,7 +160,7 @@
 (define (draw-axis-tick at)
   (defm (axis-tick a x s up? down?) at)
   ;; Get current tick size, if needed.
-  (unless s (set! s (current-tick-size)))
+  (unless s (set! s (get current-tick-size)))
   ; The start end points are in logical coordinates,
   ; but we need to work in the device window to get the right size.
 
@@ -230,25 +229,54 @@
       [(empty? xs) '()]
       [else        (reverse (rest (reverse xs)))])))
 
-(define (tick-label a x [opposite #f])
+(define (draw-axis-label a x [opposite #f] 
+                    #:offset [offset    0]  ; in device coordinates
+                    #:text   [text     #f]
+                    #:fill   [fill     #f]) ; boolean or color
+  (def k (if opposite -1 1))
+  (def α (angle2 (vec 1 0) (axis-dir a)))
+  (def label-maker     (cond [(<= -π/4 α π/4) label-top]
+                             [else            label-rt]))
+  (def opp-label-maker (cond [(<= -π/4 α π/4) label-bot]
+                             [else            label-lft]))
+  (def off             (cond [(<= -π/4 α π/4) (vec offset -4)]
+                             [else            (vec 4 (- offset))])) ; device y opposite
+  (def maker (if opposite opp-label-maker label-maker))
+  (def T     (current-curve-transformation))
+  (def pos   (pt+ (T (coordinate->pt a x)) (vec* k off)))
+  (def l     (maker (or text (~r x #:precision 4)) pos))
+  (with-device-window
+    (draw l)))
+
+(define (tick-label a x      [opposite #f] 
+                    #:text   [text     #f]
+                    #:fill   [fill     #f]) ; boolean or color
   (def α (angle2 (axis-dir a) (vec 1 0)))
   (def label-maker     (cond [(<= α α π/4) label-top]
-                         [else         label-rt]))
+                             [else         label-rt]))
   (def opp-label-maker (cond [(<= α α π/4) label-bot]
                              [else         label-lft]))
   (def maker (if opposite opp-label-maker label-maker))
-  (maker (~r x #:precision 4)
-         (coordinate->pt a x)))
+  (def l     (maker (or text (~r x #:precision 4))
+                    (coordinate->pt a x)))
+  (match fill
+    [#f                     l]
+    [#t (fill-label "white" l)]
+    [c  (fill-label c       l)]))
 
 (define (tick-labels a       ; axis
                       [d 1]  ; axis units between ticks
-                      #:window [win (curve-pict-window)])                      
+                      #:window [win (curve-pict-window)]
+                      #:fill   [fill #f])  ; boolean or color
   (defm (axis o v l) a)  
   (defv (s t) (visible-range a win))
   ; the first and last tick in the range is excluded
   ; due to collision with arrow head
-  (for/draw ([x (in-range (+ s d) t d)])            
-            (tick-label a x)))
+  (for/draw ([x (in-range (+ s d) t d)])
+    (match fill
+      [#f                     (tick-label a x)]
+      [#t (fill-label "white" (tick-label a x))]
+      [c  (fill-label c       (tick-label a x))])))
   
 (define (unit-label a)
   (def α (angle2 (axis-dir a) (vec 1 0)))
@@ -257,6 +285,7 @@
       [(<= α α π/4) label-bot]
       [else         label-lft]))  
   (label-maker "1" (coordinate->pt a 1)))
+
 
 
   
