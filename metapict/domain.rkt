@@ -312,7 +312,7 @@
 
 (define (attach-circles c start end
                         #:size [size 3])
-  ; Note: The size of the cirkles are in device coordinates.  
+  ; Note: The size of the circles are in device coordinates.  
   (define (shape x pos) (if x (circle pos size) (curve pos)))
   (define (make-draw x)
     (case x

@@ -27,6 +27,10 @@
   #:methods  gen:custom-write [(define write-proc fun-print)]
   #:transparent)
 
+(define fun-name   fun:-name)
+(define fun-domain fun:-domain)
+(define fun-map    fun:-map)
+
   
 (define fun
   (let ()

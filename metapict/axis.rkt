@@ -190,21 +190,23 @@
 
 (define (ticks a      ; axis
                [d 1]  ; axis units between ticks
-               #:size       [ts  (get current-tick-size)]
-               #:window     [win (curve-pict-window)]
-               #:last-tick? [last? #f]
-               #:up?        [up? #t]
-               #:down?      [down? #t])
+               #:size        [ts  (get current-tick-size)]
+               #:window      [win (curve-pict-window)]
+               #:last-tick?  [last?  #f]
+               #:first-tick? [first? #f]
+               #:up?         [up? #t]
+               #:down?       [down? #t])
   ; An arrow head makes the last tick look odd,
   ; the default is to omit it.  
-  (def xs (tick-ordinates a d #:window win #:last-tick? last?))
+  (def xs (tick-ordinates a d #:window win #:last-tick? last? #:first-tick? first?))
   (for/list ([x (in-list xs)])
     (tick a x #:size ts #:up? up? #:down? down?)))
 
 (define (tick-ordinates a      ; axis
                         [d 1]  ; axis units between ticks
-                        #:window [win (curve-pict-window)]
-                        #:last-tick? [last? #f])
+                        #:window      [win (curve-pict-window)]
+                        #:last-tick?  [last? #f]
+                        #:first-tick? [first? #f])
   ; An arrow head makes the last tick look odd,
   ; the default is to omit it.  
   
@@ -219,15 +221,19 @@
     (exact-round (* d (floor (/ x d)))))
 
   (let ([s (snap s d)] [t (snap t d)])
+    (displayln (list s t))
     (when (= s t) (set! t (+ s (* 10 d))))
     ; the first and last tick in the range is excluded
     ; due to collision with arrow head
     (def xs (for/list ([x (in-range (+ s d) (+ t d) d)])
               x))
     (cond
-      [last?       xs]
-      [(empty? xs) '()]
-      [else        (reverse (rest (reverse xs)))])))
+      [(and last? first)  xs]
+      [(empty? xs)        '()]
+      [(empty? (rest xs)) '()]
+      [last?              (rest xs)]
+      [first?             (reverse (rest (reverse xs)))]
+      [else               (reverse (rest (reverse (rest xs))))])))
 
 (define (draw-axis-label a x [opposite #f] 
                     #:offset [offset    0]  ; in device coordinates

@@ -216,9 +216,10 @@
   
   ; (displayln (map vectors->list connected-points))
 
+  ; on purpose! Used by function-plot.rkt
   connected-points
   
-  #;(map curve*
+  #;(curve*
        (map (λ (ps) (add-between ps --))
             (map vectors->list connected-points)))
   

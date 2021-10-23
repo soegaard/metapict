@@ -151,10 +151,10 @@
              (label-lft (or label (~a y)) (point->pt py)))))
 
 
-(define (system-grid s #:last-tick? [ts? #t])
+(define (system-grid s #:last-tick? [ts? #t] #:first-tick? [ft? #f])
   (defm (system: origin a1 a2) s)
-  (def xs (tick-ordinates a1 #:last-tick? ts?))
-  (def ys (tick-ordinates a2 #:last-tick? ts?))
+  (def xs (tick-ordinates a1 #:last-tick? ts? #:first-tick? ft?))
+  (def ys (tick-ordinates a2 #:last-tick? ts? #:first-tick? ft?))
   (def bl (point s (first xs) (first ys)))
   (def ur (point s (last  xs) (last  ys)))
   (def xmin (first xs))

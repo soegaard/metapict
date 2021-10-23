@@ -13,7 +13,9 @@
          (prefix-in adaptive- "adaptive-plot.rkt"))
 
 
-(define (fun-graph s win the-fun #:excluded [excluded #f] #:regions [regions 9])
+(define (fun-graph s win the-fun
+                   #:excluded-symbols [excluded '()] ; omit open closed symbols in this list
+                   #:regions          [regions 9])
   ; window is in axis coordinates
   (defm (system: _ a1 a2) s)
   (defv (xmin xmax) (visible-range a1 win))
@@ -28,9 +30,12 @@
   (define (end-symbol c? x)
     (match x
       [(or +inf.0 -inf.0) #f] ; none
-      [_ (match c?
-           [#t 'closed]
-           [#f 'open])]))
+      [_ 
+       (if (member x excluded)
+           #f ; none
+           (match c?
+             [#t 'closed]
+             [#f 'open]))]))
   (match the-fun
     [(fun: name (domain intervals) f)
      (flatten
@@ -45,13 +50,15 @@
              [else (def axes? #f)
                    (def ptss (adaptive-plot2d f (max a xmin) (min b xmax) ymin ymax excluded? axes?
                                               #:regions regions))
+                   ; (displayln (list 'a a 'xmin xmin 'max (max a xmin) 'a>=xmin (>= a xmin)))
                    (match ptss
-                     [(list pts)               (list (component pts  (end-symbol ac? a) (end-symbol bc? b)))]
-                     [(list pts0 pts1)         (list (component pts0 (end-symbol ac? a) #f)
-                                                     (component pts1 #f (end-symbol bc? b)))]
-                     [(list pts0 pts ... pts1) (list (component pts0 (end-symbol ac? a) #f)
+                     [(list pts)               (list (component pts  (and (>= a xmin) (end-symbol ac? a))
+                                                                     (and (<= b xmax) (end-symbol bc? b))))]
+                     [(list pts0 pts1)         (list (component pts0 (and (>= a xmin) (end-symbol ac? a)) #f)
+                                                     (component pts1 #f (and (<= b xmax) (end-symbol bc? b))))]
+                     [(list pts0 pts ... pts1) (list (component pts0 (and (>= a xmin) (end-symbol ac? a)) #f)
                                                      (map (λ (pts) (component pts #f #f)) pts)
-                                                     (component pts1 #f (end-symbol bc? b)))]
+                                                     (component pts1 #f (and (<= b xmax) (end-symbol bc? b))))]
                      [(list)                   '()])])])))]))
 
 ;; (define (plot2d s f xmin xmax ymin ymax [excluded #f])
