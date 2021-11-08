@@ -1,5 +1,5 @@
 #lang racket
-(require "../metapict.rkt")
+(require metapict)
 
 ;;;
 ;;; Racket Logo
@@ -128,6 +128,7 @@
 (def red  (make-color* 157 31 36))
 (def blue (make-color* 63 93 167))
 
+
 ; let's be fancy and give the blue area a gradient
 (define blue-gradient
   (let ()
@@ -194,9 +195,9 @@
 (define gray  (make-color* 196 196 196))
 
 (require (prefix-in pict: pict)
-         "../crop.rkt")
+         metapict/crop)
 
-(define (create-racket-stories-logo file col)
+(define (create-racket-stories-logo file col)  
   (save-pict file
    (crop/inked
     (with-font
@@ -230,3 +231,54 @@
   (draw (color white (fill blue-curve))
         (color white (fill red-left-curve))
         (color white (fill red-middle-curve))))
+
+
+(define (logo2020 level [transform identity])
+  (set-curve-pict-size 260 260)
+  (define t transform)
+  (case level
+    [(0)   (draw (color blue (fill (t blue-curve)))
+                 (color red  (fill (t red-left-curve)))
+                 (color red  (fill (t red-middle-curve))))]
+    [else  (draw (color blue (fill (t blue-curve)))
+                 (color red  (fill (t red-left-curve)))
+                 (logo2020 (- level 1) (shifted 0.05 -0.4 (scaled 0.4 t))))]))
+
+; (logo2020 10)
+
+
+(define (create-racket-discourse-white-logo file)  
+  (set-curve-pict-size 260 260)
+  (save-pict file
+   (crop/inked
+    (with-font
+      (make-similar-font (new-font) #:face "Cooper Hewitt" #:size 200)
+      (beside  (draw (color blue  (fill blue-curve))
+                     (color red   (fill red-left-curve))
+                     (color red   (fill red-middle-curve)))
+               (blank 15 1)
+               (above (blank 1 30)
+                      (pict:text "Racket"
+                                 (cons (make-color* "black")
+                                       (current-font)))))))
+   'svg))
+
+(create-racket-discourse-white-logo "racket-discourse-white.svg")
+
+(define (create-racket-discourse-black-logo file)  
+  (set-curve-pict-size 260 260)
+  (save-pict file
+   (crop/inked
+    (with-font
+      (make-similar-font (new-font) #:face "Cooper Hewitt" #:size 200)
+      (beside  (draw (color blue  (fill blue-curve))
+                     (color red   (fill red-left-curve))
+                     (color red   (fill red-middle-curve)))
+               (blank 15 1)
+               (above (blank 1 30)
+                      (pict:text "Racket"
+                                 (cons (make-color* "white")
+                                       (current-font)))))))
+   'svg))
+
+(create-racket-discourse-black-logo "racket-discourse-black.svg")
