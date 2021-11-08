@@ -249,36 +249,46 @@
 
 (define (create-racket-discourse-white-logo file)  
   (set-curve-pict-size 260 260)
-  (save-pict file
-   (crop/inked
-    (with-font
-      (make-similar-font (new-font) #:face "Cooper Hewitt" #:size 200)
-      (beside  (draw (color blue  (fill blue-curve))
-                     (color red   (fill red-left-curve))
-                     (color red   (fill red-middle-curve)))
-               (blank 15 1)
-               (above (blank 1 30)
-                      (pict:text "Racket"
-                                 (cons (make-color* "black")
-                                       (current-font)))))))
-   'svg))
+  (define transparent
+    (crop/inked
+     (with-font
+         (make-similar-font (new-font) #:face "Cooper Hewitt" #:size 200)
+       (beside  (draw (color blue  (fill blue-curve))
+                      (color red   (fill red-left-curve))
+                      (color red   (fill red-middle-curve)))
+                (blank 15 1)
+                (above (blank 1 30)
+                       (pict:text "Racket"
+                                  (cons (make-color* "black")
+                                        (current-font))))))))
+  (define w (pict-width  transparent))
+  (define h (pict-height transparent))
+  (define background      (filled-rectangle w h #:color "white"))
+  (define with-background (cc-superimpose background transparent))
+  (save-pict file with-background 'svg)
+  with-background)
 
 (create-racket-discourse-white-logo "racket-discourse-white.svg")
 
 (define (create-racket-discourse-black-logo file)  
   (set-curve-pict-size 260 260)
-  (save-pict file
-   (crop/inked
-    (with-font
-      (make-similar-font (new-font) #:face "Cooper Hewitt" #:size 200)
-      (beside  (draw (color blue  (fill blue-curve))
-                     (color red   (fill red-left-curve))
-                     (color red   (fill red-middle-curve)))
-               (blank 15 1)
-               (above (blank 1 30)
-                      (pict:text "Racket"
-                                 (cons (make-color* "white")
-                                       (current-font)))))))
-   'svg))
+  (define transparent
+    (crop/inked
+     (with-font
+         (make-similar-font (new-font) #:face "Cooper Hewitt" #:size 200)
+       (beside  (draw (color blue  (fill blue-curve))
+                      (color red   (fill red-left-curve))
+                      (color red   (fill red-middle-curve)))
+                (blank 15 1)
+                (above (blank 1 30)
+                       (pict:text "Racket"
+                                  (cons (make-color* "white")
+                                        (current-font))))))))
+  (define w (pict-width  transparent))
+  (define h (pict-height transparent))
+  (define background      (filled-rectangle w h #:color "black"))
+  (define with-background (cc-superimpose background transparent))
+  (save-pict file with-background 'svg)
+  with-background)
 
 (create-racket-discourse-black-logo "racket-discourse-black.svg")
