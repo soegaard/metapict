@@ -422,9 +422,10 @@
     (crop/inked
      (with-font
        (make-similar-font (new-font) #:face "Cooper Hewitt" #:size 200)
-       (draw (penscale 8
-                       (color "black" (draw ((trans 1 0 0 1 -0.9 0.9) 
-                                             (flipy (scaled 1/100 speech-bubble))))))
+       (draw (penscale 16
+                       (color "white"
+                              (pencolor "black" (filldraw ((trans 1 0 0 1 -0.9 0.9) 
+                                                           (flipy (scaled 1/100 speech-bubble)))))))
              (color blue  (fill (t (scaled a blue-curve))))
              (color red   (fill (t (scaled a red-left-curve))))
              (color red   (fill (t (scaled a red-middle-curve))))                      
@@ -436,6 +437,6 @@
   (save-pict file (scale (/ 120 h) transparent) 'svg)
   transparent)
 
-(create-racket-discourse-favicon "racket-discourse-favicon5.svg")
+(create-racket-discourse-favicon "racket-discourse-favicon8.svg")
 
 
