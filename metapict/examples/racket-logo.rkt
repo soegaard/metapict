@@ -258,19 +258,20 @@
                       (color red   (fill red-middle-curve)))
                 (blank 15 1)
                 (above (blank 1 30)
-                       (pict:text "Racket"
+                       (pict:text "" #;"Racket"
                                   (cons (make-color* "black")
                                         (current-font))))))))
   (define w (pict-width  transparent))
   (define h (pict-height transparent))
-  (define background      (filled-rectangle w h #:color "white"))
+  (define background      (filled-rectangle w h #:color "white" #:draw-border? #f))
   (define with-background (cc-superimpose background transparent))
-  (save-pict file with-background 'svg)
+  (save-pict file (scale (/ 120 h) with-background) 'png)
   with-background)
 
-(create-racket-discourse-white-logo "racket-discourse-white.svg")
+(create-racket-discourse-white-logo "racket-discourse-white-no-text.png")
 
 (define (create-racket-discourse-black-logo file)  
+  (define blackish (make-color* 17 17 17))
   (set-curve-pict-size 260 260)
   (define transparent
     (crop/inked
@@ -286,9 +287,155 @@
                                         (current-font))))))))
   (define w (pict-width  transparent))
   (define h (pict-height transparent))
-  (define background      (filled-rectangle w h #:color "black"))
+  (define background      (filled-rectangle (* 1.02 w) (* 1 h) #:color blackish #:draw-border? #f))
   (define with-background (cc-superimpose background transparent))
-  (save-pict file with-background 'svg)
+  (save-pict file (scale (/ 120 h) with-background) 'png)
+  with-background)
+ 
+(create-racket-discourse-black-logo "racket-discourse-black-with-text.png")
+
+(define (create-racket-discourse-black-logo-outside-transparent file)
+  (define blackish (make-color* 221 221 221))
+  (set-curve-pict-size 260 260)
+  (define transparent
+    (crop/inked
+     (with-font
+         (make-similar-font (new-font) #:face "Cooper Hewitt" #:size 200)
+       (beside  (draw (color blue  (fill blue-curve))
+                      (color red   (fill red-left-curve))
+                      (color red   (fill red-middle-curve)))
+                (blank 15 1)
+                (above (blank 1 30)
+                       (pict:text "" #;"Racket"
+                                  (cons (make-color* "white")
+                                        (current-font))))))))
+  (define w (pict-width  transparent))
+  (define h (pict-height transparent))
+  (displayln (list w h))
+  (define background      (filled-ellipse (* 0.992 w) (* 0.992 h) #:color blackish #:draw-border? #f))
+  (define with-background (cc-superimpose background transparent))
+  (save-pict file (scale (/ 120 h) with-background) 'png)
   with-background)
 
-(create-racket-discourse-black-logo "racket-discourse-black.svg")
+(create-racket-discourse-black-logo-outside-transparent "racket-discourse-black-no-text-outside-transparent.png")
+
+(define (create-racket-discourse-white-logo-outside-transparent file)  
+  (set-curve-pict-size 260 260)
+  (define transparent
+    (crop/inked
+     (with-font
+         (make-similar-font (new-font) #:face "Cooper Hewitt" #:size 200)
+       (beside  (draw (color blue  (fill blue-curve))
+                      (color red   (fill red-left-curve))
+                      (color red   (fill red-middle-curve)))
+                (blank 15 1)
+                (above (blank 1 30)
+                       (pict:text "" #;"Racket"
+                                  (cons (make-color* "black")
+                                        (current-font))))))))
+  (define w (pict-width  transparent))
+  (define h (pict-height transparent))
+  (define background      (filled-ellipse (* 0.991 w) (* 0.991 h) #:color "white" #:draw-border? #f))
+  (define with-background (cc-superimpose background transparent))
+  (save-pict file (scale (/ 120 h) with-background) 'png)
+  with-background)
+
+(create-racket-discourse-white-logo-outside-transparent "racket-discourse-white-no-text-outside-transparent.png")
+
+; The speech bubble was drawn in Inkscape and saved as a plain svg.
+; The svg used commands m, c and C only, so these commands are implemented below.
+; The end result is a metapict path.
+(define speech-bubble
+  (let ()
+    (define-values (cx cy) (values 0 0))
+
+    (define (move-relative dx dy)
+      (set! cx (+ cx dx))
+      (set! cy (+ cy dy)))
+    
+    (define (move-absolute x y)
+      (set! cx x)
+      (set! cy y))
+
+    (define (cubic-absolute x1 y1  x2 y2  x y)  
+      (define b (bez (pt cx cy)  (pt x1 y1)  (pt x2 y2)  (pt x y)))
+      (move-absolute x y)
+      b)
+
+    (define (cubic-relative dx1 dy1  dx2 dy2  dx dy)  
+      (cubic-absolute  (+ cx dx1) (+ cy dy1)  (+ cx dx2) (+ cy dy2)  (+ cx dx) (+ cy dy)))
+
+
+    (define (c . as)
+      (match as
+        [(list)
+         '()]
+        [(list* dx1 dy1  dx2 dy2  dx dy as)
+         (cons (cubic-relative dx1 dy1  dx2 dy2  dx dy)
+               (apply c as))]
+        [else
+         (error 'raise-arguments-error 'c "expected 6*n floats" "arguments" as)]))
+    
+    (define (C . as)
+      (match as
+        [(list)
+         '()]
+        [(list* x1 y1  x2 y2  x y as)
+         (cons (cubic-absolute x1 y1  x2 y2  x y)
+               (apply C as))]
+        [else
+         (error 'raise-arguments-error 'C "expected 6*n floats" "arguments" as)]))
+    
+
+    (define m move-relative)
+    (define M move-absolute)
+    
+
+    ; move to (dx,dy)
+    (M 0 0)
+    (m 108.41151  34.146771) 
+    
+    (define speech-bubble
+      (let ()
+        (define bezs
+          (append
+           ;   control:  dx1,dy1    control dx2,dy2          end dx      end dy
+           (c  50.88374   0         89.32874   28.750338   90.26334   73.007109 
+               1.16767  55.29342  -72.56155   70.49635   -89.82087   70.79478 
+               -19.021879  0.3289   -23.84302   -1.92868   -37.609717  -6.19455 
+               -6.80322   8.90992  -47.786473  21.68091   -51.326212  17.25623 
+               -3.539738 -4.42467   16.371286 -21.6809     17.256223 -38.93712)
+           ;   control:  x1,y1     control   x2, y2       end x      end y
+           (C 18.590649 127.94985  19.475585 120.87037  19.033117 108.03882 
+              17.599682 66.469241  58.412705 34.589239 108.41151 34.146771)))
+        (curve: #t bezs)))
+
+    speech-bubble))
+    
+
+
+(define (create-racket-discourse-favicon file)  
+  (set-curve-pict-size 260 260)
+  (define a 0.6)
+  (define t (trans 1 0 0 1 0.2 -0.15))
+  (define transparent
+    (crop/inked
+     (with-font
+       (make-similar-font (new-font) #:face "Cooper Hewitt" #:size 200)
+       (draw (penscale 8
+                       (color "black" (draw ((trans 1 0 0 1 -0.9 0.9) 
+                                             (flipy (scaled 1/100 speech-bubble))))))
+             (color blue  (fill (t (scaled a blue-curve))))
+             (color red   (fill (t (scaled a red-left-curve))))
+             (color red   (fill (t (scaled a red-middle-curve))))                      
+             ))))
+  (define w (pict-width  transparent))
+  (define h (pict-height transparent))
+  ; (define background      (filled-ellipse (* 0.991 w) (* 0.991 h) #:color "white" #:draw-border? #f))
+  ; (define with-background (cc-superimpose background transparent))
+  (save-pict file (scale (/ 120 h) transparent) 'svg)
+  transparent)
+
+(create-racket-discourse-favicon "racket-discourse-favicon5.svg")
+
+
