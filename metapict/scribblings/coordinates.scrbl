@@ -76,13 +76,13 @@ Let us connect the point @math{p2} with @math{p5} and @math{p3} with @math{p4}.
 If you zoom, you will see that the lines have a thickness and
 that the ends are rounded. Imagine that you have a pen with
 a circular nib. The drawings produced by MetaPict will try
-to mimick the result you get by drawing with such a pen.
+to mimic the result you get by drawing with such a pen.
 In the chapter on pens you will learn to the control the 
 thickness of the pen and the shape of the ends of lines.
 
 @section[#:tag "displacements"]{Displacements}
 
-In the example above the point @math{p2=(100,100)} was described as being 100 to 
+In the example above, the point @math{p2=(100,100)} was described as being 100 to 
 the right and 100 upwards relative to the reference point (0,0).
 
 An alternative way of describing the location of @math{p2} would be to say

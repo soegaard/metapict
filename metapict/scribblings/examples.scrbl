@@ -198,8 +198,8 @@ The inspiration was Florian Lesaint's
 
 @;void[#<<IGNORE
 @section[#:tag "example-rgb-triangle" #:style png-picts]{RGB Triangle}
-This examples shows how linear gradients can be used to fill a triangle.
-The first example use gradients from one color to another along the
+This example shows how linear gradients can be used to fill a triangle.
+The first example uses gradients from one color to another along the
 edge of a triangle. The second example shows how @emph{fading} from a color 
 @racket[c] to @racket[(change-alpha c 0)] is done.
 

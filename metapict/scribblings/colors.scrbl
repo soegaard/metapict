@@ -19,11 +19,11 @@ Given a color name as a string, @racket[make-color*] returns a @racket[color%] o
 
 Given real numbers to use as the color components, @racket[make-color*] works
 like @racket[make-color], but accepts both non-integer numbers, and 
-numbers outside the range 0--255. For a real number @racket[x] the value
+numbers outside the range 0--255. For a real number @racket[x], the value
 used is @racket[(min 255 (max 0 (exact-floor x)))].
 
 The optional argument @racket[α] is the transparency. The default value is 1.
-Given a transparency outside the interval 0--1 whichever value of 0 and 1 is
+Given a transparency outside the interval 0--1, whichever value of 0 and 1 is
 closest to @racket[α] is used.}
 @interaction-eval[#:eval eval (set-curve-pict-size 50 50)] 
 @interaction[#:eval eval 
@@ -40,7 +40,7 @@ closest to @racket[α] is used.}
 In an expression context @racket[(color c p)] is equivalent to @racket[(colorize p c)]
 and @racket[(color f c p)] is equivalent to @racket[(colorize p (color* f c))].
 
-As a match pattern @racket[(color r g b a)] matches both @racket[color%] objects 
+As a match pattern, @racket[(color r g b a)] matches both @racket[color%] objects 
 and color names (represented as strings). The variables @racket[r], 
 @racket[g], and, @racket[b] will be bound to the red, green, and, blue components
 of the color. The variable @racket[a] will be bound to the transparency.}
@@ -62,7 +62,7 @@ The color can be a @racket[color%] object or a color name (string).}
 
 @defproc[(color+ [c1 color] [c2 color]) (is-a?/c color%)]{
 Returns a @racket[color%] object, whose color components are
-the components of @racket[c1] and @racket[c2] added componentwise.
+the components of @racket[c1] and @racket[c2] added component-wise.
 The transparency is @racket[(min 1.0 (+ α1 α2))] where 
 @racket[α1] and @racket[α2] the transparencies of the two colors.}
 
@@ -72,7 +72,7 @@ The transparency is @racket[(min 1.0 (+ α1 α2))] where
 
 @defproc[(color* [k real?] [c color]) (is-a?/c color%)]{
 Returns a @racket[color%] object, whose color components are the 
-components of @racket[c] multiplied componentwise with @racket[k].
+components of @racket[c] multiplied component-wise with @racket[k].
 The transparency is the same as in @racket[c].}
 
 @interaction-eval[#:eval eval (set-curve-pict-size 50 50)] 
@@ -81,8 +81,8 @@ The transparency is the same as in @racket[c].}
 
 @defproc[(color-med [t real?] [c1 color] [c2 color]) (is-a?/c color%)]{
 Interpolates linearly between the colors @racket[c1] and @racket[c2].
-For @math["t=0"] the color @racket[c1] is returned, and when 
-@math["t=1"] the color @racket[c2] is returned.}
+For @math["t=0"], the color @racket[c1] is returned, and when 
+@math["t=1"], the color @racket[c2] is returned.}
 
 @interaction-eval[#:eval eval (set-curve-pict-size 50 50)] 
 @interaction[#:eval eval (with-window (window 0 1 0 1)
@@ -92,7 +92,9 @@ For @math["t=0"] the color @racket[c1] is returned, and when
 
 @defproc[(color-med* [t real?] [cs (listof color)]) (is-a?/c color%)]{
 Interpolates linearly between the colors in the list @racket[cs].
-For @math{"t=0"} corresponds to the first color in the list,
+@; The previous "For" doesn't seem to make sense. I'd just remove it, but
+@; that would make the sentence start with "t=0", which looks odd.
+The value @math{"t=0"} corresponds to the first color in the list,
 and @math{"t=1"} corresponds to the last color.}
 
 @interaction-eval[#:eval eval (set-curve-pict-size 50 50)]

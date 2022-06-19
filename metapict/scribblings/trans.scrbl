@@ -194,15 +194,15 @@ The transformation @racket[(trans 1 0 0 1 a b)]. @linebreak[]
 The transformation @racket[(trans a b -b a 0 0)]. @linebreak[]
 @centered{@math{(x,y)} zscaled a b = @math{(ax-ay,bx+ay)}}
 
-Note:  (1,0) zscaled (a,b) = (a,b) , thus (1,0) is rotated and 
-scaled into (a,b). Think of zscaled as "complex multiplaction".
+Note: (1,0) zscaled (a,b) = (a,b) , thus (1,0) is rotated and 
+scaled into (a,b). Think of zscaled as ``complex multiplaction''.
 
-In the example the red curve is multiplied with @math{0+1i}, which
+In the example, the red curve is multiplied with @math{0+1i}, which
 corresponds to a rotation of 90 degrees.
 
-In the example the blue curve is multiplied with @math{1+1i}, which
-corresponds to a rotation of 45 degrees. Also the since the
-magnitude of @math{1+1i} is @math{sqrt(2)} the figure is scaled with
+In the example, the blue curve is multiplied with @math{1+1i}, which
+corresponds to a rotation of 45 degrees. Also, since the
+magnitude of @math{1+1i} is @math{sqrt(2)}, the figure is scaled by
 the factor @math{sqrt(2)}.
 
 @interaction[#:eval eval
@@ -221,7 +221,7 @@ the factor @math{sqrt(2)}.
 @defproc[(rotated [θ real?]) 
          trans?]{
 The transformation @racket[(rotated theta)] is a rotation of θ 
-radian around @math{(0,0)}.
+radians around @math{(0,0)}.
 
 @interaction[#:eval eval
   (def c ; a heart shaped curve
@@ -255,7 +255,7 @@ degrees around @math{(0,0)}.
 @defproc[(rotated-about [θ real?] [p pt?]) 
          trans?]{
 The transformation @racket[(rotated-about θ)] is a rotation of θ 
-radian around the point @math{p}.
+radians around the point @math{p}.
 
 @interaction[#:eval eval
   (def c ; a heart shaped curve

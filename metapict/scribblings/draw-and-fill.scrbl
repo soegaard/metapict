@@ -16,7 +16,7 @@
 
 A @racket[curve] represents the path of a curve. Use @racket[draw]
 and @racket[fill] to create a picture in the form of a @racket[pict].
-Given a single curve @racket[draw] will use the current pen to
+Given a single curve, @racket[draw] will use the current pen to
 stroke the path and @racket[fill] will use the current brush to fill it.
 
 The size of the pict created by draw and fill functions is determined 
@@ -31,11 +31,11 @@ will be drawn.
 @defproc[(draw [d drawable?] ...) pict?]{
 Creates a pict representing an image of the drawable arguments.
 
-Given no arguments a blank pict will be returned.
+Given no arguments, a blank pict will be returned.
 
-Given multiple arguments @racket[draw] will convert each argument
+Given multiple arguments, @racket[draw] will convert each argument
 into a pict, then layer the results using @racket[cc-superimpose].
-In other words: it draw the arguments in order, starting with the first. 
+In other words: it draws the arguments in order, starting with the first. 
 
 This table shows how the drawable objects are converted:
 @(table
@@ -53,6 +53,7 @@ This table shows how the drawable objects are converted:
          (label-bot "Origo" (pt 0 0)))]
 
 @defproc[(draw* [ds list?]) pict?]{
+@; This sentence is hard to understand.
 Draw using @racket[draw] the non-false values in the list @racket[ds] 
 on the same pict.
 @interaction[#:eval eval 
@@ -72,13 +73,14 @@ The inside is drawn with the brush and the outside is left untouched.
 For a simple non-intersecting curve it is simple to decide
 whether a point is on the inside or outside. For self-intersecting
 curves the so-called winding rule is used. The winding rule is
-also used when filling multiple curves
+also used when filling multiple curves.
 
-Given a point P consider a ray from P towards infinity. For each
+Given a point P, consider a ray from P towards infinity. For each
 intersection between the ray and the curve(s), determine whether
 the curve crosses right-to-left or left-to-right. Each right-to-left
-crossing counts as +1 and each left-to-right crossing as -1. If
-the total sum of the counts are non-zero, then then point will be
+crossing counts as +1 and each left-to-right crossing as -1.
+@; Use clearer sentence, as discussed on Slack.
+If the total sum of the counts are non-zero, then the point will be
 filled.}
 
 Let's look at four concentric circles.
@@ -93,7 +95,7 @@ For a single curve, the orientation doesn't affect the filling:
 @interaction[#:eval eval 
      (beside (fill c1) (fill r1))]
 For the first filled circle, the winding sum is +1, and
-for the second it is -1. Since they are non-zero both
+for the second it is -1. Since they are non-zero, both
 circles are filled.
 
 The four combinations for two circles are:

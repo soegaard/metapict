@@ -14,7 +14,6 @@
 @; ----------------------------------------
 
 General curves are drawn by gluing together a series of Bezier curves.
-Conceptually a curve consists of multiple Bezier curves glued together.
 Such a curve can be either open or closed (a loop).
 
 The representation of a curve consists simply of a list of Bezier curves
@@ -27,7 +26,7 @@ The actual representation uses a @racket[curve:] structure.
 The reflection name of @racket[curve:] is @racket['curve], so the names is printed without
 the colon suffix.}
 
-Most users will not have reason to work with @racket[curve:] structures directly.
+Most users will not have a reason to work with @racket[curve:] structures directly.
 The @racket[curve] constructor is intended to cover all use cases. The constructor
 can be used to construct both curved as well as straight lines.
 
@@ -87,12 +86,12 @@ parameterize the curve.
 @interaction[#:eval eval
   (curve-length (curve p0 .. p1 .. p2 .. p3 .. p4))]}
 
-Given a curve @racket[c] one can compute points on the curve corresponding to a parameter value
+Given a curve @racket[c], one can compute points on the curve corresponding to a parameter value
 between 0 and the curve length with the function @racket[point-of].
 @defproc[(point-of [c curve?] [t real?]) pt?]{
 Given a curve @racket[c] and a number @racket[t] the function @racket[point-of]
 computes the point corresponding to the parameter value @racket[t].
-Here @racket[(point-of c 0)] and @racket[(point-of c (curve-length c))] will
+Here, @racket[(point-of c 0)] and @racket[(point-of c (curve-length c))] will
 return the start and and end point of the curve respectively.
 @interaction[#:eval eval
   (let ()
@@ -107,7 +106,7 @@ return the start and and end point of the curve respectively.
       (draw c
             (label-parameter-values))))]}
 
-Since the start and end point of a curve are used often, the following short hands are available:
+Since the start and end point of a curve are used often, the following shorthands are available:
 
 @defproc[(start-point [c curve?]) pt?]{
 Returns the start point of a curve.}
@@ -125,9 +124,9 @@ a start point to an end point, one can use @racket[curve-reverse]
 to create a curve where the parameterization is reversed.
 
 @defproc[(curve-reverse [c curve?]) curve?]{
-Returns a curve throught the same points as the curve @racket[c].
-In the parameterization 0 corresponds to the end point of @racket[c]
-and @racket[(curve-length c)] corresponds to start point og @racket[c].
+Returns a curve through the same points as the curve @racket[c].
+In the parameterization, 0 corresponds to the end point of @racket[c]
+and @racket[(curve-length c)] corresponds to the start point of @racket[c].
 @interaction[#:eval eval
   (let ()
     (def c (curve (pt 0 0) .. (pt 1 3) .. (pt 2 5)))
@@ -158,7 +157,7 @@ we will look at is intersections between two curves.
 @defproc[(intersection-times [c1 curve?] [c2 curve?]) (or #f number?)]{
 If the two curves @racket[c1] and @racket[c2] have an intersection point,
 the function will return times (parameter values) @math{t} and @math{u} such that
-@math{c1(t)=c2(u)}. If no intersection point is found @racket[#f] is returned.
+@math{c1(t)=c2(u)}. If no intersection point is found, @racket[#f] is returned.
 @interaction[#:eval eval
   (let ()
     (def c1 (curve (pt 0 0) .. (pt 2 3)))
@@ -205,7 +204,7 @@ If a curve is too long, the function @racket[subcurve] can be used to
 make a shorter one.
 
 @defproc[(subcurve [c curve?] [t0 number?] [t1 number?]) curve?]{
-Produces a curve from @math{c(t_0)} to @math{c(t_1)}. If @math{t_0<t_1}
+Produces a curve from @math{c(t_0)} to @math{c(t_1)}. If @math{t_0<t_1},
 the direction is reversed.
 @interaction[#:eval eval
   (let ()
@@ -218,7 +217,7 @@ the direction is reversed.
 Instead of @racket[subcurve] one can use @racket[cut-before] and @racket[cut-after]
 to make curves shorter.
 @defproc[(cut-before [c1 curve?] [c2 curve?]) curve?]{
-Cut the part of @racket[c1] that lie before the "first" intersection point of
+Cut the part of @racket[c1] that lies before the ``first'' intersection point of
 the two curves.
 @interaction[#:eval eval
   (let ()
@@ -232,7 +231,7 @@ the two curves.
 
 
 @defproc[(cut-after [c1 curve?] [c2 curve?]) curve?]{
-Cut the part of @racket[c1] that lie after the "first" intersection point of
+Cut the part of @racket[c1] that lies after the ``first'' intersection point of
 the two curves.
 @interaction[#:eval eval
   (let ()
@@ -246,16 +245,16 @@ the two curves.
 
 @defproc[(post-control [c curve?] [t number?]) pt?]{
 The curve @racket[c] consists of a number of Bezier curves.
-Return the first control point after the paramter value @racket[t].
+Return the first control point after the parameter value @racket[t].
 See the MetaFontBook page 134.}
 
 @defproc[(pre-control [c curve?] [t number?]) pt?]{
 The curve @racket[c] consists of a number of Bezier curves.
-Return the first control point before the paramter value @racket[t].
+Return the first control point before the parameter value @racket[t].
 See the MetaFontBook page 134.}
 
 @defproc[(direction-of [c curve?] [t number?]) vec?]{
-Return the direction of which the curve @racket[c] is moving at time @racket[t].
+Return the direction in which the curve @racket[c] is moving at time @racket[t].
 @interaction[#:eval eval
   (let ()
     (def c (curve (pt 1 0) .. (pt 1 3) .. (pt 4 1)))
@@ -267,7 +266,7 @@ Return the direction of which the curve @racket[c] is moving at time @racket[t].
             (dot-label-top "P" p))))]}
 
 @defproc[(cyclic? [c curve?]) boolean?]{
-Return the true value @racket[#t] if the curve @racket[c] is a closed curve.
+Return @racket[#t] if the curve @racket[c] is a closed curve.
 @interaction[#:eval eval
   (let ()
     (def c1 (curve (pt 1 0) .. (pt 1 3)))
@@ -277,8 +276,8 @@ Return the true value @racket[#t] if the curve @racket[c] is a closed curve.
 
 @defproc[(intercurve [α number?] [c1 curve?] [c2 curve?]) curve?]{
 Given two curves @racket[c1] and @racket[c2] of the same length,
-the call @racket[(intercurve α c1 c2)] will return a curve "between"
-the two curves. For @racket[α=0] the first curve is return and
+the call @racket[(intercurve α c1 c2)] will return a curve ``between''
+the two curves. For @racket[α=0] the first curve is returned and
 for @racket[α=1] the second curve is returned.
 
 In other words we can interpolate curves.
@@ -307,11 +306,11 @@ In other words we can interpolate curves.
     
 
 @defproc[(curve [<path-specification-fragment <path-specification-fragment] ...) curve:?]{
-The overall purpose of @racket[curve] is to find a "nice" (possibly closed) curve
-through a given set of points. If the user wants, he can specify how the curve
-enters and leave a point.
+The overall purpose of @racket[curve] is to find a ``nice'' (possibly closed) curve
+through a given set of points. If the user wants, they can specify how the curve
+enters and leaves a point.
 
-Concretely @racket[curve] converts a path specification into a list of bezier curves.
+Concretely, @racket[curve] converts a path specification into a list of bezier curves.
 In the most basic form, a call to @racket[curve] has one of these forms (but see
 @emph{path operations} for more options):
 
@@ -322,7 +321,7 @@ In the most basic form, a call to @racket[curve] has one of these forms (but see
 Here @racket[p0], @racket[p1], ... are points and @racket[j0], @racket[j0], ...
 are @emph{path joins}. A path join describes how the two points on either
 side of the path join are to be connected. The most common path joins are 
-@racket[..], and  @racket[--].
+@racket[..] and  @racket[--].
 
 @interaction[#:eval eval
   (defv (A B C D) (values (pt -0.3 -0.3) (pt 0.3 -0.3) (pt 0.3 0.3) (pt -0.3 0.3)))
@@ -335,13 +334,13 @@ side of the path join are to be connected. The most common path joins are
 
 The function @racket[curve] is a smart constructor, so it accepts a wider range
 of inputs and rewrites the given path specification into a basic one as the
-step of computing the list of Bezier curves. In particular you can optionally use
-direction specifiers before and/or after a point, to control the direction the
+step of computing the list of Bezier curves. In particular, you can use
+direction specifiers before and/or after a point, to control the direction in which the
 curve will enter and leave a point.
 
 @centered[@racket[...  j- ds- p ds+ j+ ...]]
 
-Here the @racket[-] and @racket[+] indicates "before" and "after" the point.
+Here the @racket[-] and @racket[+] indicates ``before'' and ``after'' the point.
 
 Finally @racket[curve] supports @emph{path operations}. A path operation @racket[f]
 can be placed after a point @racket[p]:
@@ -355,7 +354,7 @@ the path operation (a function) @racket[f] will be called with
 where @racket[f] has been removed.
 
 A few path operations such as @racket[/-], @racket[-/], @racket[--++], 
-@racket[-arc], @racket[-rectangle] are builtin. A user can define his
+@racket[-arc], @racket[-rectangle] are builtin. A user can define their
 own path operations.
 
 Given two points and a path join (and some extra pieces of information), @racket[curve]
@@ -367,7 +366,7 @@ The standard path joins are @racket[..] and  @racket[--].
 @deftogether[
   (@defthing[.. tension-and? #:value (tension-and 1 1)]
    @defthing[-- full-join? #:value (full-join (curl 1) .. (curl 1))])]{
-     Use @racket[..] to get "medium bendiness" and @racket[--] to get a straight line.}
+     Use @racket[..] to get ``medium bendiness'' and @racket[--] to get a straight line.}
 
 @defthing[cycle 'cycle]{
 The value used to indicate a closed curve is @racket['cycle].}
@@ -382,15 +381,15 @@ The value used to indicate a closed curve is @racket['cycle].}
 These path joins represent the most basic joins. They are not meant to be used
 directly (although @racket[controls-and] are occasionally useful), but are used internally.}
 
-The "tension" controls how "stiff/bendable" the curve is.
+The ``tension'' controls how ``stiff/bendable'' the curve is.
 
 The tension numbers @racket[τ-] and @racket[τ+] are real numbers.
 If a tension τ is positive, that tension is used.
-If a tension τ is negative, it is interpreted as "at least abs(τ)".
-The default tension is 1. A tension of ∞ gives a (almost) linear curve.
+If a tension τ is negative, it is interpreted as ``at least abs(τ)''.
+The default tension is 1. A tension of ∞ gives an (almost) linear curve.
 
 Note: @racket[(tension τ)] will return @racket[(tension-and τ τ)],
-this represent the same tension before and after a point.
+this represents the same tension before and after a point.
 
 
 @interaction[#:eval eval
@@ -405,8 +404,8 @@ this represent the same tension before and after a point.
            (draw (curve A ..  B (tension 10)    C) points))))]
 
 
-The path join @racket[controls-and] explicitly give the Bezier control points between the two points.
-This can be used, if a piece of a curve has been computed elsewhere.
+The path join @racket[controls-and] explicitly gives the Bezier control points between the two points.
+This can be used if a piece of a curve has been computed elsewhere.
 
 @interaction[#:eval eval
   (defv (A B C D) (values (pt -0.3 -0.3) (pt -0.3 0.0) (pt 0.3 0.3) (pt 0.6 0.3)))
@@ -417,17 +416,16 @@ This can be used, if a piece of a curve has been computed elsewhere.
 
 The last basic path join is @racket[(full-join ds- j ds+)] which allows
 one to specify an direction @racket[ds-] for the curve to enter the point and
-an direction @racket[ds+] to leave the points as well as the tension.
+a direction @racket[ds+] to leave the points as well as the tension.
 
 A @emph{direction specifier} can either be empty (represented by @racket[#f]),
-an explicit direction (an @racket[vec?]) or an curl amount.
+an explicit direction (a @racket[vec?]) or a curl amount.
 
 @defstruct*[curl ([amount real?])]{
 Warning: Currently @racket[curl] doesn't behave exactly like MetaPost (due to a bug 
 in Metapict).}
 
-Note that @racket[curve] will a join with direction specifiers before and after a 
-join into a full-fjoin.
+A join with direction specifiers before and after turns into a @racket[full-join].
 
 As an example 
 

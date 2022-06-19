@@ -83,6 +83,6 @@ Useful for debugging label placements.}
 
 @defproc[(fill-label [fill-color color?] [l label?]) pict?]{
 Fill the bounding box of the label with the fill color, then draw the label.
-Useful to remove "background noise" below a label.
+Useful to remove ``background noise'' below a label.
 }
 
