@@ -17,7 +17,7 @@
 All images in MetaPict are represented as @racket[pict]s. A @racket[pict]
 is a structure that holds information on how to draw a picture. 
 A @racket[pict] can be @emph{rendered} to produce an image in various
-formats such as png, pdf, and, svg. 
+formats such as PNG, PDF, and SVG. 
 
 The standard library @racket[pict] defines several functions to
 construct and manipulate @racket[pict]s. MetaPict provides and
@@ -30,9 +30,9 @@ for, say, @racket[circle] to return a curve. In the @racket[pict] library
 the name @tt{circle} returns a @racket[pict], so to avoid a name conflict
 it is exported as @racket[circle-pict].
 
-An attempt have been made to make the @racket[pict] the last argument
+An attempt has been made to make the @racket[pict] the last argument
 of all operations. This explains the existance of a few functions whose
-functionality overlap with the @racket[pict] library.
+functionalities overlap with the @racket[pict] library.
 
 The operations in this section operate on @racket[pict]s, so use
 @racket[draw] to convert curves into @racket[pict]s.
@@ -126,11 +126,11 @@ Use the pen @racket[a-pen] as the current pen, then draw the pict @racket[p].}
   (pen teacher-pen (draw unitcircle))]
 
 @defproc[(dashed [p pict?]) pict]{
-Use the pen style @racket['long-dash] to draw the pict @racket[p]}
+Use the pen style @racket['long-dash] to draw the pict @racket[p].}
 @interaction[#:eval eval (dashed (draw unitcircle))]
 
 @defproc[(dotted [p pict?]) pict]{
-Use the pen style @racket['dot] to draw the pict @racket[p]}
+Use the pen style @racket['dot] to draw the pict @racket[p].}
 @interaction[#:eval eval (dotted (draw unitcircle))]
 
 @subsection[#:tag "ref-pict-brush-adjusters"]{Brush Adjusters}
@@ -178,7 +178,8 @@ Use a gradient as brush, then draw the pict @racket[p].}
 
 @defproc[(save-pict [filename path?] [p pict?] [type 'png]) (void)]{
 Save the pict @racket[p] as @racket[filename].}
-Default is png, other formats include svg, pdf, xbm, xpm and bmp.
+The default format is @racket['png], other formats include @racket['svg],
+@racket['pdf], @racket['xbm], @racket['xpm] and @racket['bmp].
 JPEG is not included.
 
 @defproc[(margin [r real?] [p pict?]) pict?]{
@@ -209,7 +210,7 @@ Same as @racket[(apply vc-append ps)]}
 
 @defproc[(beside* [ps list?]) pict?]{
 Draw the picts in the list @racket[ps] beside each other.
-The first element is on the left If the picts are of different heights, center them.
+The first element is on the left. If the picts are of different heights, center them.
 
 Same as @racket[(apply hc-append ps)]}
 

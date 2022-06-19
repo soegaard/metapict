@@ -15,7 +15,7 @@ A Bezier curve from point @racket[A] to point @racket[B] with
 control points @racket[A+] and @racket[B-] is represented as
 an instance of a @racket[bez] structure: @racket[(bez A A+ B- B)].
 
-Graphically such a curve begins at point @racket[A] and ends in point @racket[B].
+Graphically such a curve begins at point @racket[A] and ends at point @racket[B].
 The curve leaves point @racket[A] directed towards 
 the control point @racket[A+]. The direction in which the curve enters the
 end point @racket[B] is from @racket[B-]. 
@@ -25,7 +25,7 @@ of the Bezier curve. The points @racket[A+] and @racket[B-] are refererred
 to as control points. The point @racket[A+] is the post control of @racket[A]
 and the point @racket[B-] is the pre control of @racket[B].
 
-Most users will not have reason to work with @racket[bez] structures directly.
+Most users will not have a reason to work with @racket[bez] structures directly.
 The @racket[curve] constructor is intended to cover all use cases.
 
 Each point on the Bezier curve corresponds to a real number @math{t} between 0 and 1.
@@ -60,7 +60,7 @@ De Casteljau's algorithm is used to compute the point.}
 Returns @racket[#t] if the defining points of the two Bezier curves 
 are within pairwise distance @racket[ε] of each other.
 The default value of @math{ε=0.0001} was chosen
-to mimick the precision of MetaPost.}
+to mimic the precision of MetaPost.}
 @interaction[#:eval eval 
                     (bez~ (bez (pt 0     0) (pt 0 1) (pt 3 2) (pt 5 0))
                           (bez (pt 0.00005 0) (pt 0 1) (pt 3 2) (pt 5 0)))]
@@ -92,7 +92,7 @@ and the graphs of @math{b_1} and @math{b_2} gives the graph of @racket[b].}
             (color "blue" (draw b2)))))]
 
 @defproc[(bez-subpath [b bez?] [t0 real?] [t1 real?]) bez?]{
-Given a Bezier curve @racket[b] return a new Bezier curve @racket[c], 
+Given a Bezier curve @racket[b], return a new Bezier curve @racket[c], 
 such that @math{c(0)=b(t_0)} and @math{c(1)=b(t_1)} and
 such that the graph of @racket[c] is a subset of the graph of @racket[b].}
 @interaction[#:eval eval
@@ -103,7 +103,7 @@ such that the graph of @racket[c] is a subset of the graph of @racket[b].}
     (penwidth 4 
       (beside (draw b) 
               (color c (draw (bez-subpath b t (+ t 1/4))))))))]
-Note: The example shows that the parameterization is not an arc-length (aka unit-speed) 
+Note: The example shows that the parameterization is not an arc length (aka unit-speed) 
 parameterization.
 
 @defproc[(bez-intersection-point [b1 bez?] [b2 bez?]) (or pt? #f)]{
@@ -121,10 +121,10 @@ then @racket[#f] is returned.}
     (draw b1 b2 (color "red" (penwidth 8 (draw p))) b3))]
 
 @defproc[(bez-intersection-times [b1 bez?] [b2 bez?]) (values real? real?)]{
-If the graphs of the Bezier curves intersect numbers @math{t_1} and @math{t_2}
+If the graphs of the Bezier curves intersect, numbers @math{t_1} and @math{t_2}
 such that @math{b_1(t_1)=b_2(t_2)} are returned. If there are more than one
 intersection, the parameter values for the first intersection is returned.
-If no such numbers exist the result is @racket[(values #f #f)]. }
+If no such numbers exist, the result is @racket[(values #f #f)]. }
 @interaction[#:eval eval
   (def b1 (bez (pt 0 0) (pt 1 1) (pt 2 2) (pt 3 3)))
   (def b2 (bez (pt 0 3) (pt 1 2) (pt 2 1) (pt 3 0)))
@@ -141,8 +141,8 @@ If no such numbers exist the result is @racket[(values #f #f)]. }
 If the graphs of the Bezier curves intersect, returns a list of
 the intersection point and two numbers @math{t_1} and @math{t_2} 
 such that  @math{b_1(t_1)=b_2(t_2)}.
-If there are more than one intersection, the parameter values for the first 
-intersection is returned. If no such numbers exist the result is @racket[(values #f #f)]. }
+If there is more than one intersection, the parameter values for the first 
+intersection is returned. If no such numbers exist, the result is @racket[(values #f #f)]. }
 @interaction[#:eval eval
   (def b1 (bez (pt 0. 0.) (pt 1. 1.) (pt 2. 2.) (pt 3. 3.)))
   (def b2 (bez (pt 0. 3.) (pt 1. 2.) (pt 2. 1.) (pt 3. 0.)))
@@ -173,7 +173,7 @@ If the optional transformation @racket[t] is present, it is applied
 to @racket[b] before the conversion.}
 
 @defproc[(bezs->dc-path [bs (listof bez?)] [t trans? #f]) (is-a? dc<%>)]{
-Convert the "consecutive" Bezier curves @racket[bs] into a @racket[dc-path%].
+Convert the ``consecutive'' Bezier curves @racket[bs] into a @racket[dc-path%].
 If the optional transformation @racket[t] is present, it is applied 
 to the @racket[bs] before the conversion.}
 
@@ -183,7 +183,7 @@ to the @racket[bs] before the conversion.}
 Returns a @racket[bez] structure representing a Bezier curve from @racket[p0] to @racket[p3] 
 that leaves @racket[p0] in the direction of @racket[w0]
 and arrives in @racket[p3] from the the direction of @racket[w0] 
-with tensions @racket[t0] and @racket[t3] respectively.}
+with tensions @racket[t0] and @racket[t3], respectively.}
 @interaction[#:eval eval 
                     (defv (p0 p3 w0 w3 τ0 τ3) (values (pt 0 0) (pt 5 0) (vec 0 1) (vec 0 -1) 1 1))
                     (def b (bez/dirs+tensions p0 p3 w0 w3 τ0 τ3))
@@ -196,7 +196,7 @@ with tensions @racket[t0] and @racket[t3] respectively.}
 Returns a @racket[bez] structure representing a Bezier curve from @racket[p0] to @racket[p3] 
 that leaves @racket[p0] with an angle of @racket[θ]
 and arrives in @racket[p3] with an angle of @racket[φ] 
-with tensions @racket[t0] and @racket[t3] respectively.}
+with tensions @racket[t0] and @racket[t3], respectively.}
 @interaction[#:eval eval 
                     (defv (p0 p3 θ φ τ0 τ3) (values (pt 0 0) (pt 5 0) pi/2 -pi/2 1 1))
                     (defv (p1 p2) (control-points p0 p3 θ φ τ0 τ3))
