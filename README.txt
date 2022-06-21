@@ -1,4 +1,4 @@
-MetaPict
+MetaPict 
 ========
 
 A graphics library for producing beautiful pictures using Racket.
