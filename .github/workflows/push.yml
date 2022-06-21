@@ -1,0 +1,38 @@
+on:
+  - push
+  - pull_request
+
+jobs:
+  build_and_publish_docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+      - name: Install Racket
+        uses: Bogdanp/setup-racket@v1.3.1
+        with:
+          architecture: 'x64'
+          distribution: 'full'
+          version: '8.1'
+          dest: '"${HOME}/racketdist"'
+          local_catalogs: $GITHUB_WORKSPACE
+          sudo: never
+      - name: Register local packages
+        run: |
+          raco pkg install -i --auto --no-setup --skip-installed metapict
+          raco pkg update  --auto --no-setup metapict
+      - name: Setup Collections
+        run: raco setup --check-pkg-deps metapict
+      - name: Build documentation using raco setup
+        run: |
+          xvfb-run -a raco setup --jobs 1 metapict
+      - name: Build documentation with raco scribble
+        run: |
+          pwd
+          ls -r *        
+          xvfb-run -a raco scribble +m --redirect-main http://pkg-build.racket-lang.org/doc/ --htmls --dest ./htmls metapict/scribblings/metapict.scrbl
+      - name: Push to Github Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          folder: htmls/manual-metapict
+          branch: gh-pages
