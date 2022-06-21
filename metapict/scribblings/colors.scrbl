@@ -111,6 +111,7 @@ Returns a @racket[color%] object like @racket[c] where one component has been ch
 
 @interaction[#:eval eval (color->list (change-red "blue" 42))]
 
+@(set! eval #f)
 
 
 

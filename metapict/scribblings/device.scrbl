@@ -51,5 +51,7 @@ Computes the transformation from the current window to device coordinates.}
 Computes the size of a pixel in logical units.}
 
 
+@(set! eval #f)
+
 
 

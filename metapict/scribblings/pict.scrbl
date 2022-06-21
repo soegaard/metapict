@@ -214,3 +214,6 @@ The first element is on the left. If the picts are of different heights, center 
 
 Same as @racket[(apply hc-append ps)]}
 
+
+@(set! eval #f)
+

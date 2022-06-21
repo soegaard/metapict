@@ -56,3 +56,5 @@ in @racket[p0], end point in @racket[p3] and control points in @racket[p1] and @
              (with-window (window -2 2 -2 2)
                (draw unitcircle
                      (curve (pt 0 1.4) -- (pt 0 0) -- (pt 1.4 0) -- cycle)))]
+
+@(set! eval #f)

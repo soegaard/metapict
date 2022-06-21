@@ -204,3 +204,5 @@ with tensions @racket[t0] and @racket[t3], respectively.}
                     b
                     (with-window (window -5 11 -5 11) (draw b))]
 
+
+@(set! eval #f)

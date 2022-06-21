@@ -86,3 +86,6 @@ Fill the bounding box of the label with the fill color, then draw the label.
 Useful to remove ``background noise'' below a label.
 }
 
+
+@(set! eval #f)
+

@@ -473,3 +473,4 @@ will be rewritten as @racket[(full-join ds0+ j0 ds1-)].
              (draw (curve A ..  B (curler   10) C) points))))]]
 
 
+@(set! eval #f)

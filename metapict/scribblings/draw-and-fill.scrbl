@@ -147,3 +147,7 @@ expression is a pict in which all values are drawn.
 Iterates like @racket[for*], but the last expression in the @racket[body]s must
 produce a single drawable value, and the result of the @racket[for/draw]
 expression is a pict in which all values are drawn.}
+
+
+
+@(set! eval #f)
