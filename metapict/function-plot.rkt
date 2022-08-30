@@ -5,7 +5,7 @@
 
 (provide fun-graph)
 
-(require racket/list racket/match
+(require racket/list racket/match racket/pretty
          "adaptive-plot.rkt"  "axis.rkt" "curve.rkt"
          "def.rkt" "domain.rkt" "draw.rkt" "function.rkt" "path.rkt"
          "system.rkt"
@@ -16,11 +16,22 @@
 (define (fun-graph s win the-fun
                    #:excluded-symbols [excluded '()] ; omit open closed symbols in this list
                    #:regions          [regions 9])
+  #;(pretty-print
+   (list 'fun-graph
+         (list 's s)
+         (list 'win win)
+         (list 'fun the-fun)))
   ; window is in axis coordinates
   (defm (system: _ a1 a2) s)
-  (defv (xmin xmax) (visible-range a1 win))
-  (defv (ymin ymax) (visible-range a2 win))
-  ; (displayln (list 'fun-graph 'x-range xmin xmax 'y-range ymin ymax))
+  (defv (xmin xmax) (visible-range a1 win)) ; #f #f if out of range
+  (defv (ymin ymax) (visible-range a2 win)) ; #f #f if out of range
+  (unless (and xmin xmax ymin ymax)
+    (define out (current-error-port))
+    (displayln (list 'fun-graph 'x-range xmin xmax 'y-range ymin ymax) out)
+    (displayln s out)
+    (displayln win out)
+    (displayln fun out)
+    (error))
   
   (define (vec->point v)  (defm (vector x y) v) (point s x y))
   (define (component vs start-symbol end-symbol)
@@ -40,6 +51,10 @@
     [(fun: name (domain intervals) f)
      (flatten
       (for/list ([i (in-list intervals)])
+        #;(pretty-print
+         (list 'fg
+               (list 'interval-i i)
+               (list 'xmin xmin ymin ymax)))
         (match i
           [(domain-interval ac? a b bc?)
            (define (excluded? x)

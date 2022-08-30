@@ -55,10 +55,47 @@
       c
       (- c)))
 
-(define (visible-range a win)  
+;;  (list 's (system: (pt 0 0) (axis (pt 0 0) (vec 1 0) #f) (axis (pt 0 0) (vec 0 1) #f)))
+;;  (list 'win (window -2 7 -9.5 -0.1))
+;;  '(fun "(function (+ (* -1 x) -2) ]-∞,∞[ #<procedure:...ict/function.rkt:41:6>)"))
+;; (fun-graph x-range #f #f y-range -9.499999999995623 -0.09999999983634256)
+
+;; (fun-graph x-range #f #f y-range 0.09999999997671694 3.199999999953434)
+;; #(struct:system: #(struct:pt 0 0) #(struct:axis #(struct:pt 0 0) #(struct:vec 1 0) #f) #(struct:axis #(struct:pt 0 0) #(struct:vec 0 1) #f))
+;; #(struct:window -2 6 0.1 3.2)
+
+(require (only-in "clipping.rkt" window-clip))
+(require racket/pretty)
+(define (visible-range a win)
   ; return the start and end (in logical coordinates i.e. not axis coordinates)
   ; of range in which the axis is visible.
-  ; Note: If you see #f #f it means the axis is entirely outside the window.  
+  ; Note: If you see #f #f it means the axis is entirely outside the window.
+  (defm (axis o v _) a)
+  (defm (pt ox oy) o)
+  (defm (window minx maxx miny maxy) win)
+  ;; x-range
+  (defm (pt x1 y1) (pt+ o (vec*  1000000. v)))
+  (defm (pt x2 y2) (pt+ o (vec* -1000000. v)))
+  (defm (list c1 c2) (window-clip minx maxx miny maxy x1 y1 x2 y2))
+  (define d1 (and c1 (coordinate a (apply pt c1))))
+  (define d2 (and c2 (coordinate a (apply pt c2))))
+  #;(pretty-print
+   (list
+    (list 'a a)
+    (list 'win win)
+    (list 'new (list (and c1 (min d1 d2))
+                     (and c2 (max d1 d2))))
+    (list 'old (let-values ([(v1 v2) (old-visible-range a win)])
+                 (list v1 v2)))))
+  (if (and d1 d2)
+      (values (min d1 d2) (max d1 d2))
+      (values d1 d2)))
+
+
+(define (old-visible-range a win)  
+  ; return the start and end (in logical coordinates i.e. not axis coordinates)
+  ; of range in which the axis is visible.
+  ; Note: If you see #f #f it means the axis is entirely outside the window.
   (defm (axis o v _) a)
   (defm (window minx maxx miny maxy) win)
     
@@ -68,7 +105,7 @@
   (def lower-border (curve (pt minx miny) -- (pt maxx miny)))
   (def upper-border (curve (pt minx maxy) -- (pt maxx maxy)))
   ; find intersection points of axis and clipping box
-  (define (line p v) (curve (pt+ p (vec* 1000000 v)) -- (pt+ p (vec* -1000000 v))))
+  (define (line p v) (curve (pt+ p (vec* 1000000. v)) -- (pt+ p (vec* -1000000. v))))
   (def l (line o v))
   (def p (first (append (intersection-points l left-border)
                         (intersection-points l lower-border)

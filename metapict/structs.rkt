@@ -224,7 +224,7 @@
 ;;;  Axis
 ;;;
 
-;; An axis represent a an axis of a coordinate system.
+;; An axis represent an axis of a coordinate system.
 ;; An axis consist of an origin (point where 0 is placed) and a unit-vector,
 ;; which is a vector from the origo to the point where 1 is placed.
 ;; The coordinates of origin and unit-vector are logical coordinates.
