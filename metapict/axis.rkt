@@ -258,7 +258,7 @@
     (exact-round (* d (floor (/ x d)))))
 
   (let ([s (snap s d)] [t (snap t d)])
-    (displayln (list s t))
+    ; (displayln (list s t))
     (when (= s t) (set! t (+ s (* 10 d))))
     ; the first and last tick in the range is excluded
     ; due to collision with arrow head
