@@ -3,7 +3,7 @@
 (provide plot2d)
 
 ;;; This implements plotting a 2d graph of a one variable function.
-;;; Singularities are handled properly (I think).
+;;; Singularities are handled properly.
 
 ;;; The points evaluated are chosen using an adaptive strategy:
 ;;;    - in areas where the graph is smooth, few points are chosen

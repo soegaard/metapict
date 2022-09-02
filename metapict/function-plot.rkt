@@ -16,22 +16,12 @@
 (define (fun-graph s win the-fun
                    #:excluded-symbols [excluded '()] ; omit open closed symbols in this list
                    #:regions          [regions 9])
-  #;(pretty-print
-   (list 'fun-graph
-         (list 's s)
-         (list 'win win)
-         (list 'fun the-fun)))
   ; window is in axis coordinates
   (defm (system: _ a1 a2) s)
   (defv (xmin xmax) (visible-range a1 win)) ; #f #f if out of range
   (defv (ymin ymax) (visible-range a2 win)) ; #f #f if out of range
-  (unless (and xmin xmax ymin ymax)
-    (define out (current-error-port))
-    (displayln (list 'fun-graph 'x-range xmin xmax 'y-range ymin ymax) out)
-    (displayln s out)
-    (displayln win out)
-    (displayln fun out)
-    (error))
+  (def x-axis-visible? (and xmin xmax))
+  (def y-axis-visible? (and ymin ymax))
   
   (define (vec->point v)  (defm (vector x y) v) (point s x y))
   (define (component vs start-symbol end-symbol)
@@ -51,29 +41,29 @@
     [(fun: name (domain intervals) f)
      (flatten
       (for/list ([i (in-list intervals)])
-        #;(pretty-print
-         (list 'fg
-               (list 'interval-i i)
-               (list 'xmin xmin ymin ymax)))
         (match i
           [(domain-interval ac? a b bc?)
            (define (excluded? x)
              (or (and (not ac?) (= x a))
                  (and (not bc?) (= x b))))
            (cond
-             [(or (> a xmax) (< b xmin)) '()]
+             [(or (not x-axis-visible?)
+                  (> a xmax) (< b xmin)) '()]
              [else (def axes? #f)
+                   (set! ymin (or ymin -inf.0)) ; todo: does adaptive-plot2d handle this?
+                   (set! ymax (or ymax +inf.0))
                    (def ptss (adaptive-plot2d f (max a xmin) (min b xmax) ymin ymax excluded? axes?
                                               #:regions regions))
                    ; (displayln (list 'a a 'xmin xmin 'max (max a xmin) 'a>=xmin (>= a xmin)))
+                   (define x? x-axis-visible?)
                    (match ptss
-                     [(list pts)               (list (component pts  (and (>= a xmin) (end-symbol ac? a))
-                                                                     (and (<= b xmax) (end-symbol bc? b))))]
-                     [(list pts0 pts1)         (list (component pts0 (and (>= a xmin) (end-symbol ac? a)) #f)
-                                                     (component pts1 #f (and (<= b xmax) (end-symbol bc? b))))]
-                     [(list pts0 pts ... pts1) (list (component pts0 (and (>= a xmin) (end-symbol ac? a)) #f)
+                     [(list pts)               (list (component pts  (and x? (>= a xmin) (end-symbol ac? a))
+                                                                     (and x? (<= b xmax) (end-symbol bc? b))))]
+                     [(list pts0 pts1)         (list (component pts0 (and x? (>= a xmin) (end-symbol ac? a)) #f)
+                                                     (component pts1 #f (and x? (<= b xmax) (end-symbol bc? b))))]
+                     [(list pts0 pts ... pts1) (list (component pts0 (and x? (>= a xmin) (end-symbol ac? a)) #f)
                                                      (map (λ (pts) (component pts #f #f)) pts)
-                                                     (component pts1 #f (and (<= b xmax) (end-symbol bc? b))))]
+                                                     (component pts1 #f (and x? (<= b xmax) (end-symbol bc? b))))]
                      [(list)                   '()])])])))]))
 
 ;; (define (plot2d s f xmin xmax ymin ymax [excluded #f])
