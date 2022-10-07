@@ -33,6 +33,11 @@
          
          horizontal-axis-range ; axis win, returns range in axis coordinates
          vertical-axis-range   ; axis win, returns range in axis coordinates
+
+         find-gap-size            ; find nice distance between ticks 
+         find-first-tick-in-range ; find first nice tick coordinate
+         find-last-tick-in-range  ; find last nice tick coordinate
+         tick-labels-in-range
          )
 
 (define (new-axis origin unit-vector [label #f])
@@ -308,19 +313,45 @@
     [c  (fill-label c       l)]))
 
 (define (tick-labels a       ; axis
-                      [d 1]  ; axis units between ticks
-                      #:window [win (curve-pict-window)]
-                      #:fill   [fill #f])  ; boolean or color
+                     [d 1]  ; axis units between ticks
+                     #:opposite   [opposite #f]
+                     #:window     [win (curve-pict-window)]
+                     #:fill       [fill #f]  ; boolean or color
+                     #:first-tick [s0 #f])
   (defm (axis o v l) a)  
   (defv (s t) (visible-range a win))
+  (set! s0 (or s0 s))
+  
   ; the first and last tick in the range is excluded
   ; due to collision with arrow head
-  (for/draw ([x (in-range (+ s d) t d)])
+  (for/draw ([x (in-range (+ s0 d) t d)])
     (match fill
-      [#f                     (tick-label a x)]
-      [#t (fill-label "white" (tick-label a x))]
-      [c  (fill-label c       (tick-label a x))])))
+      [#f                     (tick-label a x opposite)]
+      [#t (fill-label "white" (tick-label a x opposite))]
+      [c  (fill-label c       (tick-label a x opposite))])))
+
+
+(define (tick-labels-in-range
+         a      ; axis
+         s t    ; where s<t is the interval
+         [d 1]  ; axis units between ticks                     
+         #:opposite   [opposite #f]
+         #:window     [win (curve-pict-window)]
+         #:fill       [fill #f]  ; boolean or color
+         #:first-tick [s0 #f]
+         #:omit       [omit '()])
+  (defm (axis o v l) a)  
+  (set! s0 (or s0 s))
   
+  ; the first and last tick in the range is excluded
+  ; due to collision with arrow head
+  (for/draw ([x (in-range (+ s0 d) t d)])
+    (and (not (memf (λ (y) (= x y)) omit))
+         (match fill
+           [#f                     (tick-label a x opposite)]
+           [#t (fill-label "white" (tick-label a x opposite))]
+           [c  (fill-label c       (tick-label a x opposite))]))))
+
 (define (unit-label a)
   (def α (angle2 (axis-dir a) (vec 1 0)))
   (def label-maker
@@ -330,6 +361,85 @@
   (label-maker "1" (coordinate->pt a 1)))
 
 
+  ;; (define gap-size (find-gap-size s t #:at-least 5))
+  ;; (list 's s 't t 'gapsize gap-size 'last-tick (find-last-tick-in-range s t gap-size)))
+
+
+;;;
+;;; Gap size between axis ticks.
+;;;
+
+;; When the visible range is know, we need to find
+;; where the ticks go. To do that, we need to find
+;; an reasonable gap size.
+
+(define (log10 x) (log x 10))
+
+(define (find-gap-size s t #:at-least [at-least #f])
+  (unless (< s t)
+    (error 'find-gap-size "first argument must be smaller than second argument"))
+
+  (define (find-base-gap-size s t)
+    (cond
+      [(= s t) #f]
+      [(< t s) (find-gap-size t s)]
+      [else    (define l (log10 (- t s)))
+               (expt 10 (floor l))]))
+
+  (define (find-better-gap-size base gaps at-least)
+    ; The `base` gap size results in `gaps` gaps.
+    ; We need at least `at-least` gaps.
+    (for/or ([s '(1 2 4 5 10)])
+      (and (>= (* s gaps) at-least)
+           (/ base s))))
+
+  (define base (find-base-gap-size s t))
+  (define gaps (floor (/ (- t s) base)))
+
+  (if at-least
+      (find-better-gap-size base gaps at-least) 
+      base))
+
+(define (find-last-tick-in-range s t gap-size)
+  (define t/g (/ t gap-size))
+  (if (positive? t/g)
+      (* (floor   t/g) gap-size)
+      (* (ceiling t/g) gap-size)))
+
+(define (find-first-tick-in-range s t gap-size)
+  (define s/g (/ s gap-size))
+  (if (positive? s/g)
+      (* (ceiling s/g) gap-size)
+      (* (floor   s/g) gap-size)))
+
+;; (let ([s 0.18] [t 2.92])
+;;   (define gap-size (find-gap-size s t #:at-least 5))
+;;   (list 's s 't t 'gapsize gap-size 'last-tick (find-last-tick-in-range s t gap-size)))
+
+;; (let ([t -0.18] [s -2.92])
+;;   (define gap-size (find-gap-size s t #:at-least 5))
+;;   (list 's s 't t 'gapsize gap-size 'last-tick (find-last-tick-in-range s t gap-size)))
+
+;; (let ([s 0.18] [t 2.92])
+;;   (define gap-size (find-gap-size s t #:at-least 5))
+;;   (list 's s 't t 'gapsize gap-size 'first-tick (find-first-tick-in-range s t gap-size)))
+
+;; (let ([t -0.18] [s -2.92])
+;;   (define gap-size (find-gap-size s t #:at-least 5))
+;;   (list 's s 't t 'gapsize gap-size 'first-tick (find-first-tick-in-range s t gap-size)))
+
+
+;; (find-base-gap-size -22 54)  ; 10
+;; (find-base-gap-size 22 25)   ;  1
+;; (find-base-gap-size 0.2 0.9) ;  0.1
+
+;; (find-gap-size -22 54  #:at-least 5) ;  10
+;; (find-gap-size 22 25   #:at-least 5) ;   0.5
+;; (find-gap-size 0.2 0.9 #:at-least 5) ;   0.1
+
+;; (find-gap-size -22 54  #:at-least 7) ;  10
+;; (find-gap-size 22 25   #:at-least 7) ;   0.25
+;; (find-gap-size 0.2 0.9 #:at-least 7) ;   0.05
 
   
 
