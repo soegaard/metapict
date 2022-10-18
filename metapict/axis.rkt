@@ -34,9 +34,10 @@
          horizontal-axis-range ; axis win, returns range in axis coordinates
          vertical-axis-range   ; axis win, returns range in axis coordinates
 
-         find-gap-size            ; find nice distance between ticks 
-         find-first-tick-in-range ; find first nice tick coordinate
-         find-last-tick-in-range  ; find last nice tick coordinate
+         find-gap-size                 ; find nice distance between ticks 
+         find-first-tick-in-range      ; find first nice tick coordinate
+         find-last-tick-in-range       ; find last nice tick coordinate
+         find-first/last-tick-in-range ; find first and last nice tick coordinate
          tick-labels-in-range
          )
 
@@ -361,10 +362,6 @@
   (label-maker "1" (coordinate->pt a 1)))
 
 
-  ;; (define gap-size (find-gap-size s t #:at-least 5))
-  ;; (list 's s 't t 'gapsize gap-size 'last-tick (find-last-tick-in-range s t gap-size)))
-
-
 ;;;
 ;;; Gap size between axis ticks.
 ;;;
@@ -400,17 +397,24 @@
       (find-better-gap-size base gaps at-least) 
       base))
 
+(define (find-first-tick-in-range s t gap-size)
+  (define s/g (/ s gap-size))
+  (if (positive? s/g)
+      (* (ceiling s/g) gap-size)
+      (* (floor   s/g) gap-size)))
+
 (define (find-last-tick-in-range s t gap-size)
   (define t/g (/ t gap-size))
   (if (positive? t/g)
       (* (floor   t/g) gap-size)
       (* (ceiling t/g) gap-size)))
 
-(define (find-first-tick-in-range s t gap-size)
-  (define s/g (/ s gap-size))
-  (if (positive? s/g)
-      (* (ceiling s/g) gap-size)
-      (* (floor   s/g) gap-size)))
+
+
+(define (find-first/last-tick-in-range s t gap-size)
+  (values (find-first-tick-in-range s t gap-size)
+          (find-last-tick-in-range s t gap-size)))
+
 
 ;; (let ([s 0.18] [t 2.92])
 ;;   (define gap-size (find-gap-size s t #:at-least 5))
