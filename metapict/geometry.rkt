@@ -755,7 +755,7 @@
   (draw-parameterization (conic-parameterization c)))
 
 (define (draw-ellipse c)
-  (draw-parameterization (conic-parameterization c)))
+  (draw-parameterization (ellipse-parameterization c)))
 
 (define (draw-hyperbola c)
   (draw-parameterization (conic-parameterization c)))
@@ -944,6 +944,71 @@
     [(list (? pt? focus) (? line:? directrix))
      
      (error)]))
+
+;;; Approximating an ellipse with Bezier curves
+
+; Let P₁ and P₂ be two points on the ellipse.
+; The Bezier curve from P₁ to P₂ has two more control points,
+;    P₁ Q₁ Q₂ P₂
+; The control points Q₁ and Q₂ do not lie on the ellipse.
+
+; Let the parameter values of P₁ and P₂ be t₁ and t₂ respectively.
+;    P₁ = E(t₁)
+;    P₂ = E(t₂)
+; then
+;    Q₁ = P₁ + α E'(t₁)
+;    Q₂ = P₂ - α E'(t₂)
+; this makes sure the Bezier curve and ellipse has the same tangent slope in P₁ and P₂.
+; The constant α is:                      
+;    α  = 1/3 sin(t₂-t₁) [ sqrt( 4 + 3 tan²( 1/2(t₂-t_1) ) ) - 1 ]
+;                        
+
+; The parameterization E of the curve is:
+;
+;          / C_x + a cos(θ) cos(t) - b sin(θ) sin(t)
+;  E(t) = {
+;          \ C_y + a sin(θ) cos(t) - b cos(θ) sin(t)
+
+; (c_x,c_y) is the center (midpoint between focii)
+; a,b       are the semi-major axis and semi-minor axis respectively
+; θ         angle between x-axis and major axis of the ellipse
+
+
+(define (ellipse-parameterization conic)
+  (match conic
+    [(and (conic: F V e) p)
+     (def c conic)
+     ; center
+     (defm (pt cx cy) (ellipse-center conic))
+     ; θ = angle between major axis and x-axis
+     (def F1   F)
+     (def F2   (ellipse-other-focus c))
+     (def FV   (pt- F V))
+     ; Note: This assumes the major axis is not parallel to the y-axis
+     (def θ    (acos (/ (dot FV (vec 1 0))  (* (norm FV) 1))))
+     (displayln θ)
+     ; axis
+     (def a (* 1/2 (ellipse-major-axis c)))
+     (def b (* 1/2 (ellipse-minor-axis c)))
+     
+     ; parameterization     
+     (def (Ex t) (+ cx (* a (cos θ) (cos t)) (* -1 b (sin θ) (sin t))))
+     (def (Ey t) (+ cy (* a (sin θ) (cos t)) (* -1 b (cos θ) (sin t))))
+     (parameterization #t 0 (* 2 π) #t ; [0;2π]
+                       #t         ; not closed
+                       (λ (t) (pt (Ex t) (Ey t))))]
+    [_ (error 'ellipse-parameterization
+              (~a "expected a conic representing an ellipse, got: "
+                  conic))]))
+
+
+; Here
+;   r cos(λ) = a cos(t)
+;   r sin(λ) = b sin(t)
+; that is
+;   t = arctan₂(sin(λ/b), cos(λ)/2)
+;   λ = arctan₂(b sin(t), a cos(t))  ; angle from semi-major axis to current point counted from the center
+
 
 ;;;
 ;;; HYPERBOLA
