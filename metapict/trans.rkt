@@ -132,12 +132,13 @@
 (define (reflected p q . args) ; reflect around the line through p and q
   (def pq (pt- q p))
   (defm (vec x y) pq)
-  (def θ  (acos (/ x (sqrt (+ (sqr x) (sqr y))))))
-  (apply ((shifted x y)
+  (defm (pt u v) p)
+  (def θ  (atan y x)) ; use atan to take the different quadrants into account
+  (apply ((shifted u v) ; shift by one of the points on the line
           (rotated θ)
           reflecty
           (rotated (- θ))
-          (shifted (- x) (- y)))
+          (shifted (- u) (- v)))
          args))
 
 (define (det T) 
