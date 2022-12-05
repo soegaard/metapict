@@ -20,6 +20,7 @@
  ; selectors
  first-axis
  second-axis
+ axes
  ; constructors
  system ; given origin and two basis vectors construct a coordinate system
  point 
@@ -53,6 +54,7 @@
   (def axis2 (axis origin basis2 label2))
   (system: origin axis1 axis2))
 
+
 (define point
   (case-lambda
     [(system x y) (point: system (pt x y))]
@@ -67,6 +69,10 @@
 (define (second-axis system)
   (defm (system: _ _ a2) system)
   a2)
+
+(define (axes system)
+  (defm (system: _ a1 a2) system)
+  (values a1 a2))
 
 
 ;;; CONVERTERS
