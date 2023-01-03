@@ -28,6 +28,16 @@
 ;;   - random order
 ;;   - sorted according to their distance from the mid point
 
+
+;; Notes:
+;;   - as an experiment you can choose betwen rectangular and
+;;     hexagonal cells in make-buckets.
+;;     Simply uncomment the `repr`, you don't neeed.
+
+;; TODO:
+;;   - an option to discard short trajectories would
+;;     in some cases make the figures prettier.
+
 (require  metapict metapict/system metapict/axis         
           (except-in metapict ellipse first-value label table)          
           racket/list racket/match)
@@ -50,7 +60,12 @@
 (define (make-buckets xmin xmax ymin ymax dx dy)
   ; We divide the rectange [xmin,xmax]x[ymin,ymax] into
   ; small rectangles of size dx*dy. The rectangles are buckets.
+
+  ; hexagonal cells
   (define (repr x y)
+    (vec-round (vec->hex (vec x y) (* 0.5 dx))))
+  ; rectangular cells
+  #;(define (repr x y)
     (cond
       [(or (< x xmin) (> x xmax)
            (< y ymin) (> y ymax))
@@ -65,6 +80,51 @@
   (define (touched? x y) (hash-ref  ht (repr x y) #f))
   (buckets ht touch! touched? (list xmin xmax ymin ymax dx dy)))
 
+;;;
+;;; Hexagonal Cells
+;;;
+
+
+(define 180deg 3.141592653589793)
+(define  90deg (/ 180deg 2.))
+(define  60deg (/ 180deg 3.))
+(define  30deg (/ 180deg 6.))
+
+(define (vec->hex v size)
+  (define height (* 2        size))
+  (define width  (* (sqrt 3) size))
+  (define g (vec width 0))                ; vector from center of tile (0,0) to tile (1,0)
+  (define h (vec (* width (cos 60deg))    ; vector from center of tile (0,0) to tile (0,1)
+                 (* width (sin 60deg))))
+
+  ; Convert the vector into hex coordinates.
+  ; That is, find i and h such that:
+  ;    v = i g + j h
+  ; To isolate j, we take the dot product with g^ on both sides:
+  ;    v*g^ = i g*g^ + j h*g^
+  ;    v*g^ = j h*g^
+  ; Thus
+  ;    j = v*g^ / h*g^
+  ; Similarly
+  ;    i = v*h^ / g*h^
+
+  (def g^ (rot90 g))
+  (def h^ (rot90 h))
+
+  (def i (/ (dot v h^) (dot g h^)))
+  (def j (/ (dot v g^) (dot h g^)))
+  (vec i j))
+
+(define (vec-round v)
+  ; round down
+  (define (r x) (inexact->exact (ceiling (- x 0.5))))
+  (defm (vec x y) v)
+  (vec (r x) (r y)))
+
+
+;;;
+;;; Runge-Kutta 
+;;;
 
 ; Returns a table of points before and after (x0,y0).
 ; Here f : RxR -> R comes from the differential equation y'=f(x,y).
@@ -124,7 +184,9 @@
     (define y+ (next xn yn))
     (values y+ (cons (list xn yn) pts))))
 
-
+;;;
+;;; Stream Plot
+;;;
 
 (define (stream-plot f xmin xmax ymin ymax
                      #:samples [n 50]
@@ -246,6 +308,7 @@
              (and draw-starting-points?
                   (penwidth 4 (color "blue" (draw (Pt x0 y0))))))))))
 
+
 (define (generate-start-points win #:density [density 1])
   ; density: A density of 1 divides the window into 30x30 rectangles.
   ;          A density of 2 divides the window into (2*30)x(2*30) rectangles.  
@@ -264,21 +327,16 @@
   #;(sort pts compare)  
   (shuffle pts))
 
+;;;
+;;; Example
+;;;
 
 (set-curve-pict-size 300 300)
 (define (f x y) (+ x y))
 (define (g x y) (- (* x x) y))
 (define pts (generate-start-points (window -5.5 5.5 -5.5 5.5) #:density 0.4))
 
-(beside
- (draw (stream-plot g -3.5 3.5 -3.5 3.5 #:samples 5 #:pts pts
-                    #:unbroken-trajectories? #t))
- (blank 30 10)
- (draw (stream-plot g -3.5 3.5 -3.5 3.5 #:samples 5 #:pts pts)))
-
-
-
-
-
- 
-
+(draw (stream-plot f -3.5 3.5 -3.5 3.5 #:samples 5 #:pts pts
+                   #:unbroken-trajectories? #t))
+(blank 30 10)
+(draw (stream-plot f -3.5 3.5 -3.5 3.5 #:samples 5 #:pts pts))
