@@ -11,7 +11,14 @@
          draw-curve-with-palette) ; palette curve -> pict       draw curve using a palette
 
 
-(require metapict racket/match)
+(require  "color.rkt"
+          "curve.rkt"
+          "def.rkt"
+          "device.rkt"
+          "draw.rkt"
+          "pen-and-brush.rkt"
+          "pict.rkt"
+          racket/match)
 
 (define black (make-color* "black"))
 (define black-palette (λ (t) black))
@@ -62,6 +69,7 @@
 
 
 (begin
+  (require "shapes.rkt")
   (set-curve-pict-size 300 300)
   (penwidth 30
             (draw-curve-with-palette (palette "red" "yellow" "cyan" "violet" "red")
