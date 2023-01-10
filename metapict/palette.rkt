@@ -53,18 +53,19 @@
                     ((vector-ref v i) (- nt i)))]))
 
 (define (draw-curve-with-palette p c [n 50])
+  (def m (curve-length c))
   (def Δt (/ 1 n))
   (def ΔT (/ 1 (- n 1)))
   (for/draw ([t (in-range 0 1 ΔT)])
     (def col (p t))
-    (color col (draw (subcurve c t (+ t Δt))))))
+    (color col (draw (subcurve c (* m t) (* m (+ t Δt)))))))
 
 
-#;(begin
-    (def c (curve (pt -1 0) -- (pt 1 0)))
-    (set-curve-pict-size 401 401)
-    (penwidth 3
-              (draw-curve-with-palette
-               (palette-append (palette "red" "orange")
-                               (palette "orange" "yellow" "green" "cyan" "blue"))
-               c)))
+(begin
+  (set-curve-pict-size 300 300)
+  (penwidth 30
+            (draw-curve-with-palette (palette "red" "yellow" "cyan" "violet" "red")
+                                     (circle 0.9)
+                                     400)))
+
+
