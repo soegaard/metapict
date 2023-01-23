@@ -33,7 +33,7 @@
  
  harpoon-up          ; curve in the shape of an up harpoon
  harpoon-down        ; curve in the shape of an down harpoon
- hook-head
+ hook-head reverse-hook-head
  line-head           ; curve in the shape of a line
  reverse-head        ; given head maker, return new head maker that reverses given head
 
@@ -153,13 +153,13 @@
                       #:head-angle        [α #f]  ; angle in degrees
                       #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
                       #:tail-indentation  [γ #f]) ; angle in degrees 
-  (defm (head/info: head tipx fill? l r)
+  (defm (head/info: head tipx _ L R)  ; (head/info: head tipx fill? length length-ratio)
     (harpoon-up #:length            l
-                     #:length-ratio      r 
-                     #:head-angle        α
-                     #:flank-indentation β
-                     #:tail-indentation  γ))
-  (head/info (flipy head) tipx l r #:fill? #t))
+                #:length-ratio      r 
+                #:head-angle        α
+                #:flank-indentation β
+                #:tail-indentation  γ))
+  (head/info (flipy head) tipx L R #:fill? #t))
 
 ; return the curve for the arrow head placed at the end of the curve c
 (define (attach-arrow-head c ah)
@@ -249,6 +249,24 @@
   (def ymax (* l (tan (rad α/2))))
   (def radius (* 0.5 ymax))
   (def head (flipy (curve (pt 0 0) -arc radius 270 90)))
+  (head/info head 0 l r #:fill? #f))
+
+(define (reverse-hook-head  #:length            [l #f]
+                            #:length-ratio      [r #f]
+                            ; the following are ignored
+                            #:head-angle        [α #f]  ; angle in degrees
+                            #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
+                            #:tail-indentation  [γ #f])
+  ; The "attachment point" of this "arrow" is (pt 0 0).
+  ; The arrow points in the direction (vec 1 0).
+  (unless l (set! l (ahlength)))
+  (unless r (set! r (ahratio)))  
+  (unless α (set! α (ahangle)))
+  ; See http://www.ntg.nl/maps/36/19.pdf
+  (def  α/2 (/ α 2))
+  (def ymax (* l (tan (rad α/2))))
+  (def radius (* 0.5 ymax))
+  (def head (curve (pt 0 0) -arc radius 270 90))
   (head/info head 0 l r #:fill? #f))
 
 (def (draw-arrow c 
