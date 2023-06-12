@@ -169,15 +169,19 @@
 
 (define (draw-axis a #:window [win (curve-pict-window)] #:fill-label [fill #f])
   (defv (xmin xmax) (visible-range a win))
-  (define (coord x) (coordinate->pt a x))
-  (def T    (current-curve-transformation))
-  (def from (T (coord xmin)))
-  (def to   (T (coord xmax)))
-  (draw (with-device-window
-          (parameterize ([ahlength (ypx 8)])
-            (draw-arrow (curve from -- to))))
-        (and (axis-label a)
-             (draw-axis-label a xmax #f #:text (axis-label a) #:fill fill #:offset -8))))
+  (cond
+    [(and xmin xmax)
+     (define (coord x) (coordinate->pt a x))
+     (def T    (current-curve-transformation))
+     (defv (mx mn) (old-visible-range a win))
+     (def from (T (coord xmin)))
+     (def to   (T (coord xmax)))
+     (draw (with-device-window
+             (parameterize ([ahlength (ypx 8)])
+               (draw-arrow (curve from -- to))))
+           (and (axis-label a)
+                (draw-axis-label a xmax #f #:text (axis-label a) #:fill fill #:offset -8)))]
+    [else (draw)]))
 
 (current-draw-axis draw-axis)
 
@@ -340,13 +344,14 @@
          #:window     [win (curve-pict-window)]
          #:fill       [fill #f]  ; boolean or color
          #:first-tick [s0 #f]
+         #:omit-last  [omit-last? #f]
          #:omit       [omit '()])
   (defm (axis o v l) a)  
   (set! s0 (or s0 s))
   
   ; the first and last tick in the range is excluded
   ; due to collision with arrow head
-  (for/draw ([x (in-range (+ s0 d) t d)])
+  (for/draw ([x (in-range (+ s0 d) (+ t (if omit-last? 0 d)) d)])
     (and (not (memf (λ (y) (= x y)) omit))
          (match fill
            [#f                     (tick-label a x opposite)]
