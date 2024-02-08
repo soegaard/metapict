@@ -134,12 +134,14 @@
   (defm (vec x y) pq)
   (defm (pt u v) p)
   (def θ  (atan y x)) ; use atan to take the different quadrants into account
-  (apply ((shifted u v) ; shift by one of the points on the line
+  (def T ((shifted u v) ; shift by one of the points on the line
           (rotated θ)
           reflecty
           (rotated (- θ))
-          (shifted (- u) (- v)))
-         args))
+          (shifted (- u) (- v))))
+  (if (null? args)
+      T
+      (apply T args)))
 
 (define (det T) 
   (match T
