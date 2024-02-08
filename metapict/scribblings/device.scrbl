@@ -22,10 +22,9 @@ a curve is converted into a pict by @racket[draw] or similar.
 The size is in device coordinates.
 }
 
-@deftogether[(
-  @defproc[(set-curve-pict-size [w real?] [h real?]) void?]
-  @defproc[(set-curve-pict-size [p pict?]) void?])]{
-Sets the parameters @racket[curve-pict-width] and @racket[curve-pict-width]
+@defproc*[([(set-curve-pict-size [w real?] [h real?]) void?]
+           [(set-curve-pict-size [p pict?]) void?])]{
+Sets the parameters @racket[curve-pict-width] and @racket[curve-pict-height]
 to @racket[w] and @racket[h] or to the width and height of the pict @racket[p].}
 
 @defparam[curve-pict-window win window? #:value (window -1.1 1.1 -1.1 1.1)]{
