@@ -201,12 +201,15 @@
                #:flank-indentation [β #f]  ; angle in degrees  (todo: better word?)
                #:tail-indentation  [γ #f])
     (unless l (set! l (ahlength)))
-    (shifted l 0 (flipx (head-maker #:length            l
-                                    #:length-ratio      r
-                                    #:head-angle        α
-                                    #:flank-indentation β
-                                    #:tail-indentation  γ))))
+    (define h (head-maker #:length            l 
+                          #:length-ratio      r 
+                          #:head-angle        α
+                          #:flank-indentation β
+                          #:tail-indentation  γ))
+    (defm (head/info: head tipx fill? L R) h)  ; (head/info: head tipx fill? length length-ratio)
+    (head/info (shifted l 0 (flipx head)) tipx L R #:fill? #t))
   rev)
+
 
 (define (line-head  #:length            [l #f]
                     #:length-ratio      [r #f] 
