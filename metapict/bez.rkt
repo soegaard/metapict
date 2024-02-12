@@ -255,9 +255,9 @@
     (check-true (pt~ (pt t1 t2) (pt 1/2 1/2)))))
 
 (define (bez-intersection-point-and-times b1 b2 [t- 0] [t+ 1] [u- 0] [u+ 1])
-  ; (displayln (list t- t+ u- u+))
-  ; (write b1) (newline)
-  ; (write b2) (newline) (newline)
+  ;; (displayln (list t- t+ u- u+))
+  ;; (write b1) (newline)
+  ;; (write b2) (newline) (newline)
   (set! t- (* 1. t-))
   (set! t+ (* 1. t+))
   (set! u- (* 1. u-))
@@ -324,6 +324,7 @@
 ;   compute the path length of the bezier curve
 ;   Algorithm: Jens Gravensen "Adaptive subdivision and the length and energy of Bezier curves."
 (define (bez-arc-length b)
+  ; (displayln b)
   (def n 2.)
   (define (len b eps)
     (defm (bez p0 p1 p2 p3) b) ; p1 and p2 are control points
