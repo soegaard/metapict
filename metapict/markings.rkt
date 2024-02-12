@@ -31,7 +31,7 @@
 ; lines. This matters because there is a difference between bitmaps, svg and pdfs.
 ; For now, let's rely on parameters.
 
-(define angle-radius  (make-parameter 0.7))   ; distance along left leg
+(define angle-radius  (make-parameter 0.7)) ; distance along left leg
 (define angle-spacing (make-parameter 0.1)) ; distance between arcs
 (define mark-size     (make-parameter 0.3)) ; size of straight mark
 (define mark-spacing  (make-parameter 0.2)) ; space between side marks
@@ -152,7 +152,7 @@
      #'(begin (set! x (if (point:? x) (point->pt x) x)) ...)]))
 
 ; mark-angle : point point point [keyword-arguments ...] -> pict
-;   The points A, B and C make and angle at B.
+;   The points A, B and C make an angle at B.
 ;   The angle arcs are drawn in the positive orientation.
 ;   The number    radius   is the distance along c1 from P to the beginning of the first arc.
 ;   The number    spacing  is the distance between arcs.
@@ -167,7 +167,8 @@
                     #:spacing          [spacing (angle-spacing)]
                     #:radius           [radius  (angle-radius)]
                     #:draw-angle-curve [draw-angle-curve marked-arc]
-                    #:fill?            [fill? #f])
+                    #:fill?            [fill? #f]
+                    #:label            [label #f])
   (convert-points a b c)
   ; Center of arc
   (def p b) 
@@ -189,7 +190,16 @@
      (def q (pt+ b (vec* rad (normalize (pt- a b)))))
      (def r (pt+ b (vec* rad (normalize (pt- c b)))))
      ; draw
-     (draw-angle-curve p q r #:marks m #:marker marker))))
+     (draw-angle-curve p q r #:marks m #:marker marker))
+   (if label
+       (let ()
+         (set! n (min n 5))
+         (def rad (+ radius (* (+ n 2) spacing)))
+         (def dir (normalize (vec+ (normalize (pt- a b))
+                                   (normalize (pt- c b)))))
+         (def q (pt+ b (vec* rad dir)))
+         (label-cnt label q))
+       (blank))))
 
 ; mark-right-angle : point point point [keyword-arguments ...] -> pict
 ;     The points A, B, and C make a right angle at B (or an angle that is presumed to be right).
