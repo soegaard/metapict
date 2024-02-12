@@ -173,7 +173,7 @@
     [(and xmin xmax)
      (define (coord x) (coordinate->pt a x))
      (def T    (current-curve-transformation))
-     (defv (mx mn) (old-visible-range a win))
+     (defv (mx mn) (visible-range a win)) ; was:  (old-visible-range a win)
      (def from (T (coord xmin)))
      (def to   (T (coord xmax)))
      (draw (with-device-window
