@@ -55,6 +55,7 @@
 (define make-color* 
   (case-lambda
     [(name) (cond [(is-a? name color%) name]
+                  [(equal? name "currentcolor") "currentcolor"]
                   [else (def c (send the-color-database find-color name))
                         (unless c (error 'make-color* (~a "expected color name, got " name)))
                         c])]
