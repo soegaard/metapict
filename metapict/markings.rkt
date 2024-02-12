@@ -16,6 +16,7 @@
  slanted-mark
  arc-outline
  mark-angle
+ label-angle
  mark-curve-angle
  mark-curve
  mark-right-angle
@@ -191,6 +192,23 @@
      (def r (pt+ b (vec* rad (normalize (pt- c b)))))
      ; draw
      (draw-angle-curve p q r #:marks m #:marker marker))
+   ; draw label
+   (label-angle a b c label
+                #:arcs    n
+                #:spacing spacing
+                #:radius  radius)))
+
+
+; Put the label a little further out than the last arc that mark-angle draws.
+(define (label-angle a b c label
+                     #:arcs             [n 1]                     ; number of arcs
+                     #:spacing          [spacing (angle-spacing)]
+                     #:radius           [radius  (angle-radius)])
+  (convert-points a b c)
+  ; Center of arc
+  (def p b) 
+  ; Draw n arcs
+  (draw  
    (if label
        (let ()
          (set! n (min n 5))
