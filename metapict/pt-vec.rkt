@@ -47,6 +47,7 @@
 (define (med α p q) (def pq (pt- q p)) (pt+ p (vec* α pq)))  ; mediate aka linear interpolation
 (define (pt@ r θ) (pt+ (pt 0 0) (vec@ r θ))) ; from polar: radius r, angle θ
 (define (pt@d r θ) (pt+ (pt 0 0) (vec@ r (rad θ)))) ; from polar: radius r, angle θ
+
 ; for sorting:
 (define (pt< p q) (match* (p q) [((pt x y) (pt a b)) (or (< x a) (and (= x a) (< y b)))]))
 
@@ -81,7 +82,8 @@
 (define norm len)
 (define (dir/rad α) (vec (cos α) (sin α)))
 (define (dir deg) (dir/rad (rad deg)))
-(define (vec@ r θ) (vec* r (dir/rad θ))) ; from polar
+(define (vec@  r θ) (vec* r (dir/rad θ)))       ; from polar
+(define (vec@d r θ) (vec* r (dir/rad (rad θ)))) ; from polar, degrees
 (define (@ x) ; to polar
   ; these are from "angles.rkt", but used to prevent a module cycle
   (define (arccos x) ; this ensures a real result (rounding could lead to complex results)
