@@ -82,8 +82,8 @@
 (define norm len)
 (define (dir/rad α) (vec (cos α) (sin α)))
 (define (dir deg) (dir/rad (rad deg)))
-(define (vec@  r θ) (vec* r (dir/rad θ)))       ; from polar
-(define (vec@d r θ) (vec* r (dir/rad (rad θ)))) ; from polar, degrees
+(define (vec@  r θ) (vec* r (dir/rad θ)))   ; from polar
+(define (vec@d r θ) (vec* r (dir θ)))       ; from polar, degrees
 (define (@ x) ; to polar
   ; these are from "angles.rkt", but used to prevent a module cycle
   (define (arccos x) ; this ensures a real result (rounding could lead to complex results)
