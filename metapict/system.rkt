@@ -144,7 +144,7 @@
         (and (or label show?)
              (label-bot (or label (~a x)) (point->pt px)))))
 
-(define (show-value-reading-y p
+(define (show-value-reading-y p                              
                               #:show-value [show? #t]
                               #:label      [label #f]
                               #:color      [col   "black"]
@@ -157,10 +157,10 @@
              (label-lft (or label (~a y)) (point->pt py)))))
 
 
-(define (system-grid s #:last-tick? [ts? #t] #:first-tick? [ft? #f])
+(define (system-grid s [d 1] #:last-tick? [ts? #t] #:first-tick? [ft? #f])
   (defm (system: origin a1 a2) s)
-  (def xs (tick-ordinates a1 #:last-tick? ts? #:first-tick? ft?))
-  (def ys (tick-ordinates a2 #:last-tick? ts? #:first-tick? ft?))
+  (def xs (tick-ordinates a1 d #:last-tick? ts? #:first-tick? ft?))
+  (def ys (tick-ordinates a2 d #:last-tick? ts? #:first-tick? ft?))
   (def bl (point s (first xs) (first ys)))
   (def ur (point s (last  xs) (last  ys)))
   (def xmin (first xs))
