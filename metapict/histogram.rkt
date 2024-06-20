@@ -196,7 +196,8 @@
          #:y-scale       [y-scale       1.0]
          #:y-axis?       [y-axis?       #f]   ; show second axis?
          #:y-grid?       [y-grid?       #f]   ; show horizontal grid lines?
-         )
+         #:few-labels?   [few-labels?   #f]
+         #:labels-at     [labels-at     #t])
   ;; Range of observations
   (define min-obs   (apply min observations))
   (define max-obs   (apply max observations))
@@ -293,9 +294,16 @@
      (for/draw ([x bounds])
        (tick a1 x #:size 3))
 
-     ; Labels of bounds
-     (for/draw ([x bounds])
-       (tick-label a1 x #t))
+     ; Labels
+     (and labels-at
+       (for/draw ([x labels-at])
+         (tick-label a1 x #t)))
+     (and few-labels?
+       (draw (tick-label a1 (first bounds) #t)
+             (tick-label a1 (last  bounds) #t)))
+     (and (not (or labels-at few-labels?))
+       (for/draw ([x bounds])
+         (tick-label a1 x #t)))
 
      ; Area block
      (histogram-block s bounds block-area max-weight block-label)
