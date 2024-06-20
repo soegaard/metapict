@@ -8,6 +8,7 @@
     ))
 
 (define deps '("base"
+               "data-lib"
                "draw-lib"
                "math-lib"
                "gui-lib"

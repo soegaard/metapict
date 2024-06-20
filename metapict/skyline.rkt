@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 (provide skyline
          skyline->lines)
 
@@ -9,7 +9,9 @@
 ; A building specification is a left position, height, and right position. 
 ; The output is a skyline - a list of points that will be connected by interleaving horizontal and vertical lines.
 
-(require data/heap)
+(require data/heap
+         racket/list
+         racket/match)
  
 (define (skyline input)
   ; <active-set>
