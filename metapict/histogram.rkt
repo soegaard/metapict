@@ -1,6 +1,5 @@
 #lang racket/base
-(provide complete-histogram-from-observations
-         )
+(provide complete-histogram-from-observations)
 
 (require racket/format
          racket/match
@@ -11,6 +10,7 @@
 
          "arrow.rkt"
          "axis.rkt"
+         "color.rkt"
          "curve.rkt"
          "def.rkt"
          "device.rkt"
@@ -115,8 +115,9 @@
     (brushcolor "white" (filldraw (box s (from d) (to d) h)))))
 
 (define (skyline-histogram s bounds weights #:y-scale [y-scale 1.0])
-  ; This alternative to `simple-histogram` avoids `filldraw`.
-  
+  ; This alternative to `simple-histogram` avoids drawing lines twice.
+  ; We first fill the rectangles with white.
+  ; This is done to erase the dashed horizontal lines.  
   
   ; Here s is a system in which to draw the histogram.
   ; The height of a box is  scale * weight/total_weight.
@@ -138,13 +139,45 @@
   (define roofs        (extract-every lines 2))
   (define walls        (extract-every (rest lines) 2))
 
+  ;; Here `walls` consists of the vertical lines in a skyline.
+  ;;   1) The lines needs to be extended to the y-axis.
+  ;;   2) For two adjacent boxes with the same height, the middle wall is missing.
+
+  ; (define x-boundaries  (map from domains)) ; rightmost x not included here
+  (define missing-walls (let loop ([xs bounds] [roofs roofs])
+                          (cond
+                            [(null? xs)    '()]
+                            [(null? roofs) '()]
+                            [else (define x    (first xs))
+                                  (define roof (first roofs))
+                                  (match-define (list (list x0 y0) (list x1 y1)) roof) ; y0=y1 here
+                                  (cond
+                                    [(< x0 x x1) (cons (list (list x y0) (list x 0))
+                                                       (loop (cdr xs) roofs))]
+                                    [(<= x x0)   (loop (cdr xs) roofs)]                                    
+                                    [else        (loop xs (cdr roofs))])])))
+
   (draw
+   ; Todo: Instead of filling each building, one could fill the entire
+   ;       skyline once - making the result svg more efficient (and shorter).
+
+   ;; Fill inside with white
+   (for/draw ([line roofs])
+     (match-define (list (list x0 y0) (list x1 y1)) line)
+     (color "white"
+            (fill (curve (pt x0 0) -- (pt x0 y0) -- (pt x1 y1) -- (pt x1 0) -- (pt x0 0)))))
+   ;; Roofs
    (for/draw ([line roofs])
      (match-define (list (list x0 y0) (list x1 y1)) line)
      (curve (pt x0 y0) -- (pt x1 y1)))
+   ;; Vertical lines
    (for/draw ([line walls])
      (match-define (list (list x0 y0) (list x1 y1)) line)
-     (curve (pt x0 (max y0 y1)) -- (pt x0 0)))))
+     (curve (pt x0 (max y0 y1)) -- (pt x0 0)))
+   ;; Missing walls
+   (for/draw ([line missing-walls])
+     (match-define (list (list x0 y0) (list x1 y1)) line)
+     (curve (pt x0 y0) -- (pt x1 y1)))))
 
 
 (define (complete-histogram-from-observations
