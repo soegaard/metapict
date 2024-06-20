@@ -22,7 +22,9 @@
          "trans.rkt"
          "window.rkt"
          (except-in "structs.rkt" open)
-         "system.rkt")
+         "system.rkt"
+         "skyline.rkt"
+         "slices.rkt")
 
 (define (box s x0 x1 h [y0 0])
   ; draw a box in system s, where (x0,y0) and (x1,y0+h) are opposite corners
@@ -102,7 +104,7 @@
   ; Typically the weights will be absolute frequencies, so the
   ; height will be proportional to the relative frequency.
 
-  ; The length of bounds is one greater than the length of the length of weights.
+  ; The length of bounds is one greater than the length of the  weights.
   (define total-weight (for/sum  ([w weights]) w))
   (define domains      (bounds->domains bounds))
   (define heights      (for/list ([w weights] [d domains])
@@ -111,6 +113,38 @@
   
   (for/draw ([d domains] [h heights])
     (brushcolor "white" (filldraw (box s (from d) (to d) h)))))
+
+(define (skyline-histogram s bounds weights #:y-scale [y-scale 1.0])
+  ; This alternative to `simple-histogram` avoids `filldraw`.
+  
+  
+  ; Here s is a system in which to draw the histogram.
+  ; The height of a box is  scale * weight/total_weight.
+  ; Use 100 as a scale in order for the ticks on y to from 0 to 100.
+
+  ; Typically the weights will be absolute frequencies, so the
+  ; height will be proportional to the relative frequency.
+
+  ; The length of bounds is one greater than the length of the  weights.
+  (define total-weight (for/sum  ([w weights]) w))
+  (define domains      (bounds->domains bounds))
+  (define heights      (for/list ([w weights] [d domains])
+                         (define len (domain-length d))
+                         (* 1. (/ w total-weight len))))
+  (define input        (for/list ([h heights] [d domains])
+                         (list (from d) h (to d))))
+  (define key-points   (skyline input))
+  (define lines        (skyline->lines key-points))
+  (define roofs        (extract-every lines 2))
+  (define walls        (extract-every (rest lines) 2))
+
+  (draw
+   (for/draw ([line roofs])
+     (match-define (list (list x0 y0) (list x1 y1)) line)
+     (curve (pt x0 y0) -- (pt x1 y1)))
+   (for/draw ([line walls])
+     (match-define (list (list x0 y0) (list x1 y1)) line)
+     (curve (pt x0 (max y0 y1)) -- (pt x0 0)))))
 
 
 (define (complete-histogram-from-observations
@@ -216,7 +250,8 @@
                     
 
      ; Histogram
-     (simple-histogram s bounds weights #:y-scale y-scale)
+     ; (simple-histogram s bounds weights #:y-scale y-scale)
+     (skyline-histogram s bounds weights #:y-scale y-scale)
 
      ;; First Axis
      a1
