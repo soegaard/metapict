@@ -157,27 +157,28 @@
                                     [(<= x x0)   (loop (cdr xs) roofs)]                                    
                                     [else        (loop xs (cdr roofs))])])))
 
-  (draw
-   ; Todo: Instead of filling each building, one could fill the entire
-   ;       skyline once - making the result svg more efficient (and shorter).
+  (pencap 'butt
+          (draw
+           ; Todo: Instead of filling each building, one could fill the entire
+           ;       skyline once - making the result svg more efficient (and shorter).
 
-   ;; Fill inside with white
-   (for/draw ([line roofs])
-     (match-define (list (list x0 y0) (list x1 y1)) line)
-     (color "white"
-            (fill (curve (pt x0 0) -- (pt x0 y0) -- (pt x1 y1) -- (pt x1 0) -- (pt x0 0)))))
-   ;; Roofs
-   (for/draw ([line roofs])
-     (match-define (list (list x0 y0) (list x1 y1)) line)
-     (curve (pt x0 y0) -- (pt x1 y1)))
-   ;; Vertical lines
-   (for/draw ([line walls])
-     (match-define (list (list x0 y0) (list x1 y1)) line)
-     (curve (pt x0 (max y0 y1)) -- (pt x0 0)))
-   ;; Missing walls
-   (for/draw ([line missing-walls])
-     (match-define (list (list x0 y0) (list x1 y1)) line)
-     (curve (pt x0 y0) -- (pt x1 y1)))))
+           ;; Fill inside with white
+           (for/draw ([line roofs])
+             (match-define (list (list x0 y0) (list x1 y1)) line)
+             (color "white"
+                    (fill (curve (pt x0 0) -- (pt x0 y0) -- (pt x1 y1) -- (pt x1 0) -- (pt x0 0)))))
+           ;; Roofs
+           (for/draw ([line roofs])
+             (match-define (list (list x0 y0) (list x1 y1)) line)
+             (curve (pt x0 y0) -- (pt x1 y1)))
+           ;; Vertical lines
+           (for/draw ([line walls])
+             (match-define (list (list x0 y0) (list x1 y1)) line)
+             (curve (pt x0 (max y0 y1)) -- (pt x0 0)))
+           ;; Missing walls
+           (for/draw ([line missing-walls])
+             (match-define (list (list x0 y0) (list x1 y1)) line)
+             (curve (pt x0 y0) -- (pt x1 y1))))))
 
 
 (define (complete-histogram-from-observations
