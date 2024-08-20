@@ -197,7 +197,7 @@
          #:y-axis?       [y-axis?       #f]   ; show second axis?
          #:y-grid?       [y-grid?       #f]   ; show horizontal grid lines?
          #:few-labels?   [few-labels?   #f]
-         #:labels-at     [labels-at     #t])
+         #:labels-at     [labels-at     #f])
   ;; Range of observations
   (define min-obs   (apply min observations))
   (define max-obs   (apply max observations))
