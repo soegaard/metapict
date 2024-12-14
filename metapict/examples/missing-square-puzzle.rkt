@@ -19,6 +19,6 @@
 (with-window (window -1 14 -1 12)
   (define upper (list (pt 0 0) (pt 8 0) (pt 8 1) (pt 8 3)))
   (define lower (list (pt 5 2) (pt 8 0) (pt 5 0) (pt 0 0)))
-  (margin 2 (draw (color "gray" (draw (grid (pt -1 -1) (pt 14 12) (pt 0 0) 1)))
+  (margin 2 (draw (color "gray" (draw (grid (pt -1 -1) (pt 14 12) (pt 0 0) #:step 1)))
                   (draw-pieces (map (shifted (pt 0 6)) upper))
                   (draw-pieces lower))))
